@@ -199,9 +199,13 @@ function finish(){clearInterval(tick);clearTimeout(memT);document.querySelectorA
   setTimeout(showPaywall,steps.length*900+300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
-  $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз.`);
-  $('pwBars').innerHTML=GRP.map(([n,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>ans[i]===Q[i].a).length;
-    return `<div class="bar"><div class="h"><span>${T(n)}</span><span>${k}/${idx.length}</span></div><div class="t"><i style="width:${Math.max(12,k/idx.length*100)}%"></i></div></div>`}).join('');
+  $('pwStats').textContent=L2(`Вы прошли ${done} из ${TOTAL} заданий за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} тапсырманың ${done}-ін ${Math.floor(used/60)} мин ${used%60} с ішінде орындадыңыз — IQ-ыңыз есептеліп қойды.`);
+  const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
+  const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
+  $('pwRadar').innerHTML=radarSVG(gv,RGRP.map(g=>T(g[2])));
+  const st=styleList()[0];
+  $('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2('Ещё 4 черты — в полном отчёте.','Тағы 4 ерекшелік — толық есепте.')}</span></div>`;
+  $('pwReview').textContent=L2(`объяснение всех ${NS} заданий`,`барлық ${NS} тапсырманың түсіндірмесі`);
   show('paywall');if(!re)confetti(70);pwObs()}
 $('payBtn').onclick=$('payBtn2').onclick=()=>$('payModal').classList.add('on');
 $('payClose').onclick=()=>$('payModal').classList.remove('on');
@@ -218,6 +222,12 @@ function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(
 const RGRP=[['🧩','Логика','Логика',q=>q.cat==='logic'],['🔍','Внимательность','Внимание',q=>q.cat==='attn'],['🧠','Память','Память',q=>q.cat==='mem'],
   ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>!q.text||q.cat==='spat']];
 const qTitle=q=>q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
+function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const st=[];
+  st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
+  st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);
+  st.push(yes(lk('puz'))?['🧩','Любитель сложных задач','Интеллектуальные вызовы вас заряжают.']:['⚡','Прагматик','Лучше всего думаете, когда видна практическая цель.']);
+  st.push(yes(lk('vis'))?['🧊','Пространственное воображение','Легко вращаете объекты в уме.']:['🗺','Словесно-логический тип','Опираетесь на слова, схемы и правила.']);
+  st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);return st}
 function showResult(re){
   const ok=Q.map((q,i)=>!q.likert&&ans[i]===q.a);const correct=ok.filter(Boolean).length;
   const iq=iqFrom(correct),lv=levelOf(iq),used=TIME-Math.max(left,0),pc=Math.min(99,Math.max(1,pctOf(iq)));
