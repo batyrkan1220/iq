@@ -138,7 +138,11 @@ async function pickQuiz(){$('reS2').classList.remove('hide');$('reS3').classList
      <button class="btn" id="reGo" style="width:100%;margin-top:6px">✅ Келісемін — дауыс пен видео жасау</button><div class="err" id="reGoErr"></div>`;
     $('reGo').onclick=buildQuiz;voiceUI()}
   catch(e){$('rePlan').innerHTML=`<div class="err">${esc(e.message)}</div>`}}
-async function buildQuiz(){$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
+// Kazakh style guard: fixes common colloquial forms in every editable field before voicing
+function kzFix(){if(S.lang!=='kz')return;$('rePlan').querySelectorAll('input,textarea').forEach(el=>{let v=el.value,o=v;
+  v=v.replace(/(^|[\s«(])қайсы\?/g,'$1қандай?').replace(/(^|[\s«(])Қайсы\?/g,'$1Қандай?').replace(/(жылы|қашан|қай жерде|қай қалада|қай елде)(\s+)туған(\b|\?|\s|$)/g,'$1$2туылған$3');
+  if(v!==o)el.value=v})}
+async function buildQuiz(){kzFix();$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
   if(VMODE==='design'&&!VPICK){try{busy($('reGo'),true,'Диктор дайындалуда…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — «📚 Бар дауыс» арқылы жасап көріңіз.';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}}
   const set=S.set.map((q,i)=>({emo:val('qe'+i)||q.emo,col:q.col,q:val('qq'+i),o:[0,1,2].map(k=>val(`qo${i}_${k}`)),a:+$('qa'+i).value}));
   const D={set,draw:QUIZ.draw};const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,sets={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
@@ -163,7 +167,7 @@ async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
-async function build(){const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
+async function build(){kzFix();const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
   if(VMODE==='design'&&!VPICK){try{$('reGoErr').textContent='';busy($('reGo'),true,'Диктор дайындалуда…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — «📚 Бар дауыс» арқылы жасап көріңіз.';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}}
   const D={hook:val('pHookS'),q:val('pQS'),a:val('pAns'),why:val('pWhy'),trap:val('pTrap'),ot:val('pOT'),os:val('pOS'),ob:val('pOB'),ans};
   const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,set={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
