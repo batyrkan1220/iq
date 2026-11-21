@@ -57,7 +57,11 @@ const QB=[
 const CTA={kz:['','Жауабыңыз дұрыс болса, лайк басыңыз!','Ал соңғы сұрақ — ең қиыны!','Жауабыңызды комментке жазыңыз!'],
  ru:['','Если ваш ответ верный — ставьте лайк!','А последний вопрос — самый сложный!','Напишите свой ответ в комментариях!']};
 const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
-function item(b,l){const o=b[l==='ru'?3:2];return{emo:b[0],col:b[1],q:o.q,v:o.v||o.q.replace(/\n/g,' '),o:o.o.slice(),a:o.a,av:o.av}}
+let LASTPOS=-1;
+function item(b,l){const o=b[l==='ru'?3:2];const right=o.o[o.a];
+  // random order of options; avoid putting the correct answer in the same place twice in a row
+  let ord,pos;do{ord=shuffle(o.o.slice());pos=ord.indexOf(right)}while(pos===LASTPOS&&Math.random()<.85);LASTPOS=pos;
+  return{emo:b[0],col:b[1],q:o.q,v:o.v||o.q.replace(/\n/g,' '),o:ord,a:pos,av:o.av}}
 function pick4(l,used){const u=new Set(used||[]);let pool=QB.filter(b=>!u.has(b[l==='ru'?3:2].q));if(pool.length<4)pool=QB.slice();return shuffle(pool).slice(0,4).map(b=>item(b,l))}
 function swap(l,set,i){const have=new Set(set.map(x=>x.q));const pool=shuffle(QB.filter(b=>!have.has(b[l==='ru'?3:2].q)));set[i]=item(pool[0],l);return set}
 function voices(set,l){const pre=l==='ru'?'Ответ — ':'Жауабы — ';return set.map((q,i)=>({q:q.v,a:i<3?`${pre}${q.av}.${CTA[l][i]?' '+CTA[l][i]:''}`:CTA[l][3]}))}
