@@ -28,8 +28,13 @@ Deno.serve(async (req) => {
     if (action === "save_key") {
       const k = String(body.key || "").trim();
       if (k.length < 20) return json({ error: "Кілт тым қысқа" }, 400);
-      const t = await fetch(`${EL}/user/subscription`, { headers: { "xi-api-key": k } });
-      if (!t.ok) return json({ error: "ElevenLabs кілтті қабылдамады (" + t.status + ")" }, 400);
+      let okAny = false, why = "";
+      for (const path of ["/voices", "/models", "/user/subscription", "/user"]) {
+        const t = await fetch(`${EL}${path}`, { headers: { "xi-api-key": k } });
+        if (t.ok) { okAny = true; break; }
+        why = path + " → " + t.status + " " + (await t.text()).slice(0, 200);
+      }
+      if (!okAny) return json({ error: "ElevenLabs кілтті қабылдамады: " + why }, 400);
       await admin.from("app_secrets").upsert({ name: "elevenlabs", value: k, updated_at: new Date().toISOString() });
       return json({ ok: true });
     }
@@ -39,7 +44,11 @@ Deno.serve(async (req) => {
     if (action === "status") {
       if (!key) return json({ connected: false });
       const r = await fetch(`${EL}/user/subscription`, { headers: { "xi-api-key": key } });
-      if (!r.ok) return json({ connected: false, error: "Кілт жарамсыз (" + r.status + ")" });
+      if (!r.ok) {
+        const v = await fetch(`${EL}/voices`, { headers: { "xi-api-key": key } });
+        if (v.ok) return json({ connected: true, tier: "— (тарифті көру рұқсаты жоқ)", used: 0, limit: 0 });
+        return json({ connected: false, error: "Кілт жарамсыз (" + v.status + "): " + (await v.text()).slice(0, 200) });
+      }
       const s = await r.json();
       return json({ connected: true, tier: s.tier, used: s.character_count, limit: s.character_limit, reset: s.next_character_count_reset_unix });
     }
