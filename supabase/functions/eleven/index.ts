@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: sec } = await admin.from("app_secrets").select("value").eq("name", "elevenlabs").maybeSingle();
-    const key = sec?.value;
+    const key = sec?.value || Deno.env.get("ELEVENLABS_API_KEY");
     if (action === "status") {
       if (!key) return json({ connected: false });
       const r = await fetch(`${EL}/user/subscription`, { headers: { "xi-api-key": key } });
@@ -61,6 +61,40 @@ Deno.serve(async (req) => {
       if (!r.ok) return json({ error: "models " + r.status }, 502);
       const m = await r.json();
       return json({ models: (m || []).filter((x: any) => x.can_do_text_to_speech).map((x: any) => ({ id: x.model_id, name: x.name, langs: (x.languages || []).map((l: any) => l.language_id) })) });
+    }
+    if (action === "design") {
+      let text = String(body.text || "").trim();
+      const desc = String(body.description || "").trim().slice(0, 1000);
+      if (desc.length < 20) return json({ error: "Дауыс сипаттамасы тым қысқа (кемі 20 таңба)" }, 400);
+      while (text.length < 100) text = (text + " " + text).trim();
+      text = text.slice(0, 1000);
+      const tries: [string, Record<string, unknown>][] = [
+        ["/text-to-voice/design", { voice_description: desc, text, model_id: "eleven_ttv_v3" }],
+        ["/text-to-voice/design", { voice_description: desc, text }],
+        ["/text-to-voice/create-previews", { voice_description: desc, text }],
+      ];
+      let last = "";
+      for (const [path, b] of tries) {
+        const r = await fetch(`${EL}${path}?output_format=mp3_44100_128`, { method: "POST", headers: { ...H, "Content-Type": "application/json" }, body: JSON.stringify(b) });
+        if (r.ok) {
+          const d = await r.json();
+          return json({ previews: (d.previews || []).map((p: any) => ({ id: p.generated_voice_id, audio: p.audio_base_64, type: p.media_type || "audio/mpeg", dur: p.duration_secs })), text: d.text || text });
+        }
+        last = r.status + " " + (await r.text()).slice(0, 300);
+        if (r.status === 401 || r.status === 402 || r.status === 429) break;
+      }
+      return json({ error: "Voice Design: " + last }, 502);
+    }
+    if (action === "save_voice") {
+      const b = { voice_name: String(body.name || "IQly диктор").slice(0, 60), voice_description: String(body.description || "IQly reels narrator").slice(0, 1000), generated_voice_id: body.generated_voice_id };
+      let last = "";
+      for (const path of ["/text-to-voice", "/text-to-voice/create-voice-from-preview"]) {
+        const r = await fetch(`${EL}${path}`, { method: "POST", headers: { ...H, "Content-Type": "application/json" }, body: JSON.stringify(b) });
+        if (r.ok) { const d = await r.json(); return json({ voice_id: d.voice_id, name: d.name || b.voice_name }); }
+        last = r.status + " " + (await r.text()).slice(0, 300);
+        if (r.status !== 404 && r.status !== 405) break;
+      }
+      return json({ error: "Дауысты сақтау: " + last }, 502);
     }
     if (action === "tts") {
       const text = String(body.text || "").trim();

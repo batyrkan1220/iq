@@ -11,6 +11,10 @@ let fontsP=null;window.__mime=()=>pickMime();function loadFonts(){if(fontsP)retu
 
 // ---------- UI ----------
 box.innerHTML=`
+<div class="card" style="margin-bottom:12px"><h3>ElevenLabs</h3><div id="elInfo2" class="muted">Тексерілуде…</div>
+ <details id="elKeyBox2" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">API кілтті енгізу / ауыстыру</summary>
+  <p class="muted" style="font-size:12px">ElevenLabs → Developers → API Keys → Create. Кілт тек серверде (Supabase) сақталады. Voice Design үшін кілтке «Text to Voice» және «Voices: write» рұқсаттары керек.</p>
+  <div class="form"><label class="fld"><span>ElevenLabs API кілт</span><input type="password" id="elKey2" autocomplete="off" placeholder="sk_…"></label><button class="btn" id="elKeyBtn2">Сақтау</button></div><div class="err" id="elKeyErr2"></div></details></div>
 <details class="card" style="margin-bottom:12px" id="reAiBox"><summary style="cursor:pointer;font-weight:700">🤖 Claude (міндетті емес) <span id="reInfoS" class="muted" style="font-weight:500"></span></summary><div style="margin-top:10px"><div id="reInfo" class="muted">Тексерілуде…</div>
  <details id="reKeyBox" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">API кілтті енгізу / ауыстыру</summary>
   <p class="muted" style="font-size:12px">console.anthropic.com → API Keys → Create Key. Кілт тек серверде сақталады.</p>
@@ -35,6 +39,8 @@ box.innerHTML=`
 
 async function status(){try{const s=await RL({action:'status'});S.ai=s.connected;$('reInfoS').textContent=s.connected?'· қосулы':'· қосылмаған';$('reInfo').innerHTML=s.connected?`<span class="pill ok">Қосулы</span> Модель: <b>${esc(s.model)}</b>`:`<span class="pill w">Қосылмаған</span> Claude-сыз да жұмыс істейді — «Дайын база» таңдаңыз.`;$('reKeyBox').open=!s.connected}catch(e){$('reInfo').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
 $('reSrc').onchange=()=>{$('reHintL').style.display=$('reSrc').value==='ai'?'':'none'};
+async function elStatus(){try{const st=await EL({action:'status'});S.el=st.connected;$('elInfo2').innerHTML=st.connected?`<span class="pill ok">Қосулы</span> Тариф: <b>${esc(st.tier)}</b> · ${(st.used||0).toLocaleString('ru-RU')} / ${(st.limit||0).toLocaleString('ru-RU')} таңба`:`<span class="pill bad">Қосылмаған</span> ${esc(st.error||'API кілтті енгізіңіз')}`;$('elKeyBox2').open=!st.connected}catch(e){$('elInfo2').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
+$('elKeyBtn2').onclick=async()=>{$('elKeyErr2').textContent='';$('elKeyBtn2').disabled=true;try{await EL({action:'save_key',key:$('elKey2').value});$('elKey2').value='';S.voices=[];await elStatus()}catch(e){$('elKeyErr2').textContent=e.message}$('elKeyBtn2').disabled=false};
 $('reKeyBtn').onclick=async()=>{$('reKeyErr').textContent='';$('reKeyBtn').disabled=true;try{await RL({action:'save_key',key:$('reKey').value});$('reKey').value='';await status()}catch(e){$('reKeyErr').textContent=e.message}$('reKeyBtn').disabled=false};
 
 const busy=(b,on,txt)=>{b.disabled=on;if(txt)b.textContent=txt};
@@ -62,20 +68,50 @@ function drawPlan(){const p=S.plan,q=S.q,st=p.settings||{},ans=S.format==='answe
   const vopt=S.voices.map(v=>`<option value="${esc(v.id)}" ${v.id===p.voice_id?'selected':''}>${esc(v.name)}${v.category&&v.category!=='premade'?' · '+esc(v.category):''}</option>`).join('');
   $('rePlan').innerHTML=`<div class="note" style="background:#f5f3ff;border-color:#ddd6fe;color:#3b0764">🎙 <b>Ұсыныс:</b> ${esc(p.voice_name||'')} — ${esc(p.reason||'')}</div>
    <div class="grid two" style="margin-top:0">
-    <div>${fld('pHookS','Экрандағы hook',p.hook_screen)}${fld('pQS','Экрандағы сұрақ',q.q_screen,4)}${ans?fld('pAns','Жауап (экран)',q.answer)+fld('pWhy','Түсіндірме (экран)',q.why)+fld('pTrap','Қате жауап (сызылады)',q.trap):''}
-      ${fld('pOT','Соңғы экран — тақырып',p.outro_screen_title)}${fld('pOS','Соңғы экран — астыңғы мәтін',p.outro_screen_sub)}${fld('pOB','Батырма',p.outro_button)}</div>
+    <div>${fld('pHookS','Экрандағы hook',p.hook_screen,2)}${fld('pQS','Экрандағы сұрақ',q.q_screen,4)}${ans?fld('pAns','Жауап (экран)',q.answer)+fld('pWhy','Түсіндірме (экран)',q.why)+fld('pTrap','Қате жауап (сызылады)',q.trap):''}
+      ${fld('pOT','Соңғы экран — тақырып',p.outro_screen_title,2)}${fld('pOS','Соңғы экран — астыңғы мәтін',p.outro_screen_sub,2)}${fld('pOB','Батырма',p.outro_button)}</div>
     <div>${fld('pVQ','🎙 Дауыс: hook + сұрақ',(p.hook_voice||'')+' '+(p.question_voice||q.q_voice||''),4)}${ans?fld('pVA','🎙 Дауыс: жауап',p.answer_voice||q.answer_voice||'',2):''}${fld('pVO','🎙 Дауыс: соңы',p.outro_voice,2)}
-      <label class="fld"><span>Диктор</span><select id="pVoice">${vopt}</select></label>
+      <div class="card" style="background:#faf8ff;border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
+       <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmD" class="on" style="flex:1">✨ Жаңа дауыс (Voice Design)</button><button type="button" id="vmE" style="flex:1">📚 Бар дауыс</button></div>
+       <div id="vpD"><label class="fld"><span>Образ</span><select id="vdPre">${Object.keys(VPRE).map(k=>`<option value="${k}">${VPRE[k].n}</option>`).join('')}</select></label>
+        <label class="fld"><span>Дауыс сипаттамасы (ағылшынша жақсы түсінеді — өзгертуге болады)</span><textarea id="vdDesc" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
+        <button type="button" class="btn sec" id="vdGo" style="width:100%">🎨 3 дауыс нұсқасын жасау</button><div class="err" id="vdErr"></div><div id="vdPrev" class="grid" style="gap:8px;margin-top:8px"></div></div>
+       <div id="vpE" class="hide"><label class="fld"><span>Дауыс</span><select id="pVoice">${vopt}</select></label></div>
+       <div class="muted" style="font-size:12px" id="vSel"></div></div>
       <div class="form" style="grid-template-columns:repeat(2,1fr)">
        ${[['pStab','Тұрақтылық',st.stability??.5,0,1],['pSim','Ұқсастық',st.similarity??.75,0,1],['pSty','Стиль',st.style??.2,0,1],['pSpd','Жылдамдық',st.speed??1,.7,1.2]].map(([id,l,v,a,b])=>`<label class="fld"><span>${l} <b id="${id}v">${v}</b></span><input type="range" id="${id}" min="${a}" max="${b}" step="0.05" value="${v}" oninput="document.getElementById('${id}v').textContent=this.value"></label>`).join('')}</div></div></div>
    <button class="btn" id="reGo" style="width:100%;margin-top:6px">✅ Келісемін — дауыс пен видео жасау</button><div class="err" id="reGoErr"></div>`;
-  $('reGo').onclick=build}
+  $('reGo').onclick=build;voiceUI()}
+const VPRE={
+ quiz:{n:'🎤 Харизматичный жүргізуші (ер)',kz:'Charismatic Kazakh male TikTok quiz host in his early 30s, native Kazakh speaker with a natural Kazakh accent, warm mid-low voice, energetic and playful with a hint of intrigue, confident medium-fast pace, crisp studio-quality recording.',ru:'Charismatic male TikTok quiz host in his early 30s from Kazakhstan, native Russian speaker with a light Kazakhstani accent, warm mid-low voice, energetic and playful with a hint of intrigue, confident medium-fast pace, crisp studio-quality recording.'},
+ female:{n:'😊 Жылы, сенімді (әйел)',kz:'Friendly confident Kazakh woman in her late 20s, native Kazakh speaker, bright clear voice with a smile, engaging storyteller tone for short social media videos, medium pace, crisp studio-quality recording.',ru:'Friendly confident woman in her late 20s from Kazakhstan, native Russian speaker, bright clear voice with a smile, engaging storyteller tone for short social media videos, medium pace, crisp studio-quality recording.'},
+ elder:{n:'🧓 Дана ақсақал',kz:'Wise Kazakh grandfather (aksakal) in his 60s, native Kazakh speaker, deep warm slightly raspy voice, calm, kind and a little mischievous, as if telling a riddle to his grandchildren, unhurried pace, clean recording.',ru:'Wise grandfather in his 60s from Kazakhstan, native Russian speaker, deep warm slightly raspy voice, calm, kind and a little mischievous, as if telling a riddle to his grandchildren, unhurried pace, clean recording.'},
+ young:{n:'⚡ Жас блогер (энергиялы)',kz:'Young energetic Kazakh male blogger around 22, native Kazakh speaker, fast lively delivery, excited and fun, modern social media vibe, clear crisp recording.',ru:'Young energetic male blogger around 22 from Kazakhstan, native Russian speaker, fast lively delivery, excited and fun, modern social media vibe, clear crisp recording.'},
+ mystery:{n:'🕵️ Құпиялы, драмалы',kz:'Mysterious dramatic Kazakh male narrator in his 40s, native Kazakh speaker, deep resonant cinematic voice, slow suspenseful delivery like a movie trailer, building curiosity, studio-quality recording.',ru:'Mysterious dramatic male narrator in his 40s from Kazakhstan, native Russian speaker, deep resonant cinematic voice, slow suspenseful delivery like a movie trailer, building curiosity, studio-quality recording.'}};
+let VMODE='design',VPICK=null;
+function voiceUI(){const setM=m=>{VMODE=m;$('vmD').classList.toggle('on',m==='design');$('vmE').classList.toggle('on',m==='exist');$('vpD').classList.toggle('hide',m!=='design');$('vpE').classList.toggle('hide',m!=='exist');selInfo()};
+  $('vmD').onclick=()=>setM('design');$('vmE').onclick=()=>setM('exist');$('pVoice').onchange=selInfo;
+  const fill=()=>{$('vdDesc').value=VPRE[$('vdPre').value][S.lang]};$('vdPre').onchange=fill;
+  $('vdPre').value=S.format==='comment'?'quiz':'quiz';fill();VPICK=null;
+  $('vdGo').onclick=async()=>{$('vdErr').textContent='';busy($('vdGo'),true,'ElevenLabs дауыс жасап жатыр… (~20 сек)');$('vdPrev').innerHTML='';
+    try{const text=[val('pVQ'),val('pVO')].join(' ');const r=await EL({action:'design',description:$('vdDesc').value,text});
+      $('vdPrev').innerHTML=r.previews.map((p,i)=>`<div class="card" style="padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="width:22px">${i+1}</b><audio controls src="data:${p.type};base64,${p.audio}" style="flex:1;min-width:180px;height:36px"></audio><button type="button" class="btn sm" data-i="${i}">Осыны таңдаймын</button></div>`).join('')||'<div class="muted">Нұсқа келмеді</div>';
+      $('vdPrev').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const p=r.previews[+b.dataset.i];busy(b,true,'Сақталуда…');
+        try{const nm='IQly · '+$('vdPre').selectedOptions[0].textContent.replace(/^[^\s]+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU');
+          const s=await EL({action:'save_voice',generated_voice_id:p.id,name:nm.slice(0,60),description:$('vdDesc').value});
+          S.voices.unshift({id:s.voice_id,name:s.name,category:'generated'});const o=document.createElement('option');o.value=s.voice_id;o.textContent=s.name+' · generated';$('pVoice').prepend(o);$('pVoice').value=s.voice_id;
+          VPICK=s.voice_id;localStorage.setItem('el_voice',s.voice_id);$('vdPrev').querySelectorAll('.card').forEach((c,k)=>c.style.outline=k===+b.dataset.i?'2px solid var(--pri)':'');b.textContent='✓ Таңдалды';selInfo()}
+        catch(e){$('vdErr').textContent=e.message;busy(b,false,'Осыны таңдаймын')}})}
+    catch(e){$('vdErr').textContent=e.message}busy($('vdGo'),false,'🎨 Тағы 3 нұсқа жасау')};
+  setM('design')}
+function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.voices.find(x=>x.id===id);$('vSel').innerHTML=id&&v?`Таңдалған диктор: <b>${esc(v.name)}</b>`:VMODE==='design'?'Нұсқаларды тыңдап, біреуін таңдаңыз':''}
 
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
 async function build(){const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
+  if(VMODE==='design'&&!VPICK){$('reGoErr').textContent='Алдымен дикторды таңдаңыз: 3 нұсқаны жасап, біреуін «Осыны таңдаймын» басыңыз (немесе «Бар дауыс»).';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}
   const D={hook:val('pHookS'),q:val('pQS'),a:val('pAns'),why:val('pWhy'),trap:val('pTrap'),ot:val('pOT'),os:val('pOS'),ob:val('pOB'),ans};
   const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,set={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
   $('reS3').classList.remove('hide');$('reS3').scrollIntoView({behavior:'smooth'});
@@ -178,6 +214,6 @@ async function loadHist(){const {data,error}=await sb.from('reels').select('*').
     ${r.video_path?`<button class="btn sec sm" data-p="${esc(r.video_path)}">⬇ Видео</button>`:''}</div>`).join(''):'<div class="empty">Әзірге жоқ</div>';
   $('reHist').querySelectorAll('button[data-p]').forEach(b=>b.onclick=async()=>{const {data:s}=await sb.storage.from('reels').createSignedUrl(b.dataset.p,3600,{download:b.dataset.p.split('/').pop()});if(s)location.href=s.signedUrl})}
 
-window.loadRe=async()=>{status();loadHist();loadFonts()};
+window.loadRe=async()=>{elStatus();status();loadHist();loadFonts()};
 window.__reelsTest={drawFrame,timeline,mixAudio,S,loadFonts};
 })();
