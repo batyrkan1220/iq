@@ -11,17 +11,18 @@ let fontsP=null;window.__mime=()=>pickMime();function loadFonts(){if(fontsP)retu
 
 // ---------- UI ----------
 box.innerHTML=`
-<div class="card" style="margin-bottom:12px"><h3>Claude (Anthropic)</h3><div id="reInfo" class="muted">Тексерілуде…</div>
+<details class="card" style="margin-bottom:12px" id="reAiBox"><summary style="cursor:pointer;font-weight:700">🤖 Claude (міндетті емес) <span id="reInfoS" class="muted" style="font-weight:500"></span></summary><div style="margin-top:10px"><div id="reInfo" class="muted">Тексерілуде…</div>
  <details id="reKeyBox" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">API кілтті енгізу / ауыстыру</summary>
   <p class="muted" style="font-size:12px">console.anthropic.com → API Keys → Create Key. Кілт тек серверде сақталады.</p>
-  <div class="form"><label class="fld"><span>Anthropic API кілт</span><input type="password" id="reKey" autocomplete="off" placeholder="sk-ant-…"></label><button class="btn" id="reKeyBtn">Сақтау</button></div><div class="err" id="reKeyErr"></div></details></div>
+  <div class="form"><label class="fld"><span>Anthropic API кілт</span><input type="password" id="reKey" autocomplete="off" placeholder="sk-ant-…"></label><button class="btn" id="reKeyBtn">Сақтау</button></div><div class="err" id="reKeyErr"></div></details></div></details>
 <div class="card" id="reS1"><h3>1. Сұрақтар</h3>
  <div class="form">
+  <label class="fld"><span>Сұрақ көзі</span><select id="reSrc"><option value="bank">Дайын база (тегін, тексерілген)</option><option value="ai">Claude ойлап табады</option></select></label>
   <label class="fld"><span>Тіл</span><select id="reLang"><option value="kz">Қазақша</option><option value="ru">Орысша</option></select></label>
   <label class="fld"><span>Формат</span><select id="reFmt"><option value="comment">Жауапсыз — «Комментке жазыңыз»</option><option value="answer">Жауабымен — «Подробнее»</option></select></label>
-  <label class="fld" style="grid-column:span 2"><span>Қосымша тілек (міндетті емес)</span><input id="reHint" placeholder="мысалы: жас туралы, күнтізбе туралы, оңайырақ…"></label>
+  <label class="fld" id="reHintL" style="grid-column:span 2;display:none"><span>Қосымша тілек (міндетті емес)</span><input id="reHint" placeholder="мысалы: жас туралы, күнтізбе туралы, оңайырақ…"></label>
  </div>
- <button class="btn" id="reGen" style="width:100%">✨ Claude 5 сұрақ ойлап тапсын</button><div class="err" id="reGenErr"></div>
+ <button class="btn" id="reGen" style="width:100%">✨ 5 сұрақ ұсыну</button><div class="err" id="reGenErr"></div>
  <div id="reQs" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:12px"></div>
 </div>
 <div class="card hide" id="reS2" style="margin-top:12px"><h3>2. Дауыс бойынша ұсыныс</h3><div id="rePlan"></div></div>
@@ -32,13 +33,16 @@ box.innerHTML=`
  </div></div>
 <div class="card" style="margin-top:12px"><h3>Жасалған Reels</h3><div id="reHist" class="muted">—</div></div>`;
 
-async function status(){try{const s=await RL({action:'status'});$('reInfo').innerHTML=s.connected?`<span class="pill ok">Қосулы</span> Модель: <b>${esc(s.model)}</b>`:`<span class="pill bad">Қосылмаған</span> Anthropic API кілтті енгізіңіз`;$('reKeyBox').open=!s.connected}catch(e){$('reInfo').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
+async function status(){try{const s=await RL({action:'status'});S.ai=s.connected;$('reInfoS').textContent=s.connected?'· қосулы':'· қосылмаған';$('reInfo').innerHTML=s.connected?`<span class="pill ok">Қосулы</span> Модель: <b>${esc(s.model)}</b>`:`<span class="pill w">Қосылмаған</span> Claude-сыз да жұмыс істейді — «Дайын база» таңдаңыз.`;$('reKeyBox').open=!s.connected}catch(e){$('reInfo').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
+$('reSrc').onchange=()=>{$('reHintL').style.display=$('reSrc').value==='ai'?'':'none'};
 $('reKeyBtn').onclick=async()=>{$('reKeyErr').textContent='';$('reKeyBtn').disabled=true;try{await RL({action:'save_key',key:$('reKey').value});$('reKey').value='';await status()}catch(e){$('reKeyErr').textContent=e.message}$('reKeyBtn').disabled=false};
 
 const busy=(b,on,txt)=>{b.disabled=on;if(txt)b.textContent=txt};
-$('reGen').onclick=async()=>{S.lang=$('reLang').value;S.format=$('reFmt').value;$('reGenErr').textContent='';busy($('reGen'),true,'Claude ойлап жатыр… (30–60 сек)');
-  try{const r=await RL({action:'questions',lang:S.lang,hint:$('reHint').value,avoid:S.qs.map(q=>q.q_screen)});S.qs=r.questions||[];drawQs()}
-  catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Тағы 5 сұрақ ойлап тапсын')};
+$('reGen').onclick=async()=>{S.lang=$('reLang').value;S.format=$('reFmt').value;$('reGenErr').textContent='';S.src=$('reSrc').value;busy($('reGen'),true,S.src==='ai'?'Claude ойлап жатыр… (30–60 сек)':'Таңдалуда…');
+  try{if(S.src==='ai'){const r=await RL({action:'questions',lang:S.lang,hint:$('reHint').value,avoid:S.qs.map(q=>q.q_screen)});S.qs=r.questions||[]}
+    else{const {data:prev}=await sb.from('reels').select('question').order('created_at',{ascending:false}).limit(200);S.qs=RBANK.pick5(S.lang,[...(prev||[]).map(p=>p.question&&p.question.q_screen),...S.qs.map(q=>q.q_screen)])}
+    S.q=null;drawQs()}
+  catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Тағы 5 сұрақ')};
 function drawQs(){$('reQs').innerHTML=S.qs.map((q,i)=>`<div class="card" style="display:flex;flex-direction:column;gap:6px;${S.q===q?'outline:2px solid var(--pri)':''}">
   <span class="pill p" style="align-self:flex-start">${esc(q.type||'')} · ${'★'.repeat(Math.max(1,Math.min(5,+q.difficulty||3)))}</span>
   <b style="white-space:pre-line;line-height:1.35">${esc(q.q_screen)}</b>
@@ -50,8 +54,8 @@ function drawQs(){$('reQs').innerHTML=S.qs.map((q,i)=>`<div class="card" style="
 async function voices(){if(S.voices.length)return S.voices;const v=await EL({action:'voices'});S.voices=v.voices;
   if(!localStorage.getItem('el_model')){try{const m=await EL({action:'models'});const k=m.models.find(x=>x.langs.some(l=>/^kk|kaz/i.test(l)))||m.models.find(x=>/v3/.test(x.id))||m.models[0];if(k)localStorage.setItem('el_model',k.id)}catch(e){}}
   return S.voices}
-async function pick(i){S.q=S.qs[i];drawQs();$('reS2').classList.remove('hide');$('reS3').classList.add('hide');$('rePlan').innerHTML='<div class="muted">Claude дауыс бойынша ұсыныс дайындап жатыр…</div>';$('reS2').scrollIntoView({behavior:'smooth'});
-  try{const vs=await voices();const p=await RL({action:'voice_plan',lang:S.lang,format:S.format,question:S.q,voices:vs.map(v=>({id:v.id,name:v.name,category:v.category,labels:v.labels}))});S.plan=p;drawPlan()}
+async function pick(i){S.q=S.qs[i];drawQs();$('reS2').classList.remove('hide');$('reS3').classList.add('hide');$('rePlan').innerHTML='<div class="muted">Дауыс бойынша ұсыныс дайындалуда…</div>';$('reS2').scrollIntoView({behavior:'smooth'});
+  try{const vs=await voices();const p=S.src==='ai'?await RL({action:'voice_plan',lang:S.lang,format:S.format,question:S.q,voices:vs.map(v=>({id:v.id,name:v.name,category:v.category,labels:v.labels}))}):RBANK.plan(S.q,S.lang,S.format,vs);S.plan=p;drawPlan()}
   catch(e){$('rePlan').innerHTML=`<div class="err">${esc(e.message)}</div><button class="btn sec sm" onclick="this.parentElement.innerHTML='';">OK</button>`}}
 const fld=(id,l,v,ta)=>`<label class="fld"><span>${l}</span>${ta?`<textarea id="${id}" rows="${ta}" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">${esc(v)}</textarea>`:`<input id="${id}" value="${esc(v)}">`}</label>`;
 function drawPlan(){const p=S.plan,q=S.q,st=p.settings||{},ans=S.format==='answer';
