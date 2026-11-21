@@ -87,7 +87,8 @@ function voiceUI(){const setM=m=>{VMODE=m;$('vmD').classList.toggle('on',m==='de
   const fill=()=>{$('vdDesc').value=VPRE[$('vdPre').value][S.lang]};$('vdPre').onchange=fill;
   $('vdPre').value=S.format==='comment'?'quiz':'quiz';fill();VPICK=null;
   $('vdGo').onclick=()=>doDesign().catch(()=>{});
-  setM('design');if(S.el!==false)doDesign().catch(()=>{})}
+  setM('exist');const h=[...$('pVoice').options].find(o=>/^\s*Hale\b/i.test(o.textContent));if(h)$('pVoice').value=h.value;
+  else $('vSel').insertAdjacentHTML('afterend','<div class="err">«Hale» дауысы ElevenLabs кітапханаңызда табылмады — Voice Library-ден «My Voices»-қа қосыңыз.</div>');selInfo()}
 let PREV=null,DESIGNING=null;
 function doDesign(){if(DESIGNING)return DESIGNING;$('vdErr').textContent='';busy($('vdGo'),true,'ElevenLabs 3 дауыс жасап жатыр… (~20 сек)');$('vdPrev').innerHTML='<div class="muted">🎨 Дауыс нұсқалары жасалуда…</div>';PREV=null;
   DESIGNING=(async()=>{try{const text=[val('pVQ'),val('pVO')].join(' ');const r=await EL({action:'design',description:$('vdDesc').value,text});PREV=r.previews||[];
@@ -107,11 +108,11 @@ function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.v
 
 
 function narr(vopt,st){return `<div class="card" style="background:#faf8ff;border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
-       <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmD" class="on" style="flex:1">✨ Жаңа дауыс (Voice Design)</button><button type="button" id="vmE" style="flex:1">📚 Бар дауыс</button></div>
+       <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmE" class="on" style="flex:1">📚 Менің дауыстарым</button><button type="button" id="vmD" style="flex:1">✨ Voice Design</button></div>
        <div id="vpD"><label class="fld"><span>Образ</span><select id="vdPre">${Object.keys(VPRE).map(k=>`<option value="${k}">${VPRE[k].n}</option>`).join('')}</select></label>
         <label class="fld"><span>Дауыс сипаттамасы (ағылшынша жақсы түсінеді — өзгертуге болады)</span><textarea id="vdDesc" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
         <button type="button" class="btn sec" id="vdGo" style="width:100%">🎨 3 дауыс нұсқасын жасау</button><div class="err" id="vdErr"></div><div id="vdPrev" class="grid" style="gap:8px;margin-top:8px"></div></div>
-       <div id="vpE" class="hide"><label class="fld"><span>Дауыс</span><select id="pVoice">${vopt}</select></label></div>
+       <div id="vpE" class="hide"><label class="fld"><span>Дауыс (әдепкі: Hale)</span><select id="pVoice">${vopt}</select></label></div>
        <div class="muted" style="font-size:12px" id="vSel"></div></div>
       <div class="form" style="grid-template-columns:repeat(2,1fr)">
        ${[['pStab','Тұрақтылық',st.stability??.5,0,1],['pSim','Ұқсастық',st.similarity??.75,0,1],['pSty','Стиль',st.style??.2,0,1],['pSpd','Жылдамдық',st.speed??1,.7,1.2]].map(([id,l,v,a,b])=>`<label class="fld"><span>${l} <b id="${id}v">${v}</b></span><input type="range" id="${id}" min="${a}" max="${b}" step="0.05" value="${v}" oninput="document.getElementById('${id}v').textContent=this.value"></label>`).join('')}</div>`}
