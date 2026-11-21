@@ -1,5 +1,6 @@
 /* ===== App ===== */
 const PRICE='1 390 ₸';
+const FREE=true; // временно: результат открывается без оплаты
 const TEXT=[
  {cat:'attn',q:'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?',o:['7','8','15','0','3'],a:1,ex:'«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.'},
  {cat:'num',q:'Какого числа не хватает?\n5, 10, 15, 20, __, 30',o:['22','24','25','26','28'],a:2,ex:'Каждое число больше предыдущего на 5: 20 + 5 = 25.'},
@@ -199,7 +200,7 @@ function finish(){clearInterval(tick);clearTimeout(memT);document.querySelectorA
   const steps=[...document.querySelectorAll('#steps li')];steps.forEach(s=>s.className='');
   steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*900));
   const T=steps.length*900+200,t0=performance.now();(function tk(now){const p=Math.min(1,(now-t0)/T);$('ringC').style.strokeDashoffset=327*(1-p);$('ringP').textContent=Math.round(p*100)+'%';if(p<1)requestAnimationFrame(tk)})(t0);
-  setTimeout(showPaywall,steps.length*900+300)}
+  setTimeout(()=>FREE?showResult():showPaywall(),steps.length*900+300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
   $('pwStats').textContent=L2(`Вы прошли ${done} из ${TOTAL} заданий за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} тапсырманың ${done}-ін ${Math.floor(used/60)} мин ${used%60} с ішінде орындадыңыз — IQ-ыңыз есептеліп қойды.`);
@@ -313,6 +314,7 @@ function renderBell(){const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>M
   s+=`<text x="${mx(100)}" y="${my(100)-8}" font-size="11" font-weight="800" text-anchor="middle" fill="#312e81">${L2('средний','орташа')}</text>`;
   $('bell').innerHTML=s+'</svg>'}
 function renderSample(){$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
+if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
 function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want='/'+LANG+'/';const p=location.pathname;
   if(/^\/(kz|ru)(\/|$)/i.test(p)||p==='/'||p==='/index.html'){if(p!==want)history.replaceState(null,'',want+location.search+location.hash)}}catch(e){}}
