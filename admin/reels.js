@@ -93,25 +93,31 @@ function voiceUI(){const setM=m=>{VMODE=m;$('vmD').classList.toggle('on',m==='de
   $('vmD').onclick=()=>setM('design');$('vmE').onclick=()=>setM('exist');$('pVoice').onchange=selInfo;
   const fill=()=>{$('vdDesc').value=VPRE[$('vdPre').value][S.lang]};$('vdPre').onchange=fill;
   $('vdPre').value=S.format==='comment'?'quiz':'quiz';fill();VPICK=null;
-  $('vdGo').onclick=async()=>{$('vdErr').textContent='';busy($('vdGo'),true,'ElevenLabs дауыс жасап жатыр… (~20 сек)');$('vdPrev').innerHTML='';
-    try{const text=[val('pVQ'),val('pVO')].join(' ');const r=await EL({action:'design',description:$('vdDesc').value,text});
-      $('vdPrev').innerHTML=r.previews.map((p,i)=>`<div class="card" style="padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="width:22px">${i+1}</b><audio controls src="data:${p.type};base64,${p.audio}" style="flex:1;min-width:180px;height:36px"></audio><button type="button" class="btn sm" data-i="${i}">Осыны таңдаймын</button></div>`).join('')||'<div class="muted">Нұсқа келмеді</div>';
-      $('vdPrev').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const p=r.previews[+b.dataset.i];busy(b,true,'Сақталуда…');
-        try{const nm='IQly · '+$('vdPre').selectedOptions[0].textContent.replace(/^[^\s]+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU');
-          const s=await EL({action:'save_voice',generated_voice_id:p.id,name:nm.slice(0,60),description:$('vdDesc').value});
-          S.voices.unshift({id:s.voice_id,name:s.name,category:'generated'});const o=document.createElement('option');o.value=s.voice_id;o.textContent=s.name+' · generated';$('pVoice').prepend(o);$('pVoice').value=s.voice_id;
-          VPICK=s.voice_id;localStorage.setItem('el_voice',s.voice_id);$('vdPrev').querySelectorAll('.card').forEach((c,k)=>c.style.outline=k===+b.dataset.i?'2px solid var(--pri)':'');b.textContent='✓ Таңдалды';selInfo()}
-        catch(e){$('vdErr').textContent=e.message;busy(b,false,'Осыны таңдаймын')}})}
-    catch(e){$('vdErr').textContent=e.message}busy($('vdGo'),false,'🎨 Тағы 3 нұсқа жасау')};
-  setM('design')}
-function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.voices.find(x=>x.id===id);$('vSel').innerHTML=id&&v?`Таңдалған диктор: <b>${esc(v.name)}</b>`:VMODE==='design'?'Нұсқаларды тыңдап, біреуін таңдаңыз':''}
+  $('vdGo').onclick=()=>doDesign().catch(()=>{});
+  setM('design');if(S.el!==false)doDesign().catch(()=>{})}
+let PREV=null,DESIGNING=null;
+function doDesign(){if(DESIGNING)return DESIGNING;$('vdErr').textContent='';busy($('vdGo'),true,'ElevenLabs 3 дауыс жасап жатыр… (~20 сек)');$('vdPrev').innerHTML='<div class="muted">🎨 Дауыс нұсқалары жасалуда…</div>';PREV=null;
+  DESIGNING=(async()=>{try{const text=[val('pVQ'),val('pVO')].join(' ');const r=await EL({action:'design',description:$('vdDesc').value,text});PREV=r.previews||[];
+      if(!PREV.length)throw new Error('ElevenLabs нұсқа қайтармады');
+      $('vdPrev').innerHTML=PREV.map((p,i)=>`<div class="card" style="padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="width:22px">${i+1}</b><audio controls src="data:${p.type};base64,${p.audio}" style="flex:1;min-width:180px;height:36px"></audio><button type="button" class="btn sm" data-i="${i}">Осыны таңдаймын</button></div>`).join('');
+      $('vdPrev').querySelectorAll('button').forEach(b=>b.onclick=()=>pickPrev(+b.dataset.i).catch(()=>{}));selInfo();return PREV}
+    catch(e){$('vdErr').textContent=e.message;$('vdPrev').innerHTML='';throw e}
+    finally{busy($('vdGo'),false,'🎨 Тағы 3 нұсқа жасау');DESIGNING=null}})();return DESIGNING}
+async function pickPrev(i){const p=PREV[i],b=$('vdPrev').querySelector(`button[data-i="${i}"]`);if(b)busy(b,true,'Сақталуда…');
+  try{const nm='IQly · '+$('vdPre').selectedOptions[0].textContent.replace(/^[^\s]+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU');
+    const s=await EL({action:'save_voice',generated_voice_id:p.id,name:nm.slice(0,60),description:$('vdDesc').value});
+    S.voices.unshift({id:s.voice_id,name:s.name,category:'generated'});const o=document.createElement('option');o.value=s.voice_id;o.textContent=s.name+' · generated';$('pVoice').prepend(o);$('pVoice').value=s.voice_id;
+    VPICK=s.voice_id;localStorage.setItem('el_voice',s.voice_id);$('vdPrev').querySelectorAll('.card').forEach((c,k)=>c.style.outline=k===i?'2px solid var(--pri)':'');$('vdPrev').querySelectorAll('button').forEach((x,k)=>{x.disabled=false;x.textContent=k===i?'✓ Таңдалды':'Осыны таңдаймын'});selInfo();return VPICK}
+  catch(e){$('vdErr').textContent=e.message;if(b)busy(b,false,'Осыны таңдаймын');throw e}}
+
+function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.voices.find(x=>x.id===id);$('vSel').innerHTML=id&&v?`Таңдалған диктор: <b>${esc(v.name)}</b>`:VMODE==='design'?'Нұсқаларды тыңдап, ұнағанын таңдаңыз. Таңдамасаңыз, 1-нұсқа алынады.':''}
 
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
 async function build(){const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
-  if(VMODE==='design'&&!VPICK){$('reGoErr').textContent='Алдымен дикторды таңдаңыз: 3 нұсқаны жасап, біреуін «Осыны таңдаймын» басыңыз (немесе «Бар дауыс»).';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}
+  if(VMODE==='design'&&!VPICK){try{$('reGoErr').textContent='';busy($('reGo'),true,'Диктор дайындалуда…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — «📚 Бар дауыс» арқылы жасап көріңіз.';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}}
   const D={hook:val('pHookS'),q:val('pQS'),a:val('pAns'),why:val('pWhy'),trap:val('pTrap'),ot:val('pOT'),os:val('pOS'),ob:val('pOB'),ans};
   const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,set={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
   $('reS3').classList.remove('hide');$('reS3').scrollIntoView({behavior:'smooth'});
