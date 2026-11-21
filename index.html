@@ -126,7 +126,7 @@ details.map summary{font-size:13px;font-weight:700;color:var(--muted);cursor:poi
 .opts.nums .opt .l{display:none}
 /* ===== conversion & motion layer ===== */
 .hero-card{position:relative;overflow:hidden;padding-bottom:20px}
-.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.35;z-index:0;animation:float 9s ease-in-out infinite}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.35;z-index:0}
 .b1{width:220px;height:220px;background:#a5b4fc;top:-80px;right:-60px}.b2{width:180px;height:180px;background:#f0abfc;bottom:-70px;left:-50px;animation-delay:-4s}
 @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,18px)}}
 .hero-card>*:not(.blob){position:relative;z-index:1}
@@ -318,22 +318,20 @@ details.rv summary::-webkit-details-marker{display:none}
 @media (max-width:600px){.smp{grid-template-columns:1fr}.smp-card{max-width:260px;margin:0 auto;width:100%}}
 .hv{position:relative;width:100%;max-width:320px;aspect-ratio:1;margin:0 auto}
 .demo.hv .hv-svg{width:100%;height:100%;max-width:none;display:block;overflow:visible;box-shadow:none;background:none;padding:0;border-radius:0}
-.hv-pulse{transform-origin:150px 150px;animation:hvp 3.2s ease-in-out infinite}
-@keyframes hvp{0%,100%{transform:scale(.92);opacity:.8}50%{transform:scale(1.05);opacity:1}}
-.hv-ring{transform-origin:150px 150px;animation:spin 22s linear infinite}
-.hv-orbit{transform-origin:150px 150px;animation:spin 16s linear infinite}
-.hv-orbit>g>*{animation:spinR 16s linear infinite;transform-box:fill-box;transform-origin:center}
-@keyframes spin{to{transform:rotate(360deg)}}@keyframes spinR{to{transform:rotate(-360deg)}}
-.hv-arc{stroke-dasharray:465;stroke-dashoffset:465;animation:arc 4s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes arc{0%{stroke-dashoffset:465}55%,80%{stroke-dashoffset:110}100%{stroke-dashoffset:465}}
-.hv-net .nd{animation:blink 2.4s infinite;transform-box:fill-box;transform-origin:center}
+.hv-layer{position:absolute;inset:0;pointer-events:none;will-change:transform,opacity;transform:translateZ(0)}
+.demo.hv .hv-layer svg{width:100%;height:100%;max-width:none;display:block;overflow:visible;box-shadow:none;background:none;padding:0;border-radius:0;margin:0}
+.hv-glow{border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.5) 0%,rgba(167,139,250,0) 68%);z-index:-1;animation:hvp 3.2s ease-in-out infinite}
+@keyframes hvp{0%,100%{opacity:.65;transform:translateZ(0) scale(.94)}50%{opacity:1;transform:translateZ(0) scale(1.03)}}
+.hv-spin1{animation:spin 22s linear infinite}.hv-spin2{animation:spin 16s linear infinite}
+@keyframes spin{from{transform:translateZ(0) rotate(0)}to{transform:translateZ(0) rotate(360deg)}}
+.hv-arc{stroke-dasharray:465;stroke-dashoffset:110}
+.hv-net .nd{animation:blink 2.4s ease-in-out infinite}
 .n2{animation-delay:.3s!important}.n3{animation-delay:.6s!important}.n4{animation-delay:.9s!important}.n5{animation-delay:1.2s!important}.n6{animation-delay:1.5s!important}.n7{animation-delay:1.8s!important}.n8{animation-delay:2.1s!important}.n9{animation-delay:.15s!important}
-@keyframes blink{0%,70%,100%{fill:#a5b4fc;transform:scale(1)}35%{fill:#ec4899;transform:scale(1.6)}}
-.hv-net line{stroke-dasharray:4 4;animation:flow 3s linear infinite}@keyframes flow{to{stroke-dashoffset:-32}}
+@keyframes blink{0%,70%,100%{opacity:.55}35%{opacity:1}}
 .hv-core{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;pointer-events:none}
 .hv-core small{font-size:12px;font-weight:800;letter-spacing:.2em;opacity:.85}
 .hv-core b{font-size:38px;font-weight:800;line-height:1;text-shadow:0 4px 18px rgba(0,0,0,.25);font-variant-numeric:tabular-nums}
-.hv-chip{position:absolute;background:#fff;border:1px solid #e6e3fb;border-radius:99px;padding:6px 10px;font-size:12px;font-weight:800;color:#3730a3;box-shadow:0 8px 20px rgba(79,70,229,.15);white-space:nowrap;animation:bob 4s ease-in-out infinite}
+.hv-chip{will-change:transform;position:absolute;background:#fff;border:1px solid #e6e3fb;border-radius:99px;padding:6px 10px;font-size:12px;font-weight:800;color:#3730a3;box-shadow:0 8px 20px rgba(79,70,229,.15);white-space:nowrap;animation:bob 4s ease-in-out infinite}
 .hv-chip.c1{top:6%;left:-2%}.hv-chip.c2{top:14%;right:-4%;animation-delay:-1s}.hv-chip.c3{bottom:12%;left:-4%;animation-delay:-2s}.hv-chip.c4{bottom:4%;right:-2%;animation-delay:-3s}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .logo .mmi{width:36px;height:36px;flex:none;filter:drop-shadow(0 4px 10px rgba(79,70,229,.3))}
@@ -398,7 +396,7 @@ details.rv summary::-webkit-details-marker{display:none}
               <linearGradient id="hvArc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset=".6" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
               <linearGradient id="hvCore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
             </defs>
-            <circle cx="150" cy="150" r="140" fill="url(#hvGlow)" class="hv-pulse"/>
+            
             <g class="hv-net" stroke="#c7d2fe" stroke-width="1.4" fill="#818cf8">
               <line x1="62" y1="88" x2="108" y2="62"/><line x1="108" y1="62" x2="196" y2="58"/><line x1="196" y1="58" x2="240" y2="96"/>
               <line x1="240" y1="96" x2="252" y2="170"/><line x1="252" y1="170" x2="214" y2="232"/><line x1="214" y1="232" x2="132" y2="248"/>
@@ -410,15 +408,16 @@ details.rv summary::-webkit-details-marker{display:none}
             </g>
             <circle cx="150" cy="150" r="74" fill="none" stroke="#e0e7ff" stroke-width="10"/>
             <circle cx="150" cy="150" r="74" fill="none" stroke="url(#hvArc)" stroke-width="10" stroke-linecap="round" class="hv-arc" transform="rotate(-90 150 150)"/>
-            <circle cx="150" cy="150" r="88" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="3 7" class="hv-ring"/>
             <circle cx="150" cy="150" r="60" fill="url(#hvCore)"/>
-            <g class="hv-orbit">
+          </svg>
+          <div class="hv-layer hv-glow" aria-hidden="true"></div>
+          <div class="hv-layer hv-spin1" aria-hidden="true"><svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="88" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="3 7"/></svg></div>
+          <div class="hv-layer hv-spin2" aria-hidden="true"><svg viewBox="0 0 300 300"><g>
               <g transform="translate(150 50)"><rect x="-11" y="-11" width="22" height="22" rx="5" fill="#fff" stroke="#4f46e5" stroke-width="2.5"/></g>
               <g transform="translate(250 150)"><polygon points="0,-13 12,9 -12,9" fill="#fff" stroke="#a855f7" stroke-width="2.5" stroke-linejoin="round"/></g>
               <g transform="translate(150 250)"><circle r="11" fill="#fff" stroke="#ec4899" stroke-width="2.5"/></g>
               <g transform="translate(50 150)"><polygon points="0,-12 12,0 0,12 -12,0" fill="#fff" stroke="#6366f1" stroke-width="2.5"/></g>
-            </g>
-          </svg>
+            </g></svg></div>
           <div class="hv-core"><small>IQ</small><b id="hvNum">?</b></div>
           <span class="hv-chip c1" data-kz="🧩 Логика">🧩 Логика</span>
           <span class="hv-chip c2" data-kz="🧠 Жады">🧠 Память</span>
