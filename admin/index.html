@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="kk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>IQly — Админ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b21b6'/%3E%3Ctext x='32' y='42' font-size='26' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'%3EIQ%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#15172a;--mut:#6b7090;--line:#e6e8f2;--bg:#f5f6fb;--card:#fff;--pri:#5b21b6;--pri2:#7c3aed;--ok:#16a34a;--bad:#dc2626;--warn:#d97706}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+button,input,select{font:inherit}
+.hide{display:none!important}
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.lbox{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;width:100%;max-width:360px;box-shadow:0 10px 30px rgba(20,20,60,.06)}
+.brand{font-weight:800;font-size:22px;letter-spacing:-.5px}.brand em{font-style:normal;color:var(--pri)}
+.lbox h2{margin:6px 0 18px;font-size:15px;color:var(--mut);font-weight:600}
+.fld{display:block;margin-bottom:12px}.fld span{display:block;font-size:12px;color:var(--mut);margin-bottom:5px;font-weight:600}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid #c4b5fd;border-color:var(--pri2)}
+.btn{border:0;border-radius:10px;padding:10px 16px;background:var(--pri);color:#fff;font-weight:700;cursor:pointer}
+.btn.sec{background:#eef0f8;color:var(--ink)}.btn.sm{padding:6px 10px;font-size:12px}
+.btn:disabled{opacity:.5}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+/* layout */
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:14px;padding:10px 18px;max-width:1280px;margin:0 auto}
+.hrow .sp{flex:1}.who{color:var(--mut);font-size:12px}
+nav{display:flex;gap:4px;padding:0 14px;max-width:1280px;margin:0 auto;overflow-x:auto}
+nav button{border:0;background:none;padding:10px 12px;font-weight:700;color:var(--mut);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{max-width:1280px;margin:0 auto;padding:18px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:none;padding:8px 12px;font-weight:600;cursor:pointer;color:var(--mut)}
+.seg button.on{background:var(--pri);color:#fff}
+.bar input[type=date]{width:auto;padding:7px 8px}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi small{display:block;color:var(--mut);font-size:12px;font-weight:600}
+.kpi b{display:block;font-size:26px;letter-spacing:-.5px;margin-top:4px}
+.kpi i{font-style:normal;font-size:12px;color:var(--mut)}
+.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:12px}
+.card h3{margin:0 0 12px;font-size:14px}
+.fun .row{display:grid;grid-template-columns:120px 1fr 86px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.fun .tr{height:22px;background:#f1f2f8;border-radius:6px;overflow:hidden}.fun .tr i{display:block;height:100%;background:linear-gradient(90deg,var(--pri),#a855f7);border-radius:6px}
+.fun .row span:last-child{text-align:right;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);font-weight:700;font-size:12px;background:#fafbfe;position:sticky;top:0}
+tbody tr:hover{background:#fafaff}
+.tw{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:12px;background:#fff}
+tr.click{cursor:pointer}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#eef0f8;color:var(--ink)}
+.pill.ok{background:#dcfce7;color:#166534}.pill.bad{background:#fee2e2;color:#991b1b}.pill.w{background:#fef3c7;color:#92400e}.pill.p{background:#ede9fe;color:#5b21b6}
+.muted{color:var(--mut)}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.empty{padding:30px;text-align:center;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(15,17,40,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.mbox{background:#fff;border-radius:16px;max-width:620px;width:100%;max-height:85vh;overflow:auto;padding:20px}
+.tl{list-style:none;padding:0;margin:0}.tl li{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}.tl li span:first-child{color:var(--mut);width:70px;flex:none}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;word-break:break-all;font-size:13px;color:#3b0764}
+.note{background:#fffbeb;border:1px solid #fde68a;color:#78350f;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.45;margin-bottom:12px}
+@media(max-width:600px){main{padding:12px}.fun .row{grid-template-columns:96px 1fr 70px}.kpi b{font-size:22px}}
+</style></head><body>
+
+<section id="login">
+  <form class="lbox" id="lform">
+    <div class="brand">IQ<em>ly</em> · Админ</div>
+    <h2>Басқару панеліне кіру</h2>
+    <label class="fld"><span>Email</span><input type="email" id="lemail" autocomplete="username" required></label>
+    <label class="fld"><span>Құпиясөз</span><input type="password" id="lpass" autocomplete="current-password" required></label>
+    <button class="btn" style="width:100%" id="lbtn">Кіру</button>
+    <div class="err" id="lerr"></div>
+  </form>
+</section>
+
+<section id="app" class="hide">
+<header>
+  <div class="hrow"><div class="brand">IQ<em>ly</em> <span class="muted" style="font-size:13px;font-weight:600">Админ</span></div><div class="sp"></div><span class="who" id="who"></span><button class="btn sec sm" id="logout">Шығу</button></div>
+  <nav id="tabs">
+    <button data-t="ov" class="on">📊 Шолу</button><button data-t="us">👥 Қолданушылар</button><button data-t="lg">🧾 Логтар</button><button data-t="py">💳 Төлемдер</button><button data-t="lk">🔗 Жарнама сілтемесі</button><button data-t="st">⚙️ Баптаулар</button>
+  </nav>
+</header>
+<main>
+  <div class="bar" id="range">
+    <div class="seg" id="seg"><button data-r="1">Бүгін</button><button data-r="7" class="on">7 күн</button><button data-r="30">30 күн</button><button data-r="all">Барлығы</button></div>
+    <input type="date" id="dFrom"> — <input type="date" id="dTo"><button class="btn sec sm" id="reload">↻ Жаңарту</button>
+    <span class="muted" id="upd"></span>
+  </div>
+
+  <div id="t-ov">
+    <div class="grid kpis" id="kpis"></div>
+    <div class="grid two">
+      <div class="card fun"><h3>Воронка</h3><div id="funnel"></div></div>
+      <div class="card chart"><h3>Күндер бойынша</h3><div id="daily"></div><div class="legend"><span><i style="background:#c4b5fd"></i>Кірулер</span><span><i style="background:#7c3aed"></i>Тест бастады</span><span><i style="background:#16a34a"></i>Нәтиже алды</span></div></div>
+    </div>
+    <div class="grid two">
+      <div class="card"><h3>Трафик көзі (utm_source)</h3><div id="sources"></div></div>
+      <div class="card"><h3>Науқан / креатив (utm_campaign · utm_content)</h3><div id="camps"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="card chart"><h3>Қай сұрақта тастап кетеді</h3><div id="drop"></div></div>
+      <div class="card chart"><h3>IQ бөлінісі</h3><div id="iqh"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="card"><h3>Құрылғы · Тіл</h3><div id="devlang"></div></div>
+      <div class="card"><h3>Жасы · Білімі</h3><div id="agedu"></div></div>
+    </div>
+  </div>
+
+  <div id="t-us" class="hide">
+    <div class="bar"><input id="usQ" placeholder="Іздеу: IQ, жас, көз, тіл…" style="max-width:280px"><button class="btn sec sm" id="usCsv">⬇ CSV</button><span class="muted" id="usN"></span></div>
+    <div class="tw"><table><thead><tr><th>Уақыты</th><th>Тіл</th><th>IQ</th><th>Дұрыс</th><th>Жасы</th><th>Білімі</th><th>Ұзақтығы</th><th>Көзі</th><th>Науқан</th><th>Құрылғы</th></tr></thead><tbody id="usB"></tbody></table></div>
+  </div>
+
+  <div id="t-lg" class="hide">
+    <div class="bar"><select id="lgT" style="max-width:220px"><option value="">Барлық оқиғалар</option><option>start</option><option>lang</option><option>begin</option><option>answer</option><option>finish</option><option>result</option><option>share</option><option>pay_click</option><option>again</option></select><span class="muted" id="lgN"></span></div>
+    <div class="tw"><table><thead><tr><th>Уақыты</th><th>Оқиға</th><th>Деректер</th><th>Сессия</th></tr></thead><tbody id="lgB"></tbody></table></div>
+  </div>
+
+  <div id="t-py" class="hide">
+    <div class="note">Kaspi Pay әлі қосылмаған — сайттағы тест қазір тегін (FREE режимі). Kaspi қосылғанда төлемдер осы жерге автоматты түседі. Әзірге төлемді қолмен енгізуге болады.</div>
+    <div class="card" style="margin-bottom:12px"><h3>Төлемді қолмен қосу</h3>
+      <form class="form" id="pyF"><label class="fld"><span>Сомасы, ₸</span><input type="number" id="pyA" value="1390" min="0" required></label>
+      <label class="fld"><span>Статус</span><select id="pyS"><option value="paid">paid — төленді</option><option value="pending">pending — күтуде</option><option value="refund">refund — қайтарылды</option></select></label>
+      <label class="fld"><span>Kaspi ID / түбіртек</span><input id="pyE"></label>
+      <label class="fld"><span>Ескертпе</span><input id="pyN"></label>
+      <button class="btn">Қосу</button></form><div class="err" id="pyErr"></div></div>
+    <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Провайдер</th><th>ID</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
+  </div>
+
+  <div id="t-lk" class="hide">
+    <div class="card"><h3>Жарнама сілтемесін жасау</h3>
+      <p class="muted" style="margin-top:-4px">Әр жарнамаға осындай сілтеме қойсаңыз, «Шолу» бетінде қай видео/науқан қанша адам әкелгенін көресіз.</p>
+      <div class="form">
+        <label class="fld"><span>Тіл / бет</span><select id="lkL"><option value="/kz">Қазақша (/kz)</option><option value="/ru">Орысша (/ru)</option><option value="/">Таңдау (/)</option></select></label>
+        <label class="fld"><span>Көзі</span><select id="lkS"><option>tiktok</option><option>instagram</option><option>facebook</option><option>telegram</option><option>youtube</option></select></label>
+        <label class="fld"><span>Түрі</span><select id="lkM"><option>paid</option><option>organic</option><option>bio</option></select></label>
+        <label class="fld"><span>Науқан</span><input id="lkC" placeholder="mysal: kz_nov"></label>
+        <label class="fld"><span>Креатив (видео)</span><input id="lkV" placeholder="mysal: ulu_video"></label>
+      </div>
+      <code class="url" id="lkOut"></code>
+      <div style="margin-top:10px"><button class="btn" id="lkCopy">Көшіру</button></div>
+    </div>
+  </div>
+
+  <div id="t-st" class="hide">
+    <div class="card" style="max-width:420px"><h3>Құпиясөзді ауыстыру</h3>
+      <label class="fld"><span>Жаңа құпиясөз (кемі 10 таңба)</span><input type="password" id="np1" autocomplete="new-password"></label>
+      <label class="fld"><span>Қайталаңыз</span><input type="password" id="np2" autocomplete="new-password"></label>
+      <button class="btn" id="npBtn">Сақтау</button><div class="err" id="npErr"></div></div>
+  </div>
+</main>
+</section>
+
+<div class="modal hide" id="mod"><div class="mbox" id="modB"></div></div>
+
+<script>
+const SB_URL='https://dlhejkmuyyqvjzjxbwbg.supabase.co',SB_KEY='sb_publishable_7F3dYw4mts2-rpJAgjkcKw_PnlYI2bR';
+const sb=window.__SB||supabase.createClient(SB_URL,SB_KEY);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtT=s=>new Date(s).toLocaleString('ru-RU',{timeZone:'Asia/Almaty',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const dur=s=>s==null?'—':`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+const pct=(a,b)=>b?Math.round(a/b*1000)/10+'%':'—';
+const EVN={start:'«Бастау» басты',lang:'Тіл таңдады',begin:'Тест басталды',answer:'Жауап берді',finish:'Тестті аяқтады',result:'Нәтиже көрді',share:'Бөлісті',pay_click:'Төлеуді басты',again:'Қайта бастады'};
+
+// ---------- auth ----------
+$('lform').onsubmit=async e=>{e.preventDefault();$('lbtn').disabled=true;$('lerr').textContent='';
+  const {error}=await sb.auth.signInWithPassword({email:$('lemail').value.trim(),password:$('lpass').value});
+  $('lbtn').disabled=false;if(error){$('lerr').textContent='Email немесе құпиясөз қате';return}boot()};
+$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+async function boot(){const {data}=await sb.auth.getSession();if(!data.session){$('login').classList.remove('hide');$('app').classList.add('hide');return}
+  $('login').classList.add('hide');$('app').classList.remove('hide');$('who').textContent=data.session.user.email;setRange('7');}
+
+// ---------- range ----------
+let R={from:null,to:null},TAB='ov';
+const dstr=d=>new Date(d.getTime()+5*3600e3).toISOString().slice(0,10); // Almaty date
+function setRange(r){document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+  const now=new Date(),to=dstr(now);let from;
+  if(r==='all')from='2026-01-01';else{const d=new Date(now.getTime()-(+r-1)*864e5);from=dstr(d)}
+  $('dFrom').value=from;$('dTo').value=to;load()}
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>setRange(b.dataset.r));
+$('dFrom').onchange=$('dTo').onchange=()=>{document.querySelectorAll('#seg button').forEach(b=>b.classList.remove('on'));load()};
+$('reload').onclick=()=>load();
+function rng(){return{from:new Date($('dFrom').value+'T00:00:00+05:00').toISOString(),to:new Date(new Date($('dTo').value+'T00:00:00+05:00').getTime()+864e5).toISOString()}}
+
+// ---------- tabs ----------
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['ov','us','lg','py','lk','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==TAB));$('range').classList.toggle('hide',TAB==='lk'||TAB==='st');load()});
+function load(){R=rng();$('upd').textContent='жүктелуде…';
+  const f={ov:loadOv,us:loadUs,lg:loadLg,py:loadPy,lk:mkLink,st:()=>{}}[TAB];Promise.resolve(f()).then(()=>$('upd').textContent='жаңартылды '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='қате: '+(e.message||e)})}
+
+// ---------- overview ----------
+function hbars(rows,keyL,cols){if(!rows.length)return'<div class="empty">Әзірге дерек жоқ</div>';
+  return `<div class="tw" style="max-height:none;border:0"><table><thead><tr><th>${keyL}</th>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i?c:esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function svgBars(series,labels,colors,h=180){const W=600,P=28,n=labels.length;if(!n)return'<div class="empty">Әзірге дерек жоқ</div>';
+  const mx=Math.max(1,...series.flat()),bw=(W-P-8)/n,g=series.length,iw=Math.max(2,bw*0.8/g);let s=`<svg viewBox="0 0 ${W} ${h+26}">`;
+  [0,.5,1].forEach(f=>{const y=8+(h-8)*(1-f);s+=`<line x1="${P}" x2="${W}" y1="${y}" y2="${y}" stroke="#eef0f6"/><text x="${P-4}" y="${y+4}" font-size="10" fill="#9aa0b8" text-anchor="end">${Math.round(mx*f)}</text>`});
+  labels.forEach((l,i)=>{series.forEach((ser,k)=>{const v=ser[i]||0,bh=(h-8)*v/mx,x=P+i*bw+bw*0.1+k*iw;s+=`<rect x="${x}" y="${8+(h-8)-bh}" width="${iw-1}" height="${bh}" rx="2" fill="${colors[k]}"><title>${l}: ${v}</title></rect>`});
+    if(n<=16||i%Math.ceil(n/12)===0)s+=`<text x="${P+i*bw+bw/2}" y="${h+18}" font-size="10" fill="#6b7090" text-anchor="middle">${esc(l)}</text>`});
+  return s+'</svg>'}
+async function loadOv(){const {data,error}=await sb.rpc('admin_stats',{p_from:R.from,p_to:R.to});if(error)throw error;const S=data,K=S.kpi;
+  const card=(l,v,sub)=>`<div class="card kpi"><small>${l}</small><b>${v}</b>${sub?`<i>${sub}</i>`:''}</div>`;
+  $('kpis').innerHTML=card('Кірулер',K.visits)+card('Тест бастады',K.begins,pct(K.begins,K.visits)+' кірулерден')+card('Нәтиже алды',K.results,pct(K.results,K.begins)+' бастағандардан')
+    +card('Орташа IQ',K.avg_iq??'—')+card('Орташа уақыт',dur(K.avg_dur))+card('Бөлісті',K.shares)+card('Төлем',K.paid_count,(K.paid_sum||0).toLocaleString('ru-RU')+' ₸');
+  const fr=[['Кірді',K.visits],['«Бастау» басты',K.starts],['Тест басталды',K.begins],['Аяқтады',K.finishes],['Нәтиже көрді',K.results],['Төледі',K.paid_count]];
+  $('funnel').innerHTML=fr.map(([l,v])=>`<div class="row"><span>${l}</span><div class="tr"><i style="width:${K.visits?Math.max(1,v/K.visits*100):0}%"></i></div><span><b>${v}</b> · ${pct(v,K.visits)}</span></div>`).join('');
+  const D=S.daily;$('daily').innerHTML=svgBars([D.map(d=>+d.visits),D.map(d=>+d.begins),D.map(d=>+d.results)],D.map(d=>d.d.slice(5).split('-').reverse().join('.')),['#c4b5fd','#7c3aed','#16a34a']);
+  $('sources').innerHTML=hbars(S.sources.map(s=>[s.src,s.visits,s.begins,s.results,pct(s.results,s.visits)]),'Көзі',[['Кірулер'],['Бастады'],['Нәтиже'],['Конв.']]);
+  $('camps').innerHTML=S.campaigns.length?hbars(S.campaigns.map(s=>[s.c+' · '+s.content,s.visits,s.results,pct(s.results,s.visits)]),'Науқан · креатив',[['Кірулер'],['Нәтиже'],['Конв.']]):'<div class="empty">Жарнамаға utm-сілтеме қойыңыз — «🔗 Жарнама сілтемесі» бетінде жасалады</div>';
+  const dp=S.dropoff;$('drop').innerHTML=svgBars([dp.map(d=>d.c)],dp.map(d=>d.n),['#7c3aed'],160)+'<div class="legend">Әр сұраққа жауап берген адам саны (1 → 30)</div>';
+  const ih=S.iq_hist;$('iqh').innerHTML=svgBars([ih.map(d=>d.c)],ih.map(d=>d.b),['#16a34a'],160);
+  const sm=a=>a.reduce((x,y)=>x+ +y.n,0),lst=(a,t)=>a.length?a.sort((x,y)=>y.n-x.n).map(x=>`<div class="fun"><div class="row"><span>${esc(x.k)}</span><div class="tr"><i style="width:${x.n/t*100}%"></i></div><span>${x.n} · ${pct(x.n,t)}</span></div></div>`).join(''):'<div class="muted">—</div>';
+  $('devlang').innerHTML='<b class="muted" style="font-size:12px">Құрылғы (кірулер)</b>'+lst(S.devices,sm(S.devices))+'<br><b class="muted" style="font-size:12px">Тіл (нәтижелер)</b>'+lst(S.langs,sm(S.langs));
+  $('agedu').innerHTML='<b class="muted" style="font-size:12px">Жасы</b>'+lst(S.ages,sm(S.ages))+'<br><b class="muted" style="font-size:12px">Білімі</b>'+lst(S.edus,sm(S.edus));}
+
+// ---------- users ----------
+let US=[];
+async function loadUs(){const {data:r,error}=await sb.from('results').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
+  const ids=[...new Set(r.map(x=>x.visit_id))];let vm={};
+  for(let i=0;i<ids.length;i+=150){const {data:v}=await sb.from('visits').select('id,utm_source,utm_campaign,utm_content,device,referrer').in('id',ids.slice(i,i+150));(v||[]).forEach(x=>vm[x.id]=x)}
+  US=r.map(x=>({...x,v:vm[x.visit_id]||{}}));drawUs()}
+function drawUs(){const q=$('usQ').value.toLowerCase().trim();const rows=US.filter(u=>!q||JSON.stringify([u.iq,u.lang,u.age,u.edu,u.v.utm_source,u.v.utm_campaign,u.v.utm_content,u.v.device]).toLowerCase().includes(q));
+  $('usN').textContent=rows.length+' нәтиже';
+  $('usB').innerHTML=rows.length?rows.map((u,i)=>`<tr class="click" data-v="${u.visit_id}"><td>${fmtT(u.created_at)}</td><td><span class="pill p">${esc(u.lang||'—')}</span></td><td><b>${u.iq}</b></td><td>${u.correct}/${u.total}</td><td>${esc(u.age||'—')}</td><td>${esc(u.edu||'—')}</td><td>${dur(u.duration_sec)}</td><td>${esc(u.v.utm_source||'тікелей')}</td><td class="muted">${esc([u.v.utm_campaign,u.v.utm_content].filter(Boolean).join(' · ')||'—')}</td><td>${esc(u.v.device||'—')}</td></tr>`).join(''):'<tr><td colspan="10" class="empty">Бұл кезеңде нәтиже жоқ</td></tr>';
+  document.querySelectorAll('#usB tr.click').forEach(tr=>tr.onclick=()=>showVisit(tr.dataset.v))}
+$('usQ').oninput=drawUs;
+$('usCsv').onclick=()=>{const h=['created_at','lang','iq','correct','total','age','edu','duration_sec','utm_source','utm_campaign','utm_content','device'];
+  const c=v=>`"${String(v??'').replace(/"/g,'""')}"`;const csv='﻿'+h.join(',')+'\n'+US.map(u=>[u.created_at,u.lang,u.iq,u.correct,u.total,u.age,u.edu,u.duration_sec,u.v.utm_source,u.v.utm_campaign,u.v.utm_content,u.v.device].map(c).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='iqly_users.csv';a.click()};
+async function showVisit(id){$('mod').classList.remove('hide');$('modB').innerHTML='Жүктелуде…';
+  const [{data:v},{data:ev}]=await Promise.all([sb.from('visits').select('*').eq('id',id).maybeSingle(),sb.from('events').select('*').eq('visit_id',id).order('created_at').limit(500)]);
+  const t0=ev&&ev[0]?new Date(ev[0].created_at):null;const rel=s=>t0?'+'+dur(Math.round((new Date(s)-t0)/1000)):'';
+  const ok=(ev||[]).filter(e=>e.type==='answer'&&e.data&&e.data.ok===true).length,bad=(ev||[]).filter(e=>e.type==='answer'&&e.data&&e.data.ok===false).length;
+  $('modB').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Сессия</h3><button class="btn sec sm" onclick="$('mod').classList.add('hide')">✕</button></div>
+   <p class="muted" style="font-size:12px;word-break:break-all">${esc(id)}</p>
+   ${v?`<p>Көзі: <b>${esc(v.utm_source||'тікелей')}</b> · ${esc(v.utm_campaign||'')} ${esc(v.utm_content||'')}<br>Құрылғы: ${esc(v.device)} · Бет: ${esc(v.path)}<br>Referrer: <span class="muted">${esc(v.referrer||'—')}</span></p>`:''}
+   <p><span class="pill ok">${ok} дұрыс</span> <span class="pill bad">${bad} қате</span></p>
+   <ul class="tl">${(ev||[]).map(e=>`<li><span>${rel(e.created_at)}</span><span><b>${EVN[e.type]||esc(e.type)}</b> ${e.type==='answer'?`№${e.data.n} ${e.data.ok===true?'<span class="pill ok">✓</span>':e.data.ok===false?'<span class="pill bad">✗</span>':'<span class="pill">стиль</span>'}`:e.data?`<span class="muted">${esc(JSON.stringify(e.data))}</span>`:''}</span></li>`).join('')||'<li>Оқиға жоқ</li>'}</ul>`}
+$('mod').onclick=e=>{if(e.target.id==='mod')$('mod').classList.add('hide')};
+
+// ---------- logs ----------
+async function loadLg(){let q=sb.from('events').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(500);const t=$('lgT').value;if(t)q=q.eq('type',t);
+  const {data,error}=await q;if(error)throw error;$('lgN').textContent=data.length+' жазба (соңғы 500)';
+  $('lgB').innerHTML=data.length?data.map(e=>`<tr class="click" data-v="${e.visit_id}"><td>${fmtT(e.created_at)}</td><td><span class="pill ${e.type==='result'?'ok':e.type==='pay_click'?'w':'p'}">${EVN[e.type]||esc(e.type)}</span></td><td class="muted">${esc(e.data?JSON.stringify(e.data):'')}</td><td class="muted">${esc(e.visit_id.slice(0,8))}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">Жазба жоқ</td></tr>';
+  document.querySelectorAll('#lgB tr.click').forEach(tr=>tr.onclick=()=>showVisit(tr.dataset.v))}
+$('lgT').onchange=()=>load();
+
+// ---------- payments ----------
+async function loadPy(){const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
+  $('pyB').innerHTML=data.length?data.map(p=>`<tr><td>${fmtT(p.created_at)}</td><td><b>${(p.amount||0).toLocaleString('ru-RU')} ₸</b></td><td><span class="pill ${p.status==='paid'?'ok':p.status==='refund'?'bad':'w'}">${esc(p.status)}</span></td><td>${esc(p.provider)}</td><td class="muted">${esc(p.ext_id||'')}</td><td class="muted">${esc(p.note||'')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">Төлем әзірге жоқ</td></tr>'}
+$('pyF').onsubmit=async e=>{e.preventDefault();$('pyErr').textContent='';const {error}=await sb.from('payments').insert({amount:+$('pyA').value,status:$('pyS').value,ext_id:$('pyE').value||null,note:$('pyN').value||null,provider:'manual'});
+  if(error){$('pyErr').textContent=error.message;return}$('pyE').value=$('pyN').value='';loadPy()};
+
+// ---------- links ----------
+function mkLink(){const slug=s=>s.trim().toLowerCase().replace(/[^a-z0-9а-яәіңғүұқөһ_-]+/gi,'_').replace(/^_|_$/g,'');
+  const p=new URLSearchParams({utm_source:$('lkS').value,utm_medium:$('lkM').value});const c=slug($('lkC').value),v=slug($('lkV').value);if(c)p.set('utm_campaign',c);if(v)p.set('utm_content',v);
+  $('lkOut').textContent=location.origin+$('lkL').value+'?'+p.toString()}
+['lkL','lkS','lkM','lkC','lkV'].forEach(i=>$(i).oninput=$(i).onchange=mkLink);
+$('lkCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('lkOut').textContent);$('lkCopy').textContent='Көшірілді ✓'}catch(e){}setTimeout(()=>$('lkCopy').textContent='Көшіру',1500)};
+
+// ---------- settings ----------
+$('npBtn').onclick=async()=>{const a=$('np1').value,b=$('np2').value;$('npErr').style.color='';
+  if(a.length<10){$('npErr').textContent='Кемі 10 таңба';return}if(a!==b){$('npErr').textContent='Сәйкес емес';return}
+  const {error}=await sb.auth.updateUser({password:a});if(error){$('npErr').textContent=error.message;return}$('npErr').style.color='#16a34a';$('npErr').textContent='Сақталды ✓';$('np1').value=$('np2').value=''};
+
+boot();
+</script>
+</body></html>

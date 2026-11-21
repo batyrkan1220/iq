@@ -116,10 +116,10 @@ const nOpts=q=>q.text?q.o.length:q.opts.length;
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
 function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
-function start(){if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
-document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
+function start(){TR('start');if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
+document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;TR('lang',{l:LANG});try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
-function begin(){paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
+function begin(){TR('begin',{l:LANG});paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
 function drawTimer(){return;const t=Math.max(left,0);$('timer').textContent=`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;$('timer').classList.toggle('low',left<=120)}
 const CATN={attn:'Внимательность',num:'Числовое мышление',logic:'Логика',verb:'Вербальное мышление',mem:'Кратковременная память',spat:'Пространственное мышление'};
@@ -154,7 +154,7 @@ function render(){const q=Q[cur];clearTimeout(memT);
   $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
 }
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),1800)}
-function choose(k){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}const first=ans[cur]===null;ans[cur]=k;
+function choose(k){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}const first=ans[cur]===null;ans[cur]=k;if(first)TR('answer',{n:cur+1,ok:Q[cur].likert?null:k===Q[cur].a});
   $('opts').querySelectorAll('.opt').forEach(b=>b.classList.toggle('sel',+b.dataset.i===k));
   const done=ans.filter(a=>a!==null).length;
   if(first&&CHEER[done])toast(T(CHEER[done]));
@@ -196,7 +196,7 @@ function pctOf(iq){const z=(iq-100)/15,t=1/(1+.2316419*Math.abs(z)),d=.3989423*M
 function levelOf(iq){
   if(iq>=130)return'Очень высокий интеллект';if(iq>=115)return'Выше среднего';
   if(iq>=100)return'Средний (верхняя граница)';if(iq>=85)return'Средний';return'Ниже среднего'}
-function finish(){clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));show('analyze');
+function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));show('analyze');
   const steps=[...document.querySelectorAll('#steps li')];steps.forEach(s=>s.className='');
   steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*900));
   const T=steps.length*900+200,t0=performance.now();(function tk(now){const p=Math.min(1,(now-t0)/T);$('ringC').style.strokeDashoffset=327*(1-p);$('ringP').textContent=Math.round(p*100)+'%';if(p<1)requestAnimationFrame(tk)})(t0);
@@ -211,7 +211,7 @@ function showPaywall(re){
   $('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2(`Ещё ${styleList().length-1} черты — в полном отчёте.`,`Тағы ${styleList().length-1} ерекшелік — толық есепте.`)}</span></div>`;
   $('pwReview').textContent=L2(`объяснение всех ${NS} заданий`,`барлық ${NS} тапсырманың түсіндірмесі`);
   show('paywall');if(!re)confetti(70);pwObs()}
-$('payBtn').onclick=$('payBtn2').onclick=()=>$('payModal').classList.add('on');
+$('payBtn').onclick=$('payBtn2').onclick=()=>TR('pay_click')||$('payModal').classList.add('on');
 $('payClose').onclick=()=>$('payModal').classList.remove('on');
 $('demoUnlock').onclick=()=>{$('payModal').classList.remove('on');showResult()};
 function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
@@ -268,10 +268,11 @@ function showResult(re){
     $('tBad').classList.toggle('on',f==='bad');$('tAll').classList.toggle('on',f==='all')};
   $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все задания');window._rv(bad+skip?'bad':'all');
   window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — IQly`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — IQly`);
+  if(!re){const di=Q.findIndex(q=>q.key==='age'),de=Q.findIndex(q=>q.demo&&q.key!=='age');sbIns('results',{visit_id:VID,lang:LANG,iq,correct,total:NS,age:di>=0&&ans[di]!==null?Q[di].o[ans[di]]:null,edu:de>=0&&ans[de]!==null?Q[de].o[ans[de]]:null,duration_sec:used,traits:st.map(x=>x[1]),answers:ans});TR('result',{iq})}
   saveHist({d:new Date().toLocaleString('ru-RU'),n:userName||'—',c:correct,iq,age:ans[SEQ.indexOf('D0')],edu:ans[SEQ.indexOf('D1')]});show('result');if(!re)window.scrollTo(0,0)}
 $('tBad').onclick=()=>window._rv('bad');$('tAll').onclick=()=>window._rv('all');
-$('againBtn').onclick=()=>show('start');
-$('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(window._lastResult);$('copyBtn').textContent=T('Текст скопирован ✓')}catch(e){$('copyBtn').textContent=T('Сделайте скриншот 📸')}setTimeout(()=>$('copyBtn').textContent=T('Поделиться результатом'),2200)};
+$('againBtn').onclick=()=>{TR('again');show('start')};
+$('copyBtn').onclick=async()=>{TR('share');try{await navigator.clipboard.writeText(window._lastResult);$('copyBtn').textContent=T('Текст скопирован ✓')}catch(e){$('copyBtn').textContent=T('Сделайте скриншот 📸')}setTimeout(()=>$('copyBtn').textContent=T('Поделиться результатом'),2200)};
 const HK='iqtest_history_v1';
 function getHist(){try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){return[]}}
 function saveHist(r){try{const h=getHist();h.unshift(r);localStorage.setItem(HK,JSON.stringify(h.slice(0,20)))}catch(e){}}
