@@ -81,7 +81,7 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
 <header>
   <div class="hrow"><div class="brand">IQ<em>ly</em> <span class="muted" style="font-size:13px;font-weight:600">Админ</span></div><div class="sp"></div><span class="who" id="who"></span><button class="btn sec sm" id="logout">Шығу</button></div>
   <nav id="tabs">
-    <button data-t="ov" class="on">📊 Шолу</button><button data-t="us">👥 Қолданушылар</button><button data-t="lg">🧾 Логтар</button><button data-t="py">💳 Төлемдер</button><button data-t="vo">🎙 Дауыс</button><button data-t="lk">🔗 Жарнама сілтемесі</button><button data-t="st">⚙️ Баптаулар</button>
+    <button data-t="ov" class="on">📊 Шолу</button><button data-t="us">👥 Қолданушылар</button><button data-t="lg">🧾 Логтар</button><button data-t="py">💳 Төлемдер</button><button data-t="re">🎬 Reels жасау</button><button data-t="vo">🎙 Дауыс</button><button data-t="lk">🔗 Жарнама сілтемесі</button><button data-t="st">⚙️ Баптаулар</button>
   </nav>
 </header>
 <main>
@@ -131,6 +131,8 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
       <button class="btn">Қосу</button></form><div class="err" id="pyErr"></div></div>
     <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Провайдер</th><th>ID</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
   </div>
+
+  <div id="t-re" class="hide"></div>
 
   <div id="t-vo" class="hide">
     <div class="card" id="elStat" style="margin-bottom:12px"><h3>ElevenLabs</h3><div id="elInfo" class="muted">Тексерілуде…</div>
@@ -217,9 +219,9 @@ function rng(){return{from:new Date($('dFrom').value+'T00:00:00+05:00').toISOStr
 
 // ---------- tabs ----------
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['ov','us','lg','py','vo','lk','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==TAB));$('range').classList.toggle('hide',['lk','st','vo'].includes(TAB));load()});
+  ['ov','us','lg','py','re','vo','lk','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==TAB));$('range').classList.toggle('hide',['lk','st','vo','re'].includes(TAB));load()});
 function load(){R=rng();$('upd').textContent='жүктелуде…';
-  const f={ov:loadOv,us:loadUs,lg:loadLg,py:loadPy,vo:loadVo,lk:mkLink,st:()=>{}}[TAB];Promise.resolve(f()).then(()=>$('upd').textContent='жаңартылды '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='қате: '+(e.message||e)})}
+  const f={ov:loadOv,us:loadUs,lg:loadLg,py:loadPy,re:()=>window.loadRe(),vo:loadVo,lk:mkLink,st:()=>{}}[TAB];Promise.resolve(f()).then(()=>$('upd').textContent='жаңартылды '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='қате: '+(e.message||e)})}
 
 // ---------- overview ----------
 function hbars(rows,keyL,cols){if(!rows.length)return'<div class="empty">Әзірге дерек жоқ</div>';
@@ -338,4 +340,5 @@ $('npBtn').onclick=async()=>{const a=$('np1').value,b=$('np2').value;$('npErr').
 
 boot();
 </script>
+<script src="reels.js"></script>
 </body></html>
