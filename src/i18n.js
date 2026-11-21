@@ -1,5 +1,6 @@
 /* ===== i18n: Russian is the source; Kazakh translations below ===== */
-let LANG=(()=>{try{return localStorage.getItem('iq_lang')||'ru'}catch(e){return 'ru'}})();
+const PATH_LANG=(()=>{const p=(location.pathname||'').toLowerCase();return /^\/kz(\/|$)/.test(p)?'kz':/^\/ru(\/|$)/.test(p)?'ru':null})();
+let LANG=PATH_LANG||(()=>{try{return localStorage.getItem('iq_lang')||'ru'}catch(e){return 'ru'}})();
 const KZ={
 // --- questions ---
 'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?':'Фермердің 15 қойы болды. 8-інен басқасының бәрі өліп қалды. Қанша қой қалды?',

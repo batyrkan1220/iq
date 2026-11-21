@@ -115,7 +115,7 @@ const nOpts=q=>q.text?q.o.length:q.opts.length;
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
 function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
-function start(){$('langModal').classList.add('on')}
+function start(){if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
 document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
 function begin(){paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();

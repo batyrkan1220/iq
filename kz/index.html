@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22512%22%20height%3D%22512%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22mmClip%22%3E%3Crect%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2230%22/%3E%3C/clipPath%3E%3ClinearGradient%20id%3D%22mmBg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f46e5%22/%3E%3Cstop%20offset%3D%22.55%22%20stop-color%3D%22%237c3aed%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a855f7%22/%3E%3C/linearGradient%3E%0A%3ClinearGradient%20id%3D%22mmTx%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f46e5%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a855f7%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%20transform%3D%22translate%280%200%29%20scale%281%29%22%3E%0A%20%20%3Crect%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2230%22%20fill%3D%22url%28%23mmBg%29%22/%3E%0A%20%20%3Cpath%20d%3D%22M120%200H90A30%2030%200%200%201%20120%2030Z%22%20fill%3D%22none%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2224%22%20r%3D%2240%22%20fill%3D%22%23fff%22%20opacity%3D%22.08%22%20clip-path%3D%22url%28%23mmClip%29%22/%3E%0A%20%20%3Cpolyline%20points%3D%2228%2C86%2028%2C40%2060%2C72%2092%2C40%2092%2C86%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%0A%20%20%3Ccircle%20cx%3D%2228%22%20cy%3D%2240%22%20r%3D%229%22%20fill%3D%22%23fff%22/%3E%3Ccircle%20cx%3D%2228%22%20cy%3D%2240%22%20r%3D%224%22%20fill%3D%22%236366f1%22/%3E%0A%20%20%3Ccircle%20cx%3D%2292%22%20cy%3D%2240%22%20r%3D%229%22%20fill%3D%22%23fff%22/%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%2240%22%20r%3D%224%22%20fill%3D%22%23a855f7%22/%3E%0A%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2272%22%20r%3D%228.5%22%20fill%3D%22%23f9a8d4%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223%22/%3E%0A%3C/g%3E%3C/svg%3E">
+<title>MindMetric — тест IQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6fc;--card:#fff;--ink:#1b1d2e;--muted:#676b85;--line:#e3e5f0;--acc:#4f46e5;--acc2:#a855f7;--accSoft:#eef0ff;--ok:#16a34a;--bad:#dc2626}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;color:#fff;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 8px 30px rgba(40,40,110,.06)}
+h1{font-size:32px;line-height:1.15;margin:0 0 12px;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 14px}
+p{line-height:1.6;color:var(--muted);margin:0 0 14px}
+.btn{border:0;border-radius:14px;padding:15px 22px;font-weight:800;font-size:16px;background:linear-gradient(135deg,var(--acc),#7c3aed);color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.25);transition:transform .12s}
+.btn:active{transform:scale(.98)}
+.btn.big{width:100%;padding:18px;font-size:18px}
+.btn.ghost{background:var(--accSoft);color:var(--acc);box-shadow:none}
+.btn.line{background:#fff;border:1px solid var(--line);color:var(--ink);box-shadow:none}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:center}
+.demo svg{width:100%;max-width:250px;display:block;margin:0 auto;box-shadow:0 14px 34px rgba(79,70,229,.16)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.chip{background:var(--accSoft);color:var(--acc);font-weight:700;font-size:13px;padding:8px 12px;border-radius:99px}
+.price{font-weight:800}
+.pricebox{background:linear-gradient(135deg,#eef0ff,#f6efff);border:1px solid #dcd8fb;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.55;color:#3730a3;margin:6px 0 18px}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0 0}
+.how div{background:#fafbff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:13px;color:var(--muted);line-height:1.45}
+.how b{display:block;color:var(--ink);font-size:14px;margin-bottom:3px}
+input[type=text]{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);font:inherit;font-size:16px;margin:6px 0 16px;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--acc)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.topbar .cnt{font-weight:800;font-size:16px}.topbar .cnt small{font-weight:600;color:var(--muted);font-size:13px;margin-left:6px}
+.timer{font-weight:800;font-size:15px;padding:7px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad);border-color:#fecaca;background:#fff5f5}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .35s}
+.tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--acc);background:var(--accSoft);padding:5px 10px;border-radius:99px;margin-bottom:12px}
+.qtext{font-size:21px;font-weight:700;line-height:1.45;margin:0 0 18px;white-space:pre-line}
+.enter{animation:in .28s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.matrix{display:block;margin:0 auto 18px;width:100%;max-width:330px;background:#fff;border-radius:18px;padding:10px;box-shadow:0 0 0 1.5px #e6e8ee}
+.opts{display:grid;grid-template-columns:1fr;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;padding:15px 16px;font-size:17px;color:var(--ink);transition:border-color .12s,background .12s}
+.opt:hover{border-color:#c7c9f5}
+.opt.sel{border-color:var(--acc);background:var(--accSoft)}
+.opt .l{flex:none;width:30px;height:30px;border-radius:9px;background:var(--bg);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--muted)}
+.opt.sel .l{background:var(--acc);color:#fff}
+.opts.vis{grid-template-columns:repeat(3,1fr)}
+.opts.vis .opt{flex-direction:column;gap:4px;padding:10px 6px 12px;background:#f5f6f8;border-color:#f5f6f8;border-radius:18px}
+.opts.vis .opt:hover{border-color:#d9dce3}
+.opts.vis .opt.sel{background:#eef3ff;border-color:#2f6fe4;box-shadow:none}
+.opts.vis .opt .l{background:#fff}
+.opts.vis .opt.sel .l{background:#2f6fe4}
+.opts.vis .opt svg{width:100%;max-width:84px;height:auto}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.invisible{visibility:hidden}
+details.map{margin-top:16px}
+details.map summary{font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.dots button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:700;color:var(--muted)}
+.dots button.done{background:var(--accSoft);color:var(--acc);border-color:#c7c9f5}
+.dots button.cur{outline:2px solid var(--acc);outline-offset:1px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;font-size:15px;opacity:0;transition:.3s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+#analyze .card{text-align:center;padding:40px 24px}
+.spinner{width:64px;height:64px;border-radius:50%;border:6px solid var(--accSoft);border-top-color:var(--acc);margin:0 auto 20px;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#steps{list-style:none;padding:0;margin:18px auto 0;max-width:320px;text-align:left}
+#steps li{padding:9px 0 9px 32px;position:relative;color:#b0b3c6;font-weight:600}
+#steps li::before{content:'';position:absolute;left:0;top:9px;width:20px;height:20px;border-radius:50%;border:2px solid #d6d8e8}
+#steps li.act{color:var(--ink)}#steps li.act::before{border-color:var(--acc);border-top-color:transparent;animation:sp .8s linear infinite}
+#steps li.done{color:var(--ink)}#steps li.done::before{background:var(--ok);border-color:var(--ok)}
+#steps li.done::after{content:'✓';position:absolute;left:5px;top:9px;color:#fff;font-size:12px;font-weight:800}
+.score{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.gauge{position:relative;width:200px;height:120px;margin:0 auto}
+.gauge .num{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:44px;font-weight:800}
+.level{font-size:22px;font-weight:800;margin-bottom:6px}
+.bars{margin:22px 0}
+.bar{margin-bottom:12px}
+.bar .h{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:5px}
+.bar .t{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.review{border-top:1px solid var(--line);padding:14px 0}
+.review .q{font-weight:700;margin-bottom:6px;white-space:pre-line}
+.review .a{font-size:14px;color:var(--muted);line-height:1.7}
+.ok{color:var(--ok);font-weight:800}.bad{color:var(--bad);font-weight:800}
+.note{font-size:13px;background:#fff8eb;border:1px solid #fde4b3;color:#8a5a00;border-radius:14px;padding:12px 14px;line-height:1.55;margin-top:16px}
+.hist{width:100%;border-collapse:collapse;font-size:14px}
+.hist td,.hist th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:rgba(20,22,40,.45);display:none;place-items:center;padding:18px;z-index:30}
+.modal.on{display:grid}.modal .card{max-width:420px;width:100%}
+.fine{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
+.locked{position:relative;width:200px;margin:0 auto 6px}
+.blur{filter:blur(9px);opacity:.8}
+.lock{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);font-size:30px;background:#fff;border-radius:50%;width:56px;height:56px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(49,46,129,.18)}
+.unlock{list-style:none;padding:0;margin:14px 0 20px;text-align:left}
+.unlock li{padding:10px 0 10px 32px;position:relative;border-bottom:1px solid var(--line);font-weight:600;font-size:15px}
+.unlock li::before{content:'✓';position:absolute;left:4px;top:9px;width:20px;height:20px;border-radius:50%;background:var(--accSoft);color:var(--acc);font-size:12px;font-weight:800;display:grid;place-items:center}
+.memb{background:linear-gradient(135deg,#f7f6ff,#f1efff);border-radius:22px;padding:16px;margin:0 0 10px}
+.digs{display:flex;gap:8px;justify-content:center}
+.digs span{flex:1;max-width:64px;aspect-ratio:1;background:#fff;border-radius:16px;display:grid;place-items:center;font-size:30px;font-weight:800;box-shadow:0 4px 12px rgba(49,46,129,.08)}
+.mbar{height:5px;background:#e3e5f0;border-radius:9px;margin-top:14px;overflow:hidden}
+.mbar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));animation:mb linear forwards}
+@keyframes mb{from{width:100%}to{width:0}}
+.opts.lik .opt{justify-content:center;font-weight:700;padding:16px}
+.opt.lk0{background:#ecfdf3}.opt.lk1{background:#f3fdf6}.opt.lk2{background:#fffbea}.opt.lk3{background:#fdf4f4}.opt.lk4{background:#fdeeee}
+.opts.lik .opt.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.stl{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.stl .se{font-size:26px;width:46px;height:46px;flex:none;border-radius:14px;background:var(--accSoft);display:grid;place-items:center}
+.stl p{margin:3px 0 0;font-size:14px}
+.bolt{width:110px;height:110px;margin:4px auto 14px;border-radius:50%;display:grid;place-items:center;background:var(--accSoft);box-shadow:0 0 0 10px #f6f5ff,0 0 0 11px #e3e1fb}
+.paceT{font-size:22px;line-height:1.3}.paceT em{font-style:normal;color:var(--acc)}
+.matrix.pat{padding:0;box-shadow:0 0 0 1.5px #e6e8ee;border-radius:16px;overflow:hidden}
+.word{font-size:34px;font-weight:800;letter-spacing:.12em;margin:10px 0 14px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.opts.nums .opt{font-size:26px;font-weight:800;padding:14px}
+.opts.nums .opt .l{display:none}
+/* ===== conversion & motion layer ===== */
+.hero-card{position:relative;overflow:hidden;padding-bottom:20px}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.35;z-index:0}
+.b1{width:220px;height:220px;background:#a5b4fc;top:-80px;right:-60px}.b2{width:180px;height:180px;background:#f0abfc;bottom:-70px;left:-50px;animation-delay:-4s}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,18px)}}
+.hero-card>*:not(.blob){position:relative;z-index:1}
+.hero-txt>*{animation:fadeUp .6s both}.hero-txt h1{animation-delay:.08s}.hero-txt p{animation-delay:.16s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tag.live{display:inline-flex;align-items:center;gap:7px}.tag.live i{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:ping 1.6s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}80%,100%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+.demo{animation:fadeUp .7s .2s both}
+.demo .dQ{animation:dq 4.2s infinite}.demo .dAns{transform-origin:275px 275px;animation:da 4.2s infinite}
+@keyframes dq{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+@keyframes da{0%,44%{opacity:0;transform:scale(.4)}54%{opacity:1;transform:scale(1.12)}60%,90%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(.4)}}
+.demo .dCell{animation:dc 4.2s infinite}@keyframes dc{0%,44%{stroke:#2f6fe4}52%,90%{stroke:#16a34a}100%{stroke:#2f6fe4}}
+.cta{position:relative;overflow:hidden}
+.cta::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:shine 3.2s infinite}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+.cta .arr{display:inline-block;animation:nudge 1.4s infinite}@keyframes nudge{0%,100%{transform:none}50%{transform:translateX(5px)}}
+.pulse{animation:pulse 2s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(99,102,241,.45)}70%{box-shadow:0 0 0 16px rgba(99,102,241,0)}100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}}
+.trust{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:14px;font-size:13px;font-weight:700;color:#3f4361}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.fi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;animation:fadeUp .6s both}
+.fi:nth-child(2){animation-delay:.1s}.fi:nth-child(3){animation-delay:.2s}
+.fi .fe{font-size:24px;width:44px;height:44px;border-radius:12px;background:var(--accSoft);display:grid;place-items:center;margin-bottom:8px}
+.fi b{display:block;font-size:15px;margin-bottom:3px}.fi span{font-size:13px;color:var(--muted);line-height:1.45}
+.how2 h2{margin-bottom:12px}
+.steps3{display:grid;gap:12px}
+.steps3>div{display:grid;grid-template-columns:36px 1fr;column-gap:12px;align-items:start}
+.steps3 em{grid-row:span 2;font-style:normal;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:800;display:grid;place-items:center}
+.steps3 b{font-size:15px}.steps3 span{font-size:13px;color:var(--muted)}
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(245,246,252,0),#f5f6fc 35%);z-index:15;transform:translateY(110%);transition:transform .3s}
+.sticky-cta.on{transform:none}
+.sticky-cta .btn{max-width:688px;margin:0 auto;display:block}
+/* question motion */
+.enter{animation:slideIn .32s cubic-bezier(.2,.8,.2,1)}.enterBack{animation:slideBack .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes slideBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+#opts .opt{animation:fadeUp .35s both}
+#opts .opt:nth-child(2){animation-delay:.03s}#opts .opt:nth-child(3){animation-delay:.06s}#opts .opt:nth-child(4){animation-delay:.09s}#opts .opt:nth-child(5){animation-delay:.12s}#opts .opt:nth-child(6){animation-delay:.15s}
+.opt:active{transform:scale(.97)}
+.opt.sel{animation:tap .3s!important}@keyframes tap{0%{transform:scale(1)}40%{transform:scale(.95)}100%{transform:scale(1)}}
+.progress i{position:relative;overflow:hidden}
+.progress i::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shim 1.8s infinite}
+@keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.modal.on .card{animation:mod .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes mod{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+.modal.on{animation:fade .25s}@keyframes fade{from{opacity:0}to{opacity:1}}
+.bolt svg{animation:boltz 1.2s ease-in-out infinite}@keyframes boltz{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(-6deg)}}
+#radarBox polygon.rd{stroke-dasharray:900;stroke-dashoffset:900;animation:draw 1.2s .2s forwards}@keyframes draw{to{stroke-dashoffset:0}}
+.toast{font-size:16px}
+/* analyze */
+.ring{position:relative;width:130px;height:130px;margin:0 auto 14px}.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:800}
+#ringC{transition:stroke-dashoffset .25s linear}
+/* paywall */
+.pw{text-align:center;padding-bottom:22px}
+.okc{display:grid;place-items:center;margin:2px 0 6px}.okc svg{animation:pop .5s cubic-bezier(.2,.9,.3,1.4) both}
+.ck{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .5s .35s forwards}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.pwh{font-size:26px;margin:6px 0 4px}.pws{margin:0 0 14px}
+.preview{position:relative;border:1px solid var(--line);border-radius:20px;padding:14px 16px 16px;background:#fbfbff;margin-bottom:16px;overflow:hidden}
+.pv-g{position:relative;width:200px;margin:0 auto}
+.pv-g .lock{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);font-size:26px;background:#fff;border-radius:50%;width:52px;height:52px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(49,46,129,.18);animation:wig 2.4s infinite}
+@keyframes wig{0%,80%,100%{transform:translate(-50%,-50%) rotate(0)}85%{transform:translate(-50%,-50%) rotate(-12deg)}90%{transform:translate(-50%,-50%) rotate(10deg)}95%{transform:translate(-50%,-50%) rotate(-6deg)}}
+#pwArc{stroke-dasharray:260;stroke-dashoffset:260;animation:draw 1.4s .3s forwards}
+.pv-bars{text-align:left;margin-top:8px}
+.pv-bars .bar{margin-bottom:8px}.pv-bars .t i{filter:blur(3px)}.pv-bars .h span:last-child{filter:blur(5px)}
+.pv-style{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;filter:blur(4px)}
+.pv-style span{background:var(--accSoft);border-radius:99px;padding:6px 10px;font-size:13px;color:var(--acc)}
+.pv-shade{position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(180deg,rgba(251,251,255,0),#fbfbff)}
+.unlock li{animation:fadeUp .4s both}.unlock li:nth-child(2){animation-delay:.08s}.unlock li:nth-child(3){animation-delay:.16s}.unlock li:nth-child(4){animation-delay:.24s}.unlock li:nth-child(5){animation-delay:.32s}
+.unlock li b{color:var(--ink)}
+.kaspi{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.4}
+.kb{font-size:14px;flex:none}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
+.bar .t i{transition:width 1s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:600px){.feat{grid-template-columns:1fr}.fi{display:grid;grid-template-columns:44px 1fr;column-gap:12px}.fi .fe{grid-row:span 2;margin:0}.pwh{font-size:23px}}
+@media (min-width:601px){.sticky-cta{display:none}}
+/* ===== result page ===== */
+.shot{position:relative;overflow:hidden;border-radius:28px;padding:20px 20px 18px;color:#fff;
+ background:radial-gradient(120% 70% at 0% 0%,rgba(99,102,241,.95) 0%,transparent 60%),radial-gradient(110% 70% at 100% 100%,rgba(168,85,247,.9) 0%,transparent 60%),#1e1b4b;
+ box-shadow:0 18px 40px rgba(49,46,129,.35);animation:pop .5s cubic-bezier(.2,.9,.3,1.2) both}
+.shot::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+.shot>*{position:relative}
+.sh-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;opacity:.9}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.bm{width:28px;height:28px;border-radius:8px;background:#fff;color:#4f46e5;display:grid;place-items:center;font-size:12px;font-weight:900}
+.iqring{position:relative;width:220px;height:220px;margin:4px auto -18px}
+.iqring svg{filter:drop-shadow(0 0 18px rgba(165,180,252,.45))}
+.iqring .v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.iqring small{font-size:11px;letter-spacing:.18em;font-weight:800;opacity:.75}
+.iqring b{font-size:72px;font-weight:800;line-height:1;letter-spacing:-.03em;text-shadow:0 4px 24px rgba(0,0,0,.25)}
+.lvl{display:table;margin:0 auto;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:99px;font-weight:800;font-size:15px}
+.pct{text-align:center;font-size:14px;opacity:.9;margin:8px 0 4px}
+.pct b{color:#fde68a}
+.sh-radar{display:flex;justify-content:center;margin:2px 0}
+.sh-str{text-align:center;font-size:13.5px;margin:2px 0 10px;opacity:.95}.sh-str b{color:#a7f3d0}
+.sh-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px}
+.sh-chips span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:6px 11px;font-size:12.5px;font-weight:700}
+.sh-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid rgba(255,255,255,.18);padding-top:12px;text-align:center}
+.sh-foot b{display:block;font-size:18px}.sh-foot span{font-size:11.5px;opacity:.75}
+.shot-hint{text-align:center;font-size:13px;color:var(--muted);margin:10px 0 12px}
+.rbtn{justify-content:center;margin-bottom:14px}.rbtn .btn{flex:1;min-width:150px}
+.rc{margin-bottom:14px}.rc h2{margin-bottom:12px}
+.abil .ab{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.abil .ab:last-child{border:0}
+.abil .ae{width:38px;height:38px;border-radius:11px;background:var(--accSoft);display:grid;place-items:center;font-size:19px}
+.abil .an{font-weight:700;font-size:14.5px}.abil .at{height:7px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:6px}
+.abil .at i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.abil .ap{font-weight:800;font-size:15px;min-width:44px;text-align:right}
+.abil .tagS{font-size:11px;font-weight:800;color:#16a34a;background:#dcfce7;border-radius:99px;padding:2px 7px;margin-left:6px}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stc:last-child:nth-child(odd){grid-column:span 2}
+.stc{background:#fafbff;border:1px solid var(--line);border-radius:16px;padding:12px}
+.stc .se{font-size:22px}.stc b{display:block;font-size:14px;margin:4px 0 3px}.stc p{margin:0;font-size:12.5px;line-height:1.45}
+.rv-sum{display:flex;gap:8px;margin-bottom:12px}
+.rv-sum div{flex:1;border-radius:14px;padding:10px;text-align:center;font-size:13px;font-weight:700}
+.rv-sum b{display:block;font-size:22px}
+.rv-ok{background:#ecfdf3;color:#15803d}.rv-bad{background:#fef2f2;color:#b91c1c}.rv-skip{background:#f3f4f6;color:#4b5563}
+.tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:10px}
+.tabs button{flex:1;border:0;background:none;padding:9px;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+details.rv{border:1px solid var(--line);border-radius:14px;margin-bottom:8px;overflow:hidden;background:#fff}
+details.rv summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+details.rv summary::-webkit-details-marker{display:none}
+.rn{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:12.5px;flex:none}
+.rn.g{background:#dcfce7;color:#15803d}.rn.r{background:#fee2e2;color:#b91c1c}.rn.s{background:#f3f4f6;color:#6b7280}
+.rt{flex:1;font-weight:600;font-size:14px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.chev{transition:transform .2s;color:var(--muted)}details[open] .chev{transform:rotate(180deg)}
+.rb{padding:0 12px 12px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.cmp>div{border-radius:12px;padding:8px;text-align:center;font-size:12px;font-weight:700}
+.cmp .y{background:#fef2f2;color:#b91c1c}.cmp .y.ok{background:#ecfdf3;color:#15803d}.cmp .c{background:#ecfdf3;color:#15803d}
+.cmp .vv{display:flex;justify-content:center;align-items:center;min-height:44px;color:var(--ink);font-size:16px;margin-top:4px}
+.rx{font-size:13.5px;color:#3f4361;line-height:1.55;background:#fafbff;border-radius:10px;padding:9px 10px}
+.empty{text-align:center;color:var(--muted);padding:14px;font-size:14px}
+@media (max-width:380px){.stgrid{grid-template-columns:1fr}}
+.lsw{display:flex;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px}
+.lsw button{border:0;background:none;font-weight:800;font-size:13px;color:var(--muted);padding:7px 10px;border-radius:9px}
+.lsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.quote{position:relative;margin:14px 0;padding:22px 20px 18px 120px;min-height:130px;border-radius:22px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);color:#fff;overflow:hidden;animation:fadeUp .7s .25s both}
+.quote::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.55),transparent 70%)}
+.quote .qm{position:absolute;left:104px;top:-6px;font-size:84px;line-height:1;font-family:Georgia,serif;color:rgba(255,255,255,.18)}
+.quote blockquote{position:relative;margin:0;font-size:18px;line-height:1.5;font-weight:700;font-style:italic;z-index:1}
+.quote figcaption{position:relative;margin-top:10px;font-size:13.5px;font-weight:700;color:#c7d2fe;z-index:1}
+.qph{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:86px;height:86px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#a5b4fc,#f0abfc);box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:1}
+.qph img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid #1e1b4b}
+@media (max-width:420px){.quote{padding:112px 20px 18px;text-align:center}.qph{left:50%;top:18px;transform:translateX(-50%)}.quote .qm{display:none}}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0}
+.stats3>div{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center;animation:fadeUp .6s both}
+.stats3 b{display:block;font-size:24px;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats3 span{font-size:12.5px;color:var(--muted);font-weight:600}
+.sub{margin:-4px 0 12px}
+.warm h2,.scale h2,.sample h2,.faq h2{margin:8px 0 8px}
+#warmBox svg{display:block;margin:0 auto 12px;width:100%;max-width:280px;background:#fff;border-radius:16px;box-shadow:0 0 0 1.5px #e6e8ee;padding:8px}
+.wopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wopts button{background:#f5f6f8;border:2px solid #f5f6f8;border-radius:16px;padding:10px 4px;transition:.15s}
+.wopts button svg{width:72px;height:72px}
+.wopts button.ok{border-color:#16a34a;background:#ecfdf3;animation:tap .3s}
+.wopts button.no{border-color:#dc2626;background:#fef2f2;animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.wres{text-align:center;margin-top:12px;min-height:10px}
+.wres .msg{font-weight:800;font-size:16px;margin-bottom:10px}
+.wres .msg.g{color:#15803d}.wres .msg.r{color:#b91c1c}
+#bell svg{width:100%;height:auto;display:block}
+.ranges{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:10px}
+.ranges>div{display:grid;grid-template-columns:12px auto;column-gap:8px;align-items:center}
+.ranges i{width:12px;height:12px;border-radius:4px;grid-row:span 2}
+.ranges b{font-size:14px}.ranges span{font-size:12px;color:var(--muted)}
+.smp{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:center}
+.smp-card{position:relative;border-radius:22px;padding:16px 12px 8px;color:#fff;text-align:center;background:radial-gradient(120% 70% at 0% 0%,rgba(99,102,241,.95),transparent 60%),radial-gradient(110% 70% at 100% 100%,rgba(168,85,247,.9),transparent 60%),#1e1b4b;box-shadow:0 12px 30px rgba(49,46,129,.3)}
+.smp-badge{position:absolute;top:10px;right:10px;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.18);border-radius:99px;padding:3px 8px;letter-spacing:.04em}
+.smp-iq small{display:block;font-size:10px;letter-spacing:.16em;opacity:.75;font-weight:800}
+.smp-iq b{font-size:46px;font-weight:800;line-height:1.05}
+.smp-lvl{display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:800;margin:4px 0 2px}
+#smpRadar svg{width:100%;height:auto}
+.smp-list{list-style:none;margin:0;padding:0}
+.smp-list li{padding:8px 0 8px 30px;position:relative;border-bottom:1px solid var(--line)}
+.smp-list li:last-child{border:0}
+.smp-list li::before{content:'✓';position:absolute;left:0;top:9px;width:20px;height:20px;border-radius:50%;background:var(--accSoft);color:var(--acc);font-size:12px;font-weight:800;display:grid;place-items:center}
+.smp-list b{display:block;font-size:14px}.smp-list span{font-size:12.5px;color:var(--muted)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:last-child{border:0}
+.faq summary{list-style:none;cursor:pointer;padding:14px 28px 14px 0;font-weight:700;font-size:15px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+';position:absolute;right:4px;top:10px;font-size:22px;color:var(--acc);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:-4px 0 14px;font-size:14px;animation:fadeUp .25s}
+.final{text-align:center;background:linear-gradient(135deg,#eef0ff,#f6efff);border-color:#dcd8fb}
+.final h2{margin-bottom:4px}.final p{margin-bottom:14px}
+.warm,.scale,.sample,.faq,.final{margin-bottom:14px}
+@media (max-width:600px){.smp{grid-template-columns:1fr}.smp-card{max-width:260px;margin:0 auto;width:100%}}
+.hv{position:relative;width:100%;max-width:320px;aspect-ratio:1;margin:0 auto}
+.demo.hv .hv-svg{width:100%;height:100%;max-width:none;display:block;overflow:visible;box-shadow:none;background:none;padding:0;border-radius:0}
+.hv-layer{position:absolute;inset:0;pointer-events:none;will-change:transform,opacity;transform:translateZ(0)}
+.demo.hv .hv-layer svg{width:100%;height:100%;max-width:none;display:block;overflow:visible;box-shadow:none;background:none;padding:0;border-radius:0;margin:0}
+.hv-glow{border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.5) 0%,rgba(167,139,250,0) 68%);z-index:-1;animation:hvp 3.2s ease-in-out infinite}
+@keyframes hvp{0%,100%{opacity:.65;transform:translateZ(0) scale(.94)}50%{opacity:1;transform:translateZ(0) scale(1.03)}}
+.hv-spin1{animation:spin 22s linear infinite}.hv-spin2{animation:spin 16s linear infinite}
+@keyframes spin{from{transform:translateZ(0) rotate(0)}to{transform:translateZ(0) rotate(360deg)}}
+.hv-arc{stroke-dasharray:465;stroke-dashoffset:110}
+.hv-net .nd{animation:blink 2.4s ease-in-out infinite}
+.n2{animation-delay:.3s!important}.n3{animation-delay:.6s!important}.n4{animation-delay:.9s!important}.n5{animation-delay:1.2s!important}.n6{animation-delay:1.5s!important}.n7{animation-delay:1.8s!important}.n8{animation-delay:2.1s!important}.n9{animation-delay:.15s!important}
+@keyframes blink{0%,70%,100%{opacity:.55}35%{opacity:1}}
+.hv-core{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;pointer-events:none}
+.hv-core small{font-size:12px;font-weight:800;letter-spacing:.2em;opacity:.85}
+.hv-core b{font-size:38px;font-weight:800;line-height:1;text-shadow:0 4px 18px rgba(0,0,0,.25);font-variant-numeric:tabular-nums}
+.hv-chip{will-change:transform;position:absolute;background:#fff;border:1px solid #e6e3fb;border-radius:99px;padding:6px 10px;font-size:12px;font-weight:800;color:#3730a3;box-shadow:0 8px 20px rgba(79,70,229,.15);white-space:nowrap;animation:bob 4s ease-in-out infinite}
+.hv-chip.c1{top:6%;left:-2%}.hv-chip.c2{top:14%;right:-4%;animation-delay:-1s}.hv-chip.c3{bottom:12%;left:-4%;animation-delay:-2s}.hv-chip.c4{bottom:4%;right:-2%;animation-delay:-3s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.logo .mmi{width:36px;height:36px;flex:none;filter:drop-shadow(0 4px 10px rgba(79,70,229,.3))}
+.wm{font-weight:800;font-size:20px;letter-spacing:-.02em;color:#1b1d2e}.wm em{font-style:normal;background:linear-gradient(90deg,#4f46e5,#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .mmi{width:28px;height:28px;border-radius:8px;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+/* paywall v2 */
+.pv2{position:relative;border-radius:24px;padding:16px 16px 14px;color:#fff;margin:6px 0 14px;overflow:hidden;text-align:center;
+ background:radial-gradient(120% 70% at 0% 0%,rgba(99,102,241,.95),transparent 60%),radial-gradient(110% 70% at 100% 100%,rgba(168,85,247,.9),transparent 60%),#1e1b4b;box-shadow:0 14px 34px rgba(49,46,129,.3)}
+.pv2-top{display:flex;justify-content:space-between;align-items:center}
+.brand2{font-weight:800;font-size:13px;opacity:.9}
+.lockpill{background:rgba(255,255,255,.16);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:800}
+.pv2-iq small{display:block;font-size:11px;letter-spacing:.18em;opacity:.75;font-weight:800;margin-top:6px}
+.blurN{display:inline-block;font-size:60px;font-weight:800;line-height:1.05;filter:blur(10px);user-select:none}
+.blurT{filter:blur(6px);user-select:none}
+.pv2-lvl{display:inline-block;margin:4px 0 0;font-weight:800;opacity:.85}
+.pv2-radar{display:flex;justify-content:center;margin-top:2px}
+.pv2-radar svg{width:250px;height:auto}
+.pv2-str{font-size:14px;opacity:.95;margin-top:-4px}
+.gift{display:flex;gap:12px;align-items:center;text-align:left;background:linear-gradient(135deg,#ecfdf3,#f0fdf9);border:1px solid #bbf7d0;border-radius:18px;padding:12px 14px;margin-bottom:16px;animation:fadeUp .5s .4s both}
+.gift .ge{font-size:26px;width:46px;height:46px;border-radius:14px;background:#fff;display:grid;place-items:center;flex:none}
+.gift small{display:block;font-size:11.5px;font-weight:800;color:#15803d;letter-spacing:.03em;text-transform:uppercase}
+.gift b{display:block;font-size:15px}.gift span{font-size:13px;color:#3f4361}
+.inc-h{text-align:left;margin:0 0 10px;font-size:17px}
+.inc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;text-align:left}
+.inc>div{background:#fafbff;border:1px solid var(--line);border-radius:14px;padding:10px 11px;animation:fadeUp .4s both}
+.inc>div.w2{grid-column:span 2}
+.inc i{font-style:normal;font-size:18px}.inc b{display:block;font-size:13.5px;margin-top:2px}.inc span{font-size:12px;color:var(--muted)}
+.pricebx{display:flex;justify-content:center;margin-bottom:12px}
+.pr-l{text-align:center}.pr-l b{display:block;font-size:34px;font-weight:800;letter-spacing:-.02em}.pr-l span{font-size:13px;color:var(--muted);font-weight:600}
+.trust2{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:12px 0 4px;font-size:12.5px;font-weight:700;color:#3f4361}
+.howpay{text-align:left;margin-top:16px;background:#fafbff;border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.howpay h3{margin:0 0 6px;font-size:15px}
+.howpay ol{margin:0;padding-left:20px;font-size:13.5px;line-height:1.7;color:#3f4361}
+.faq.mini{text-align:left;margin-top:6px}
+.faq.mini summary{font-size:14px;padding:12px 28px 12px 0}
+.lpicks{display:grid;gap:10px}
+.lpick{display:grid;grid-template-columns:54px 1fr;column-gap:14px;align-items:center;text-align:left;background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px 16px;transition:border-color .15s,background .15s}
+.lpick:hover,.lpick:focus-visible{border-color:var(--acc);background:var(--accSoft)}
+.lpick .lf{grid-row:span 2;width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:800;font-size:15px;display:grid;place-items:center}
+.lpick b{font-size:18px}.lpick small{font-size:13px;color:var(--muted)}
+.hidden{display:none!important}
+@media (max-width:600px){
+  h1{font-size:27px}.card{padding:18px;border-radius:20px}.hero{grid-template-columns:1fr}.demo{order:-1}.demo svg{max-width:200px}
+  .how{grid-template-columns:1fr}.qtext{font-size:18px}.opts.vis{gap:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><svg viewBox="0 0 120 120" class="mmi" aria-hidden="true"><defs><linearGradient id="mmBgH" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="120" height="120" rx="30" fill="url(#mmBgH)"/><polyline points="28,86 28,40 60,72 92,40 92,86" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="40" r="9" fill="#fff"/><circle cx="28" cy="40" r="4" fill="#6366f1"/><circle cx="92" cy="40" r="9" fill="#fff"/><circle cx="92" cy="40" r="4" fill="#a855f7"/><circle cx="60" cy="72" r="8.5" fill="#f9a8d4" stroke="#fff" stroke-width="3"/></svg><span class="wm">Mind<em>Metric</em></span></div>
+    <div class="lsw"><button data-l="ru">RU</button><button data-l="kz">ҚАЗ</button></div>
+  </header>
+
+  <section id="start">
+    <div class="card hero-card">
+      <div class="blob b1"></div><div class="blob b2"></div>
+      <div class="hero">
+        <div class="hero-txt">
+          <h1 data-kz="Өз &lt;em&gt;IQ&lt;/em&gt; деңгейіңізді&lt;br&gt;қазір біліңіз">Узнайте свой <em>IQ</em><br>прямо сейчас</h1>
+          <p data-kz="Логикаға, жадыға және кеңістіктік ойлауға арналған &lt;b class=&quot;totalN&quot;&gt;40&lt;/b&gt; тапсырма. Арнайы білім қажет емес — тек зеректік."><b class="totalN">40</b> заданий на логику, память и пространственное мышление. Никаких специальных знаний — только смекалка.</p>
+        </div>
+        <div class="demo hv" id="demo">
+          <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
+            <defs>
+              <radialGradient id="hvGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#a78bfa" stop-opacity=".55"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></radialGradient>
+              <linearGradient id="hvArc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset=".6" stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
+              <linearGradient id="hvCore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+            </defs>
+            
+            <g class="hv-net" stroke="#c7d2fe" stroke-width="1.4" fill="#818cf8">
+              <line x1="62" y1="88" x2="108" y2="62"/><line x1="108" y1="62" x2="196" y2="58"/><line x1="196" y1="58" x2="240" y2="96"/>
+              <line x1="240" y1="96" x2="252" y2="170"/><line x1="252" y1="170" x2="214" y2="232"/><line x1="214" y1="232" x2="132" y2="248"/>
+              <line x1="132" y1="248" x2="70" y2="206"/><line x1="70" y1="206" x2="50" y2="146"/><line x1="50" y1="146" x2="62" y2="88"/>
+              <line x1="62" y1="88" x2="196" y2="58" opacity=".5"/><line x1="240" y1="96" x2="214" y2="232" opacity=".5"/><line x1="132" y1="248" x2="50" y2="146" opacity=".5"/>
+              <circle cx="62" cy="88" r="4.5" class="nd n1"/><circle cx="108" cy="62" r="3.5" class="nd n2"/><circle cx="196" cy="58" r="4.5" class="nd n3"/>
+              <circle cx="240" cy="96" r="3.5" class="nd n4"/><circle cx="252" cy="170" r="4.5" class="nd n5"/><circle cx="214" cy="232" r="3.5" class="nd n6"/>
+              <circle cx="132" cy="248" r="4.5" class="nd n7"/><circle cx="70" cy="206" r="3.5" class="nd n8"/><circle cx="50" cy="146" r="4" class="nd n9"/>
+            </g>
+            <circle cx="150" cy="150" r="74" fill="none" stroke="#e0e7ff" stroke-width="10"/>
+            <circle cx="150" cy="150" r="74" fill="none" stroke="url(#hvArc)" stroke-width="10" stroke-linecap="round" class="hv-arc" transform="rotate(-90 150 150)"/>
+            <circle cx="150" cy="150" r="60" fill="url(#hvCore)"/>
+          </svg>
+          <div class="hv-layer hv-glow" aria-hidden="true"></div>
+          <div class="hv-layer hv-spin1" aria-hidden="true"><svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="88" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="3 7"/></svg></div>
+          <div class="hv-layer hv-spin2" aria-hidden="true"><svg viewBox="0 0 300 300"><g>
+              <g transform="translate(150 50)"><rect x="-11" y="-11" width="22" height="22" rx="5" fill="#fff" stroke="#4f46e5" stroke-width="2.5"/></g>
+              <g transform="translate(250 150)"><polygon points="0,-13 12,9 -12,9" fill="#fff" stroke="#a855f7" stroke-width="2.5" stroke-linejoin="round"/></g>
+              <g transform="translate(150 250)"><circle r="11" fill="#fff" stroke="#ec4899" stroke-width="2.5"/></g>
+              <g transform="translate(50 150)"><polygon points="0,-12 12,0 0,12 -12,0" fill="#fff" stroke="#6366f1" stroke-width="2.5"/></g>
+            </g></svg></div>
+          <div class="hv-core"><small>IQ</small><b id="hvNum">?</b></div>
+          <span class="hv-chip c1" data-kz="🧩 Логика">🧩 Логика</span>
+          <span class="hv-chip c2" data-kz="🧠 Жады">🧠 Память</span>
+          <span class="hv-chip c3" data-kz="🔍 Зейін">🔍 Внимание</span>
+          <span class="hv-chip c4" data-kz="🧊 Кеңістік">🧊 Пространство</span>
+        </div>
+      </div>
+      <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
+      <div class="trust">
+        <span data-kz="⚡ Нәтиже тесттен кейін бірден">⚡ Результат сразу после теста</span><span data-kz="🧠 5 қабілет бойынша профиль">🧠 Профиль по 5 способностям</span><span data-kz="📱 Телефоннан ыңғайлы">📱 Удобно с телефона</span>
+      </div>
+    </div>
+    <div class="stats3">
+      <div><b class="totalN">30</b><span data-kz="тапсырма">заданий</span></div>
+      <div><b>5</b><span data-kz="қабілет">способностей</span></div>
+      <div><b>2</b><span data-kz="тіл: RU / ҚАЗ">языка: RU / ҚАЗ</span></div>
+    </div>
+    <figure class="quote">
+      <div class="qph"><img src="data:image/jpeg;base64,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" alt="Альберт Эйнштейн"></div>
+      <div class="qm">“</div>
+      <blockquote data-kz="Қиял білімнен маңыздырақ. Білімнің шегі бар, ал қиял бүкіл әлемді қамтиды.">Воображение важнее знания. Знание ограничено, воображение охватывает весь мир.</blockquote>
+      <figcaption data-kz="— Альберт Эйнштейн, 1929">— Альберт Эйнштейн, 1929</figcaption>
+    </figure>
+    <div class="feat">
+      <div class="fi"><div class="fe">🧩</div><b data-kz="Матрицалар мен аналогиялар">Матрицы и аналогии</b><span data-kz="Фигуралар арасындағы жасырын заңдылықты табыңыз">Найдите скрытую закономерность среди фигур</span></div>
+      <div class="fi"><div class="fe">🔢</div><b data-kz="Сандар мен логика">Числа и логика</b><span data-kz="Интуиция алданатын тұзақ-есептер">Задачи-ловушки, в которых интуиция ошибается</span></div>
+      <div class="fi"><div class="fe">🧠</div><b data-kz="Жады мен зейін">Память и внимание</b><span data-kz="Тест барысында цифрлар мен сөздерді есте сақтаңыз">Запоминайте цифры и слова прямо во время теста</span></div>
+    </div>
+    <div class="card warm" id="warm">
+      <span class="tag" data-kz="Разминка">Разминка</span>
+      <h2 data-kz="Попробуйте решить прямо сейчас 👇">Попробуйте решить прямо сейчас 👇</h2>
+      <p class="sub" data-kz="Какая фигура должна стоять на месте «?»">Какая фигура должна стоять на месте «?»</p>
+      <div id="warmBox"></div>
+      <div class="wopts" id="warmOpts"></div>
+      <div class="wres" id="warmRes"></div>
+    </div>
+
+    <div class="card scale">
+      <h2 data-kz="IQ шкаласы деген не?">Что показывает шкала IQ?</h2>
+      <p class="sub" data-kz="IQ — адамның нәтижесін басқалармен салыстыратын көрсеткіш. Орташа мән — 100.">IQ — это показатель, который сравнивает ваш результат с другими людьми. Среднее значение — 100.</p>
+      <div id="bell"></div>
+      <div class="ranges">
+        <div><i style="background:#cbd5e1"></i><b>&lt; 85</b><span data-kz="орташадан төмен · ~16%">ниже среднего · ~16%</span></div>
+        <div><i style="background:#a5b4fc"></i><b>85–115</b><span data-kz="орташа · ~68% адам">средний · ~68% людей</span></div>
+        <div><i style="background:#818cf8"></i><b>115–130</b><span data-kz="орташадан жоғары · ~14%">выше среднего · ~14%</span></div>
+        <div><i style="background:#7c3aed"></i><b>130+</b><span data-kz="өте жоғары · ~2%">очень высокий · ~2%</span></div>
+      </div>
+    </div>
+
+    <div class="card sample">
+      <h2 data-kz="Тест соңында не аласыз">Что вы получите в конце</h2>
+      <div class="smp">
+        <div class="smp-card">
+          <span class="smp-badge" data-kz="Үлгі">Пример</span>
+          <div class="smp-iq"><small data-kz="СІЗДІҢ IQ">ВАШ IQ</small><b>118</b></div>
+          <div class="smp-lvl" data-kz="Орташадан жоғары">Выше среднего</div>
+          <div id="smpRadar"></div>
+        </div>
+        <ul class="smp-list">
+          <li><b data-kz="IQ бағасы">Оценка IQ</b><span data-kz="және деңгейіңіз шкала бойынша">и ваш уровень по шкале</span></li>
+          <li><b data-kz="Қабілеттер профилі">Профиль способностей</b><span data-kz="логика, жады, зейін, сандар, кеңістік">логика, память, внимание, числа, пространство</span></li>
+          <li><b data-kz="Ойлау стилі">Стиль мышления</b><span data-kz="сіздің мықты жақтарыңыз">ваши сильные стороны</span></li>
+          <li><b data-kz="Жауаптар талдауы">Разбор ответов</b><span data-kz="әр тапсырманың түсіндірмесі">объяснение каждого задания</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card faq">
+      <h2 data-kz="Жиі қойылатын сұрақтар">Частые вопросы</h2>
+      <details><summary data-kz="Тіркелу керек пе?">Нужно ли регистрироваться?</summary><p data-kz="Жоқ. Тестті бірден бастай аласыз — аты-жөн, телефон немесе пошта қажет емес.">Нет. Тест можно начать сразу — без имени, телефона и почты.</p></details>
+      <details><summary data-kz="Тест неше сұрақтан тұрады?">Сколько вопросов в тесте?</summary><p data-kz="30 сұрақ: логикалық есептер, сан қатарлары, матрицалар, фигуралар аналогиясы, өрнектер, жады және ойлау стилі. Уақытқа шектеу жоқ, орташа 10–15 минут.">30 вопросов: логические задачи, числовые ряды, матрицы, аналогии фигур, узоры, память и стиль мышления. Ограничения по времени нет, в среднем 10–15 минут.</p></details>
+      <details><summary data-kz="Телефоннан тапсыруға бола ма?">Можно ли пройти с телефона?</summary><p data-kz="Иә, тест телефонға арнайы бейімделген. Бір қолмен ыңғайлы.">Да, тест специально адаптирован для телефона — удобно проходить одной рукой.</p></details>
+      <details><summary data-kz="Нәтиже қаншалықты дәл?">Насколько точен результат?</summary><p data-kz="Бұл — дұрыс жауаптар санына негізделген шамамен алынған баға. Ол танысу мақсатында жасалған және клиникалық диагностиканы алмастырмайды.">Это ориентировочная оценка по числу правильных ответов. Тест носит ознакомительный характер и не заменяет клиническую диагностику.</p></details>
+      <details><summary data-kz="Нәтижені қалай аламын?">Как получить результат?</summary><p data-kz="Тест соңында толық есепті ашасыз: IQ, профиль, ойлау стилі және жауаптар талдауы. Төлем Kaspi арқылы.">В конце теста вы откроете полный отчёт: IQ, профиль, стиль мышления и разбор ответов. Оплата — через Kaspi.</p></details>
+    </div>
+
+    <div class="card final">
+      <h2 data-kz="Өз деңгейіңізді білуге дайынсыз ба?">Готовы узнать свой уровень?</h2>
+      <p data-kz="Бірінші тапсырма бір минуттан кейін басталады.">Первое задание — уже через минуту.</p>
+      <button class="btn big cta" id="startBtn3" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
+    </div>
+
+    <div class="sticky-cta" id="stickyCta"><button class="btn big cta" id="startBtn2" data-kz="Тестті бастау →">Начать тест →</button></div>
+  </section>
+
+  <section id="test" class="hidden">
+    <div class="topbar">
+      <div class="cnt"><span id="qcount">1 / 25</span><small id="qleft"></small></div>
+    </div>
+    <div class="progress"><i id="prog" style="width:0"></i></div>
+    <div class="card" id="qcard">
+      <span class="tag" id="qcat"></span>
+      <div class="qtext" id="qtext"></div>
+      <div id="qvis"></div>
+      <div class="opts" id="opts"></div>
+      <div class="nav">
+        <button class="btn line" id="prevBtn" data-kz="← Артқа">← Назад</button>
+        <button class="btn ghost" id="skipBtn">Пропустить →</button>
+      </div>
+      <details class="map"><summary data-kz="Барлық сұрақтар">Все вопросы</summary><div class="dots" id="dots"></div></details>
+    </div>
+  </section>
+
+  <section id="analyze" class="hidden">
+    <div class="card">
+      <div class="ring"><svg viewBox="0 0 120 120" width="130" height="130"><circle cx="60" cy="60" r="52" fill="none" stroke="#eef0ff" stroke-width="10"/><circle id="ringC" cx="60" cy="60" r="52" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" transform="rotate(-90 60 60)"/><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs></svg><b id="ringP">0%</b></div>
+      <h2 data-kz="Жауаптарыңызды талдап жатырмыз">Анализируем ваши ответы</h2>
+      <ul id="steps">
+        <li data-kz="Жауаптарды тексеріп жатырмыз">Проверяем ответы</li>
+        <li data-kz="Тапсырма түрлері бойынша ұпай санап жатырмыз">Считаем баллы по типам заданий</li>
+        <li data-kz="IQ бағасын есептеп жатырмыз">Рассчитываем оценку IQ</li>
+        <li data-kz="Жауаптар талдауын дайындап жатырмыз">Готовим разбор ответов</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="paywall" class="hidden">
+    <div class="card pw">
+      <div class="okc"><svg viewBox="0 0 52 52" width="64" height="64"><circle cx="26" cy="26" r="24" fill="#16a34a"/><path class="ck" d="M15 27l7 7 15-15" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h2 class="pwh" data-kz="Нәтижеңіз дайын!">Ваш результат готов!</h2>
+      <p id="pwStats" class="pws"></p>
+
+      <div class="pv2">
+        <div class="pv2-top"><div class="brand2">MindMetric</div><span class="lockpill">🔒 <span data-kz="жабық">закрыто</span></span></div>
+        <div class="pv2-iq"><small data-kz="СІЗДІҢ IQ">ВАШ IQ</small><b class="blurN">1??</b></div>
+        <div class="pv2-lvl blurT">████████████</div>
+        <div id="pwRadar" class="pv2-radar"></div>
+        <div class="pv2-str"><span data-kz="Мықты жағыңыз:">Сильная сторона:</span> <b class="blurT">██████████</b></div>
+      </div>
+
+      <div class="gift" id="pwGift"></div>
+
+      <h3 class="inc-h" data-kz="Толық есепте:">В полном отчёте:</h3>
+      <div class="inc">
+        <div><i>🎯</i><b data-kz="IQ бағасы">Оценка IQ</b><span data-kz="және деңгейіңіз">и ваш уровень</span></div>
+        <div><i>📊</i><b data-kz="Процентиль">Процентиль</b><span data-kz="басқалармен салыстыру">сравнение с другими</span></div>
+        <div><i>🕸</i><b data-kz="5 қабілет профилі">Профиль 5 способностей</b><span data-kz="логикадан кеңістікке дейін">от логики до пространства</span></div>
+        <div><i>🧭</i><b data-kz="Ойлау стилі">Стиль мышления</b><span data-kz="мықты жақтарыңыз">ваши сильные стороны</span></div>
+        <div class="w2"><i>💡</i><b data-kz="Жауаптар талдауы">Разбор ответов</b><span id="pwReview"></span></div>
+      </div>
+
+      <div class="pricebx">
+        <div class="pr-l"><b class="price">1 390 ₸</b><span data-kz="бір реттік төлем · жазылымсыз">разовый платёж · без подписки</span></div>
+      </div>
+      <button class="btn big cta pulse" id="payBtn" data-kz="Нәтижемді ашу →">Открыть мой результат →</button>
+      <div class="trust2">
+        <span data-kz="🔒 Kaspi арқылы төлем">🔒 Оплата через Kaspi</span><span data-kz="⚡ Нәтиже бірден ашылады">⚡ Результат откроется сразу</span><span data-kz="🚫 Автоматты түрде ақша алынбайды">🚫 Без автосписаний</span>
+      </div>
+
+      <div class="howpay">
+        <h3 data-kz="Қалай төлеймін?">Как оплатить?</h3>
+        <ol>
+          <li data-kz="«Нәтижемді ашу» батырмасын басыңыз">Нажмите «Открыть мой результат»</li>
+          <li data-kz="Kaspi қосымшасында төлемді растаңыз">Подтвердите оплату в приложении Kaspi</li>
+          <li data-kz="Нәтижеңіз осы бетте бірден ашылады">Результат сразу откроется на этой странице</li>
+        </ol>
+      </div>
+      <div class="faq mini">
+        <details><summary data-kz="Бұл жазылым ба?">Это подписка?</summary><p data-kz="Жоқ. Бұл бір реттік төлем — қайта ақша алынбайды.">Нет. Это разовая оплата — повторных списаний не будет.</p></details>
+        <details><summary data-kz="Төлегеннен кейін не аламын?">Что я получу после оплаты?</summary><p data-kz="IQ бағасы, процентиль, 5 қабілет профилі, ойлау стилі және әр тапсырманың түсіндірмесі бар жауаптар талдауы.">Оценку IQ, процентиль, профиль 5 способностей, стиль мышления и разбор всех заданий с объяснениями.</p></details>
+      </div>
+    </div>
+    <div class="sticky-cta pwsticky"><button class="btn big cta" id="payBtn2" data-kz="Нәтижемді ашу — &lt;span class=&quot;price&quot;&gt;1 390 ₸&lt;/span&gt;">Открыть результат — <span class="price">1 390 ₸</span></button></div>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="shot" id="shot">
+      <div class="sh-top"><div class="brand"><svg viewBox="0 0 120 120" class="mmi" aria-hidden="true"><defs><linearGradient id="mmBgS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="120" height="120" rx="30" fill="url(#mmBgS)"/><polyline points="28,86 28,40 60,72 92,40 92,86" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="40" r="9" fill="#fff"/><circle cx="28" cy="40" r="4" fill="#6366f1"/><circle cx="92" cy="40" r="9" fill="#fff"/><circle cx="92" cy="40" r="4" fill="#a855f7"/><circle cx="60" cy="72" r="8.5" fill="#f9a8d4" stroke="#fff" stroke-width="3"/></svg><span>MindMetric</span></div><span id="shDate"></span></div>
+      <div class="iqring"><svg viewBox="0 0 220 220" width="220" height="220"><defs><linearGradient id="rgR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5b4fc"/><stop offset="1" stop-color="#f0abfc"/></linearGradient></defs>
+        <circle cx="110" cy="110" r="92" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="14" stroke-linecap="round" stroke-dasharray="433.5 578" transform="rotate(135 110 110)"/>
+        <circle id="iqArc" cx="110" cy="110" r="92" fill="none" stroke="url(#rgR)" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 578" transform="rotate(135 110 110)"/></svg>
+        <div class="v"><small data-kz="СІЗДІҢ IQ">ВАШ IQ</small><b id="iqNum">0</b></div></div>
+      <div class="lvl" id="level"></div>
+      <div class="pct" id="pctLine"></div>
+      <div class="sh-radar" id="shRadar"></div>
+      <div class="sh-str" id="shStr"></div>
+      <div class="sh-chips" id="shChips"></div>
+      <div class="sh-foot"><div><b id="fCorrect"></b><span data-kz="дұрыс жауап">верных ответов</span></div><div><b id="fTime"></b><span data-kz="уақыт">время</span></div><div><b id="fPct"></b><span>процентиль</span></div></div>
+    </div>
+    <div class="shot-hint" data-kz="📸 Карточканың скриншотын жасап, достарыңызбен бөлісіңіз">📸 Сделайте скриншот карточки и поделитесь с друзьями</div>
+    <div class="row rbtn"><button class="btn" id="copyBtn" data-kz="Нәтижемен бөлісу">Поделиться результатом</button><button class="btn line" id="againBtn" data-kz="Қайта тапсыру">Пройти снова</button></div>
+
+    <div class="card rc">
+      <h2 data-kz="Қабілеттеріңіз">Ваши способности</h2>
+      <div class="abil" id="bars"></div>
+    </div>
+    <div class="card rc">
+      <h2 data-kz="Ойлау стиліңіз">Ваш стиль мышления</h2>
+      <div class="stgrid" id="style"></div>
+    </div>
+    <div class="card rc">
+      <h2 data-kz="Жауаптар талдауы">Разбор ответов</h2>
+      <div class="rv-sum" id="rvSum"></div>
+      <div class="tabs"><button class="on" data-f="bad" id="tBad">Ошибки</button><button data-f="all" id="tAll">Все задания</button></div>
+      <div id="review"></div>
+    </div>
+    <div class="note" data-kz="Тест танысу мақсатында жасалған және клиникалық психометриялық диагностика болып табылмайды. IQ бағасы дұрыс жауаптар санына қарай шамамен есептеледі.">Тест носит ознакомительный характер и не является клинической психометрической диагностикой. Оценка IQ рассчитана приблизительно по числу правильных ответов.</div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+<div class="modal" id="payModal"><div class="card"><h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
+  <p data-kz="Мұнда Kaspi арқылы төлем болады (келесі қадамда қосамыз).">Здесь будет оплата через Kaspi (подключим на следующем шаге).</p>
+  <div class="row"><button class="btn line" id="payClose" data-kz="Жабу">Закрыть</button><button class="btn" id="demoUnlock" data-kz="Нәтижені көрсету (демо)">Показать результат (демо)</button></div></div></div>
+<div class="modal" id="langModal"><div class="card" style="text-align:center">
+  <h2 style="margin-bottom:6px">Выберите язык теста</h2>
+  <p style="margin-bottom:18px">Тест тілін таңдаңыз</p>
+  <div class="lpicks">
+    <button class="lpick" data-l="ru"><span class="lf">RU</span><b>Русский</b><small>Пройти тест на русском</small></button>
+    <button class="lpick" data-l="kz"><span class="lf">ҚАЗ</span><b>Қазақша</b><small>Тестті қазақ тілінде тапсыру</small></button>
+  </div></div></div>
+<div class="modal" id="wordModal"><div class="card" style="text-align:center">
+  <span class="tag" data-kz="Жадыға арналған тапсырма">Задание на память</span>
+  <h2 data-kz="Мына сөзді есте сақтаңыз">Запомните это слово</h2>
+  <div class="word" id="wordTxt">ГОРИЗОНТ</div>
+  <p data-kz="Біз оны тест соңында сұраймыз. Жазып алмаңыз — жадыңыз тексеріледі.">Мы спросим его в конце теста. Не записывайте — проверяется память.</p>
+  <button class="btn big" id="wordBtn" data-kz="Есте сақтадым, бастау →">Запомнил(а), начать →</button></div></div>
+<div class="modal" id="radarModal"><div class="card" style="text-align:center">
+  <h2 class="paceT" data-kz="Профиліңіз қалыптаса бастады 👀">Начинает вырисовываться ваш профиль 👀</h2><div id="radarBox"></div>
+  <p data-kz="Бұл — жауаптарыңыз бойынша алдын ала көрініс. Тағы бірнеше тапсырма — және қабілеттер профиліңіз толық болады.">Это предварительная картина по вашим ответам. Ещё несколько заданий — и профиль способностей будет полным.</p>
+  <button class="btn big" id="radarBtn" data-kz="Жалғастыру">Продолжить</button></div></div>
+<div class="modal" id="progModal"><div class="card" style="text-align:center">
+  <h2 class="paceT" id="progT"></h2><div id="progG"></div>
+  <p data-kz="Тағы аздап — және IQ нәтижеңіз дайын болады!">Ещё немного — и ваш результат IQ будет готов!</p>
+  <button class="btn big" id="progBtn" data-kz="Жалғастыру">Продолжить</button></div></div>
+<div class="modal" id="paceModal"><div class="card" style="text-align:center">
+  <div class="bolt"><svg viewBox="0 0 24 24" width="54" height="54"><path d="M13.5 2 4 14h7l-1.5 8L20 10h-7z" fill="url(#bg)"/><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs></svg></div>
+  <h2 id="paceT" class="paceT"></h2>
+  <p data-kz="Ақпаратты жылдам өңдеу күрделі жағдайда шешім қабылдауға және маңызды детальдарды жіберіп алмауға көмектеседі. Әрі қарай тапсырмалар қызығырақ болады — зейініңізді сақтаңыз!">Быстрая обработка информации помогает принимать решения в сложных ситуациях и не терять важные детали. Дальше задания станут интереснее — сохраняйте концентрацию!</p>
+  <button class="btn big" id="paceBtn" data-kz="Жалғастыру">Продолжить</button></div></div>
+<div class="modal" id="histModal"><div class="card"><h2>История попыток</h2><div id="histBody"></div>
+  <div class="row" style="margin-top:16px"><button class="btn line" id="histClose">Закрыть</button><button class="btn ghost" id="histClear">Очистить</button></div></div></div>
+<div class="modal" id="confirmModal"><div class="card"><h2 data-kz="Тестті аяқтау керек пе?">Завершить тест?</h2><p id="confirmText"></p>
+  <div class="row"><button class="btn line" id="cNo" data-kz="Оралу">Вернуться</button><button class="btn" id="cYes" data-kz="Нәтижені білу">Узнать результат</button></div></div></div>
+<script>
+/* ===== Matrix puzzle generator (original rules) ===== */
+const INK='#111111';
+const ACC='#111111';
+const FILLS=['#ffffff','#b8bcc6','#111111'];
+const DEFS=`<defs><linearGradient id="gA"><stop offset="0" stop-color="#111"/></linearGradient><linearGradient id="gL"><stop offset="0" stop-color="#fff"/></linearGradient><linearGradient id="gD"><stop offset="0" stop-color="#111"/></linearGradient><linearGradient id="gS"><stop offset="0" stop-color="#111"/></linearGradient><filter id="sh"><feOffset dx="0" dy="0"/></filter></defs>`;
+const SH=['circle','square','triangle','diamond','pentagon','hexagon'];
+function mkR(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pick=(R,a)=>a[Math.floor(R()*a.length)];
+const perm=(R,a)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const ri=(R,a,b)=>a+Math.floor(R()*(b-a+1));
+
+function poly(n,cx,cy,r,rot){rot=rot==null?-90:rot;const p=[];for(let i=0;i<n;i++){const a=(rot+i*360/n)*Math.PI/180;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return p.join(' ')}
+function shp(t,cx,cy,r,fill){
+  const sw=r<14?0:2.4,st=`stroke="${sw?INK:'none'}" stroke-width="${sw}" stroke-linejoin="round" fill="${fill}" filter="url(#sh)"`;
+  if(t==='circle')return `<circle cx="${cx}" cy="${cy}" r="${r}" ${st}/>`;
+  if(t==='square')return `<rect x="${cx-r*.85}" y="${cy-r*.85}" width="${r*1.7}" height="${r*1.7}" rx="${r*.22}" ${st}/>`;
+  const n={triangle:3,diamond:4,pentagon:5,hexagon:6}[t];
+  return `<polygon points="${poly(n,cx,cy+(n===3?r*.15:0),r)}" ${st}/>`;
+}
+const POS={1:[[0,0]],2:[[-17,0],[17,0]],3:[[-28,0],[0,0],[28,0]],4:[[-16,-16],[16,-16],[-16,16],[16,16]],5:[[-27,-15],[0,-15],[27,-15],[-13.5,15],[13.5,15]]};
+const rotMask=(m,k)=>{k=((k%4)+4)%4;return((m<<k)|(m>>(4-k)))&15};
+const bits=m=>{let c=0;while(m){c+=m&1;m>>=1}return c};
+
+const FAM={
+ count:{
+  gen(R,o){const S=perm(R,SH).slice(0,3);return(r,c)=>({s:S[r],n:o.latin?((r+c)%3)+1:c+1})},
+  render:(v,x,y)=>POS[v.n].map(([dx,dy])=>shp(v.s,x+dx,y+dy,11.5,'url(#gS)')).join(''),
+  mut:(v,R)=>R()<.6?{...v,n:ri(R,1,5)}:{...v,s:pick(R,SH)},
+  ex:o=>o.latin?'В каждой строке одна фигура, а количество фигур (1, 2, 3) встречается в каждой строке и столбце ровно один раз.':'В каждой строке одна и та же фигура, а количество растёт слева направо: 1, 2, 3.'
+ },
+ sides:{
+  gen(R,o){const f=pick(R,[1,2]);return(r,c)=>({n:3+r+c,f})},
+  render:(v,x,y)=>`<polygon points="${poly(v.n,x,y,33)}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" fill="${FILLS[v.f]}" filter="url(#sh)"/>`,
+  mut:(v,R)=>({...v,n:ri(R,3,9)}),
+  ex:()=>'Число сторон многоугольника = 3 + номер строки + номер столбца (с нуля). В правом нижнем углу — семиугольник.'
+ },
+ size:{
+  gen(R){const S=perm(R,SH).slice(0,3),Z=[11,20,31];const inc=R()<.5;return(r,c)=>({s:S[(r+c)%3],z:Z[inc?c:2-c]})},
+  render:(v,x,y)=>shp(v.s,x,y,v.z,v.z<14?'url(#gS)':'url(#gL)'),
+  mut:(v,R)=>R()<.5?{...v,z:pick(R,[11,20,31])}:{...v,s:pick(R,SH)},
+  ex:()=>'Размер фигуры зависит от столбца, а каждая форма встречается в строке и столбце по одному разу.'
+ },
+ rotate:{
+  gen(R,o){const a0=pick(R,[0,45,90,135,180,225,270,315]);return o.two?(r,c)=>({a:(a0+r*45+c*90)%360}):(r,c)=>({a:(a0+(r*3+c)*45)%360})},
+  render:(v,x,y)=>`<g transform="rotate(${v.a} ${x} ${y})" filter="url(#sh)"><path d="M${x-6} ${y+27} L${x-6} ${y-10} L${x-16} ${y-10} L${x} ${y-32} L${x+16} ${y-10} L${x+6} ${y-10} L${x+6} ${y+27} Z" fill="url(#gA)" stroke="url(#gA)" stroke-width="3" stroke-linejoin="round"/></g>`,
+  mut:(v,R)=>({a:pick(R,[0,45,90,135,180,225,270,315])}),
+  ex:o=>o.two?'Вправо по строке стрелка поворачивается на 90°, а каждая следующая строка начинается с поворота на 45°.':'Читая слева направо и сверху вниз, каждая следующая стрелка поворачивается на 45° по часовой стрелке.'
+ },
+ latin:{
+  gen(R){const S=perm(R,SH).slice(0,3),F=perm(R,[0,1,2]);return(r,c)=>({s:S[(r+c)%3],f:F[(r+2*c)%3]})},
+  render:(v,x,y)=>shp(v.s,x,y,26,FILLS[v.f]),
+  mut:(v,R)=>R()<.5?{...v,f:ri(R,0,2)}:{...v,s:pick(R,SH)},
+  ex:()=>'Каждая форма и каждая заливка (белая, серая, чёрная) встречается в каждой строке и каждом столбце ровно один раз.'
+ },
+ corner:{
+  gen(R){const off=ri(R,0,3),d=pick(R,[1,-1]),o2=ri(R,0,2);return(r,c)=>({p:((off+d*(r+c))%4+4)%4,l:(r+2*c+o2)%3})},
+  render(v,x,y){const P=[[-19,-19],[19,-19],[19,19],[-19,19]];let s=shp('square',x,y,37,'#fff');
+    if(v.l===1)s+=`<line x1="${x-24}" y1="${y}" x2="${x+24}" y2="${y}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+    if(v.l===2)s+=`<line x1="${x}" y1="${y-24}" x2="${x}" y2="${y+24}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+    return s+`<circle cx="${x+P[v.p][0]}" cy="${y+P[v.p][1]}" r="7.5" fill="#111"/>`},
+  mut:(v,R)=>R()<.5?{...v,p:ri(R,0,3)}:{...v,l:ri(R,0,2)},
+  ex:()=>'Два правила сразу: точка в каждой следующей клетке переходит в соседний угол (по кругу), а линия (нет / горизонтальная / вертикальная) встречается в каждой строке и столбце по одному разу.'
+ },
+ quad:{
+  gen(R,o){const d=o.d||1;const B=[0,1,2].map(()=>{let m=0;while(bits(m)<1||bits(m)>2||m===5||m===10)m=ri(R,1,14);return m});return(r,c)=>({m:rotMask(B[r],c*d)})},
+  render(v,x,y){let s='';for(let k=0;k<4;k++){const a1=(k*90-90)*Math.PI/180,a2=(k*90)*Math.PI/180,R=32;
+    s+=`<path d="M${x} ${y} L${(x+R*Math.cos(a1)).toFixed(1)} ${(y+R*Math.sin(a1)).toFixed(1)} A${R} ${R} 0 0 1 ${(x+R*Math.cos(a2)).toFixed(1)} ${(y+R*Math.sin(a2)).toFixed(1)} Z" fill="${(v.m>>k)&1?'#111':'#fff'}" stroke="#111" stroke-width="2.4" stroke-linejoin="round"/>`}return s},
+  mut:(v,R)=>R()<.6?{m:rotMask(v.m,ri(R,1,3))}:{m:v.m^(1<<ri(R,0,3))},
+  ex:o=>`В каждой строке закрашенные сектора поворачиваются на четверть круга ${(o.d||1)===1?'по часовой стрелке':'против часовой стрелки'} с каждым шагом вправо.`
+ },
+ nest:{
+  gen(R){const S=perm(R,SH),O=S.slice(0,3),I=S.slice(3,6);return(r,c)=>({o:O[(r+c)%3],i:I[(r+2*c)%3]})},
+  render:(v,x,y)=>shp(v.o,x,y,34,'url(#gL)')+shp(v.i,x,y,12,'url(#gS)'),
+  mut:(v,R)=>R()<.5?{...v,o:pick(R,SH)}:{...v,i:pick(R,SH)},
+  ex:()=>'Внешняя и внутренняя фигуры подчиняются разным правилам: каждая из них встречается в каждой строке и каждом столбце ровно один раз.'
+ },
+ cfill:{
+  gen(R){const s=pick(R,SH),F=perm(R,[0,1,2]);return(r,c)=>({s,n:c+1,f:F[(r+2*c)%3]})},
+  render:(v,x,y)=>POS[v.n].map(([dx,dy])=>shp(v.s,x+dx,y+dy,11.5,FILLS[v.f]).replace('stroke="none" stroke-width="0"','stroke="'+INK+'" stroke-width="2"')).join(''),
+  mut:(v,R)=>R()<.5?{...v,n:ri(R,1,4)}:{...v,f:ri(R,0,2)},
+  ex:()=>'Количество фигур растёт по столбцам (1, 2, 3), а цвет заливки встречается в каждой строке и столбце по одному разу.'
+ },
+ logic:{ // op: xor | or | and on 8 radial strokes
+  gen(R,o){const op={xor:(a,b)=>a^b,or:(a,b)=>a|b,and:(a,b)=>a&b}[o.op];const rows=[];
+    for(let r=0;r<3;r++){let a,b,ok=false;while(!ok){a=ri(R,1,255);b=ri(R,1,255);const ba=bits(a),bb=bits(b),ab=bits(a&b);
+      ok=ba>=3&&ba<=5&&bb>=3&&bb<=5&&ab>=1&&ab<=2&&a!==b&&op(a,b)!==0}
+      rows.push([a,b,op(a,b)])}
+    return(r,c)=>({m:rows[r][c]})},
+  render(v,x,y){let s=`<circle cx="${x}" cy="${y}" r="37" fill="#fff" stroke="#111" stroke-width="2.4"/>`;
+    for(let k=0;k<8;k++)if((v.m>>k)&1){const a=k*45*Math.PI/180;s+=`<line x1="${x}" y1="${y}" x2="${(x+33*Math.sin(a)).toFixed(1)}" y2="${(y-33*Math.cos(a)).toFixed(1)}" stroke="#111" stroke-width="4" stroke-linecap="round"/>`}
+    return s+`<circle cx="${x}" cy="${y}" r="4.5" fill="${INK}"/>`},
+  mut:(v,R)=>{let m=v.m^(1<<ri(R,0,7));if(R()<.4)m^=(1<<ri(R,0,7));return{m:m||1}},
+  ex:o=>({xor:'Третья клетка строки получается наложением первых двух, при этом совпадающие линии исчезают, а остаются только несовпадающие.',
+          or:'Третья клетка строки — наложение первых двух: в ней все линии из первой и второй клеток.',
+          and:'В третьей клетке строки остаются только те линии, которые есть одновременно в первой и во второй клетке.'})[o.op]
+ }
+};
+
+const PLAN=[
+ ['count',{},11],['sides',{},12],['size',{},13],['rotate',{},14],['latin',{},15],['quad',{d:1},17],
+ ['count',{latin:1},16],['nest',{},18],['logic',{op:'or'},19],['corner',{},20],['cfill',{},22],['rotate',{two:1},21],
+ ['logic',{op:'xor'},24],['quad',{d:-1},25],['logic',{op:'and'},27],['corner',{},28],['logic',{op:'xor'},31],['logic',{op:'and'},36]
+];
+const key=v=>JSON.stringify(v);
+function buildQuestions(){
+  return PLAN.map(([fam,o,seed])=>{
+    const F=FAM[fam],R=mkR(seed*7919),fn=F.gen(R,o);
+    const cells=[0,1,2].map(r=>[0,1,2].map(c=>fn(r,c)));
+    const ans=cells[2][2],seen=new Set([key(ans)]),opts=[ans];
+    if(fam==='logic'){const[a,b]=[cells[2][0].m,cells[2][1].m];[a^b,a|b,a&b,a,b].forEach(m=>{if(m&&!seen.has(key({m}))&&opts.length<6){seen.add(key({m}));opts.push({m})}})}
+    let guard=0;while(opts.length<6&&guard++<500){const m=F.mut(ans,R);if(!seen.has(key(m))){seen.add(key(m));opts.push(m)}}
+    const order=perm(mkR(seed*104729+13),[0,1,2,3,4,5]);
+    return{fam,o,cells,opts:order.map(i=>opts[i]),a:order.indexOf(0),ex:F.ex(o)};
+  });
+}
+
+
+/* ===== i18n: Russian is the source; Kazakh translations below ===== */
+const PATH_LANG=(()=>{const p=(location.pathname||'').toLowerCase();return /^\/kz(\/|$)/.test(p)?'kz':/^\/ru(\/|$)/.test(p)?'ru':null})();
+let LANG=PATH_LANG||(()=>{try{return localStorage.getItem('iq_lang')||'ru'}catch(e){return 'ru'}})();
+const KZ={
+// --- questions ---
+'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?':'Фермердің 15 қойы болды. 8-інен басқасының бәрі өліп қалды. Қанша қой қалды?',
+'«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.':'«8-інен басқасының бәрі» дегені — тура 8 қой тірі қалды деген сөз. Сұрақ тұжырымға мұқият болуды тексереді.',
+'Какая цифра была второй?':'Екінші цифр қандай болды?',
+'Последовательность была 6 – 2 – 9 – 4. Второй была цифра 2.':'Тізбек 6 – 2 – 9 – 4 болды. Екіншісі — 2 цифры.',
+'Какая цифра была четвёртой?':'Төртінші цифр қандай болды?',
+'Последовательность была 2 – 7 – 4 – 9 – 1 – 6. Четвёртой была цифра 9.':'Тізбек 2 – 7 – 4 – 9 – 1 – 6 болды. Төртіншісі — 9 цифры.',
+'Какое число следующее?\n3, 6, 11, 18, 27, …':'Келесі сан қандай?\n3, 6, 11, 18, 27, …',
+'Разница растёт на 2: +3, +5, +7, +9, затем +11. 27 + 11 = 38.':'Айырма 2-ге өсіп отырады: +3, +5, +7, +9, одан кейін +11. 27 + 11 = 38.',
+'Какое число следующее?\n2, 3, 5, 9, 17, …':'Келесі сан қандай?\n2, 3, 5, 9, 17, …',
+'Каждое следующее число = предыдущее × 2 − 1: 17 × 2 − 1 = 33.':'Әр келесі сан = алдыңғысы × 2 − 1: 17 × 2 − 1 = 33.',
+'Какое число лишнее?\n3, 5, 7, 9, 11, 13':'Қай сан артық?\n3, 5, 7, 9, 11, 13',
+'Все числа, кроме 9, — простые: делятся только на 1 и на самих себя. А 9 делится на 3.':'9-дан басқа сандардың бәрі жай сандар: тек 1-ге және өзіне ғана бөлінеді. Ал 9 саны 3-ке бөлінеді.',
+'У Маши три брата. У каждого брата есть одна сестра. Сколько всего детей в семье?':'Айгүлдің үш ағасы бар. Әр ағасының бір қарындасы бар. Отбасында барлығы неше бала?',
+'Единственная сестра у всех братьев — это сама Маша. Итого 3 брата + Маша = 4.':'Барлық ағаларының жалғыз қарындасы — Айгүлдің өзі. Барлығы: 3 аға + Айгүл = 4.',
+'Во время забега вы обогнали бегуна, который бежал вторым. Каким вы стали?':'Жарыс кезінде екінші болып жүгіріп келе жатқан адамды басып оздыңыз. Енді нешінші болдыңыз?',
+'Вы заняли место того, кого обогнали, — второе. Первым вы не стали: впереди всё ещё лидер.':'Сіз басып озған адамның орнын алдыңыз — екінші орынды. Бірінші бола алмайсыз: алда әлі көшбасшы бар.',
+'Первым':'Бірінші','Вторым':'Екінші','Третьим':'Үшінші','Последним':'Соңғы',
+'Какое слово лишнее?':'Қай сөз артық?',
+'Акула — рыба. Кит, дельфин, тюлень и морж — морские млекопитающие.':'Акула — балық. Кит, дельфин, итбалық және морж — теңіз сүтқоректілері.',
+'Кит':'Кит','Дельфин':'Дельфин','Акула':'Акула','Тюлень':'Итбалық','Морж':'Морж',
+'Кувшинки на озере каждый день удваивают свою площадь. За 48 дней они покрывают всё озеро. За сколько дней кувшинки покроют половину озера?':'Көлдегі тұңғиықтар күн сайын өз аумағын екі есе ұлғайтады. 48 күнде олар бүкіл көлді жабады. Көлдің жартысын олар неше күнде жабады?',
+'Площадь удваивается каждый день, значит за день до полного покрытия — на 47-й день — была покрыта ровно половина.':'Аумақ күн сайын екі еселенеді, сондықтан көл толық жабылардан бір күн бұрын — 47-күні — оның тура жартысы жабылған еді.',
+'Ручка и тетрадь вместе стоят 1 100 ₸. Ручка дороже тетради на 1 000 ₸. Сколько стоит тетрадь?':'Қалам мен дәптер бірге 1 100 ₸ тұрады. Қалам дәптерден 1 000 ₸ қымбат. Дәптер қанша тұрады?',
+'Если тетрадь стоит x, то ручка — x + 1000. Вместе: 2x + 1000 = 1100 → x = 50 ₸. Ответ «100 ₸» — интуитивная ловушка.':'Дәптер x тұрса, қалам — x + 1000. Бірге: 2x + 1000 = 1100 → x = 50 ₸. «100 ₸» деген жауап — интуицияның тұзағы.',
+'Какое слово мы просили запомнить в самом начале теста?':'Тест басында қандай сөзді есте сақтауды сұрадық?',
+'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.':'Тест басында «Көкжиек» сөзін есте сақтауды сұрадық. Бұл — кейінге қалдырылған есте сақтауға арналған тапсырма.',
+'Граница':'Шекара','Галактика':'Галактика','Горизонт':'Көкжиек','Гармония':'Үйлесім','Город':'Қала',
+'Сколько вам лет?':'Жасыңыз нешеде?','До 18':'18-ге дейін','60 и старше':'60 және одан жоғары',
+'Ваше образование?':'Біліміңіз қандай?','Среднее школьное':'Орта мектеп','Среднее специальное (колледж)':'Арнаулы орта (колледж)',
+'Высшее (бакалавриат)':'Жоғары (бакалавриат)','Высшее (магистратура и выше)':'Жоғары (магистратура және одан жоғары)','Учусь сейчас':'Қазір оқып жүрмін',
+// likert
+'Мне проще учиться на практике, чем по книгам':'Маған кітаптан гөрі тәжірибе арқылы үйрену оңай',
+'Я быстро замечаю мелкие детали и ошибки':'Мен ұсақ детальдар мен қателерді тез байқаймын',
+'Я легко представляю трёхмерные объекты в уме':'Мен үш өлшемді заттарды ойша оңай елестетемін',
+'Мне нравится решать головоломки и сложные задачи':'Маған жұмбақтар мен күрделі есептерді шешу ұнайды',
+'Прежде чем действовать, я обычно продумываю план':'Әрекет етпес бұрын әдетте жоспар құрамын',
+'Совершенно верно':'Толығымен дұрыс','Скорее верно':'Көбіне дұрыс','Затрудняюсь ответить':'Жауап беру қиын','Скорее неверно':'Көбіне дұрыс емес','Совершенно неверно':'Мүлдем дұрыс емес',
+// explanations of figure rules
+'В каждой строке одна и та же фигура, а количество растёт слева направо: 1, 2, 3.':'Әр жолда бір ғана фигура, ал олардың саны солдан оңға қарай өседі: 1, 2, 3.',
+'В каждой строке одна фигура, а количество фигур (1, 2, 3) встречается в каждой строке и столбце ровно один раз.':'Әр жолда бір фигура, ал фигуралар саны (1, 2, 3) әр жол мен бағанда тура бір реттен кездеседі.',
+'Размер фигуры зависит от столбца, а каждая форма встречается в строке и столбце по одному разу.':'Фигураның өлшемі бағанға байланысты, ал әр пішін әр жол мен бағанда бір реттен кездеседі.',
+'Читая слева направо и сверху вниз, каждая следующая стрелка поворачивается на 45° по часовой стрелке.':'Солдан оңға және жоғарыдан төменге қарай оқысақ, әр келесі стрелка сағат тілімен 45°-қа бұрылады.',
+'Вправо по строке стрелка поворачивается на 90°, а каждая следующая строка начинается с поворота на 45°.':'Жол бойымен оңға қарай стрелка 90°-қа бұрылады, ал әр келесі жол 45°-қа бұрылудан басталады.',
+'Каждая форма и каждая заливка (белая, серая, чёрная) встречается в каждой строке и каждом столбце ровно один раз.':'Әр пішін мен әр бояу (ақ, сұр, қара) әр жолда және әр бағанда тура бір реттен кездеседі.',
+'Два правила сразу: точка в каждой следующей клетке переходит в соседний угол (по кругу), а линия (нет / горизонтальная / вертикальная) встречается в каждой строке и столбце по одному разу.':'Екі ереже бірден: нүкте әр келесі ұяшықта көрші бұрышқа ауысады (шеңбер бойымен), ал сызық (жоқ / көлденең / тік) әр жол мен бағанда бір реттен кездеседі.',
+'В каждой строке закрашенные сектора поворачиваются на четверть круга по часовой стрелке с каждым шагом вправо.':'Әр жолда оңға қарай әр қадам сайын боялған секторлар шеңбердің төрттен біріне сағат тілімен бұрылады.',
+'В каждой строке закрашенные сектора поворачиваются на четверть круга против часовой стрелки с каждым шагом вправо.':'Әр жолда оңға қарай әр қадам сайын боялған секторлар шеңбердің төрттен біріне сағат тіліне қарсы бұрылады.',
+'Внешняя и внутренняя фигуры подчиняются разным правилам: каждая из них встречается в каждой строке и каждом столбце ровно один раз.':'Сыртқы және ішкі фигуралар әртүрлі ережеге бағынады: олардың әрқайсысы әр жол мен әр бағанда тура бір реттен кездеседі.',
+'Количество фигур растёт по столбцам (1, 2, 3), а цвет заливки встречается в каждой строке и столбце по одному разу.':'Фигуралар саны бағандар бойынша өседі (1, 2, 3), ал бояу түсі әр жол мен бағанда бір реттен кездеседі.',
+'Третья клетка строки получается наложением первых двух, при этом совпадающие линии исчезают, а остаются только несовпадающие.':'Жолдың үшінші ұяшығы алғашқы екеуін қабаттастырғанда шығады: сәйкес келетін сызықтар жоғалып, тек сәйкес келмейтіндері қалады.',
+'Третья клетка строки — наложение первых двух: в ней все линии из первой и второй клеток.':'Жолдың үшінші ұяшығы — алғашқы екеуінің қабаттасуы: онда бірінші және екінші ұяшықтағы барлық сызықтар бар.',
+'В третьей клетке строки остаются только те линии, которые есть одновременно в первой и во второй клетке.':'Жолдың үшінші ұяшығында бірінші және екінші ұяшықта бірдей бар сызықтар ғана қалады.',
+'Из первой фигуры во вторую меняется только заливка: белая становится тёмной, точка остаётся. Значит, шестиугольник тоже становится тёмным с точкой.':'Бірінші фигурадан екіншісіне тек бояуы өзгереді: ақ түс қараяды, нүкте қалады. Демек алтыбұрыш та нүктесімен бірге қараяды.',
+'Первая стрелка поворачивается на 90° по часовой стрелке. Поворачиваем стрелку, смотрящую на 45°, ещё на 90° — получаем 135°.':'Бірінші стрелка сағат тілімен 90°-қа бұрылады. 45°-қа қараған стрелканы тағы 90°-қа бұрсақ, 135° шығады.',
+'Вторая фигура — зеркальное отражение первой слева направо (чёрная клетка тоже отражается). Отражаем третью фигуру так же.':'Екінші фигура — біріншісінің солдан оңға қарай айнадағы бейнесі (қара шаршы да бейнеленеді). Үшінші фигураны да солай бейнелейміз.',
+'Из первой фигуры во вторую исчезает точка, а линия и форма остаются. Значит, у квадрата тоже убираем только точку.':'Бірінші фигурадан екіншісіне нүкте жоғалады, ал сызық пен пішін қалады. Демек шаршыдан да тек нүктені алып тастаймыз.',
+'Узор — ровная сетка с одинаковым шагом и толщиной линий без наклона. Подходит только фрагмент с тем же шагом, толщиной и углом.':'Өрнек — қадамы мен сызық қалыңдығы бірдей, көлбеусіз тегіс тор. Тек қадамы, қалыңдығы және бұрышы сәйкес келетін бөлік қана жарайды.',
+'Крестики стоят рядами, повёрнутыми примерно на 22°, на одинаковом расстоянии и одного размера. Совпадают угол, шаг и размер только у одного фрагмента.':'Крестиктер шамамен 22°-қа көлбеген қатарлармен, бірдей қашықтықта тұр, өлшемдері де бірдей. Бұрышы, қадамы мен өлшемі тек бір бөлікте ғана сәйкес келеді.',
+'Узор состоит из ромбов с перекрестием и точкой в центре, уложенных ровной сеткой. Правильный фрагмент совпадает не только по форме и размеру, но и по положению ромбов — он продолжает соседние ряды.':'Өрнек ортасында айқышы мен нүктесі бар, тегіс тормен орналасқан ромбтардан тұрады. Дұрыс бөлік пішіні мен өлшемі бойынша ғана емес, ромбтардың орны бойынша да сәйкес келеді — ол көрші қатарларды жалғастырады.',
+'В каждой строке третье число равно произведению первых двух: 6 × 2 = 12.':'Әр жолдағы үшінші сан алғашқы екеуінің көбейтіндісіне тең: 6 × 2 = 12.',
+'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.':'Әр жолдағы үшінші сан алғашқы екеуінің айырмасына тең: 15 − 6 = 9.',
+'Какое число следующее?\n2, 6, 12, 20, 30, …':'Келесі сан қандай?\n2, 6, 12, 20, 30, …',
+'Разница растёт на 2: +4, +6, +8, +10, затем +12. 30 + 12 = 42.':'Айырма 2-ге өсіп отырады: +4, +6, +8, +10, одан кейін +12. 30 + 12 = 42.',
+'5 станков за 5 минут делают 5 деталей. За сколько минут 100 станков сделают 100 деталей?':'5 станок 5 минутта 5 бөлшек жасайды. 100 станок 100 бөлшекті неше минутта жасайды?',
+'Каждый станок делает одну деталь за 5 минут. 100 станков работают одновременно и сделают 100 деталей за те же 5 минут.':'Әр станок бір бөлшекті 5 минутта жасайды. 100 станок бір мезгілде жұмыс істеп, 100 бөлшекті сол 5 минутта жасайды.',
+// --- UI ---
+'Внимательность':'Зейін','Числовое мышление':'Сандық ойлау','Логика':'Логика','Вербальное мышление':'Сөздік ойлау','Кратковременная память':'Қысқа мерзімді жады',
+'Пространственное мышление':'Кеңістіктік ойлау','О вас':'Сіз туралы','Стиль мышления':'Ойлау стилі',
+'Память':'Жады','Числа и слова':'Сандар мен сөздер','Пространство':'Кеңістік','Внимание':'Зейін','Числа':'Сандар',
+'лёгкая':'жеңіл','средняя':'орташа','высокая':'жоғары',
+'Какая фигура должна стоять на месте «?»':'«?» орнында қандай фигура тұруы керек?',
+'Какой фрагмент дополняет узор?':'Өрнекті қай бөлік толықтырады?',
+'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':'Бірінші жұп фигуралар бір ережемен байланысқан. Екінші жұпты қай фигура жалғастырады?',
+'Какое число должно стоять на месте «?»':'«?» орнында қандай сан тұруы керек?',
+'Запомните эту последовательность цифр':'Мына цифрлар тізбегін есте сақтаңыз',
+'последний вопрос':'соңғы сұрақ','Завершить тест ✓':'Тестті аяқтау ✓','Пропустить →':'Өткізу →','Далее →':'Келесі →',
+'Отличное начало! 👍':'Керемет бастама! 👍','Уже 10 вопросов позади — так держать!':'10 сұрақ артта қалды — осылай жалғастырыңыз!',
+'Отлично идёте! Дальше будет интереснее.':'Жақсы келе жатырсыз! Әрі қарай қызығырақ болады.','Половина позади — так держать!':'Жартысы артта қалды — осылай жалғастырыңыз!',
+'Вы ответили на все вопросы. Готовы узнать результат?':'Барлық сұраққа жауап бердіңіз. Нәтижені білуге дайынсыз ба?',
+'Очень высокий интеллект':'Өте жоғары интеллект','Выше среднего':'Орташадан жоғары','Средний (верхняя граница)':'Орташа (жоғарғы шегі)','Средний':'Орташа','Ниже среднего':'Орташадан төмен',
+'Практик':'Практик','Лучше усваиваете знания через действие и опыт.':'Білімді әрекет пен тәжірибе арқылы жақсы меңгересіз.',
+'Теоретик':'Теоретик','Сначала разбираетесь в принципах, потом действуете.':'Алдымен қағидаларды түсініп, содан кейін әрекет етесіз.',
+'Внимание к деталям':'Детальдарға зейінді','Замечаете мелочи, которые другие пропускают.':'Басқалар байқамайтын ұсақ-түйекті көресіз.',
+'Целостное восприятие':'Тұтас қабылдау','Быстро схватываете суть, видите картину целиком.':'Мәнін тез ұғып, суретті тұтас көресіз.',
+'Любитель сложных задач':'Күрделі есептердің жанкүйері','Интеллектуальные вызовы вас заряжают.':'Интеллектуалдық сынақтар сізге қуат береді.',
+'Прагматик':'Прагматик','Лучше всего думаете, когда видна практическая цель.':'Практикалық мақсат көрінгенде жақсы ойлайсыз.',
+'Пространственное воображение':'Кеңістіктік қиял','Легко вращаете объекты в уме.':'Заттарды ойша оңай айналдырасыз.',
+'Словесно-логический тип':'Сөздік-логикалық тип','Опираетесь на слова, схемы и правила.':'Сөздерге, сызбалар мен ережелерге сүйенесіз.',
+'Стратег':'Стратег','Продумываете шаги заранее и реже ошибаетесь.':'Қадамдарды алдын ала ойластырып, сирек қателесесіз.',
+'Импровизатор':'Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.':'Жағдайға қарай тез әрекет етіп, оңай бейімделесіз.',
+'Числовая матрица':'Сандық матрица','Аналогия фигур':'Фигуралар аналогиясы','Дополните узор':'Өрнекті толықтырыңыз',
+'Все задания':'Барлық тапсырма','сильная сторона':'мықты жағы',
+'Текст скопирован ✓':'Мәтін көшірілді ✓','Сделайте скриншот 📸':'Скриншот жасаңыз 📸','Поделиться результатом':'Нәтижемен бөлісу',
+'ГОРИЗОНТ':'КӨКЖИЕК'
+};
+function T(s){return LANG==='kz'&&s!=null&&KZ[s]!=null?KZ[s]:s}
+function L2(ru,kz){return LANG==='kz'?kz:ru}
+
+/* ===== App ===== */
+const PRICE='1 390 ₸';
+const TEXT=[
+ {cat:'attn',q:'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?',o:['7','8','15','0','3'],a:1,ex:'«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.'},
+ {cat:'num',q:'Какого числа не хватает?\n5, 10, 15, 20, __, 30',o:['22','24','25','26','28'],a:2,ex:'Каждое число больше предыдущего на 5: 20 + 5 = 25.'},
+ {cat:'num',q:'Какое число следующее?\n3, 6, 11, 18, 27, …',o:['36','38','39','40'],a:1,ex:'Разница растёт на 2: +3, +5, +7, +9, затем +11. 27 + 11 = 38.'},
+ {cat:'attn',q:'У Маши три брата. У каждого брата есть одна сестра. Сколько всего детей в семье?',o:['4','6','7','5'],a:0,ex:'Единственная сестра у всех братьев — это сама Маша. Итого 3 брата + Маша = 4.'},
+ {cat:'logic',q:'Во время забега вы обогнали бегуна, который бежал вторым. Каким вы стали?',o:['Первым','Вторым','Третьим','Последним'],a:1,ex:'Вы заняли место того, кого обогнали, — второе. Первым вы не стали: впереди всё ещё лидер.'},
+ {cat:'verb',q:'Какое слово лишнее?',o:['Кит','Дельфин','Акула','Тюлень','Морж'],a:2,ex:'Акула — рыба. Кит, дельфин, тюлень и морж — морские млекопитающие.'},
+ {cat:'logic',q:'Кувшинки на озере каждый день удваивают свою площадь. За 48 дней они покрывают всё озеро. За сколько дней кувшинки покроют половину озера?',o:['24','47','46','36'],a:1,ex:'Площадь удваивается каждый день, значит за день до полного покрытия — на 47-й день — была покрыта ровно половина.'},
+ {cat:'spat',q:'Сколько рёбер у куба?',o:['6','8','10','12','16'],a:3,ex:'У куба 4 ребра сверху, 4 снизу и 4 вертикальных — всего 12.'},
+ {cat:'num',q:'Какое число следующее?\n2, 3, 5, 9, 17, …',o:['25','31','33','34'],a:2,ex:'Каждое следующее число = предыдущее × 2 − 1: 17 × 2 − 1 = 33.'},
+ {cat:'num',q:'Какое число лишнее?\n3, 5, 7, 9, 11, 13',o:['3','9','11','13','7'],a:1,ex:'Все числа, кроме 9, — простые: делятся только на 1 и на самих себя. А 9 делится на 3.'},
+ {cat:'logic',q:'Ручка и тетрадь вместе стоят 1 100 ₸. Ручка дороже тетради на 1 000 ₸. Сколько стоит тетрадь?',o:['100 ₸','50 ₸','1 000 ₸','550 ₸'],a:1,ex:'Если тетрадь стоит x, то ручка — x + 1000. Вместе: 2x + 1000 = 1100 → x = 50 ₸. Ответ «100 ₸» — интуитивная ловушка.'},
+ {cat:'num',q:'Какое число следующее?\n2, 6, 12, 20, 30, …',o:['36','40','42','44'],a:2,ex:'Разница растёт на 2: +4, +6, +8, +10, затем +12. 30 + 12 = 42.'},
+ {cat:'logic',q:'5 станков за 5 минут делают 5 деталей. За сколько минут 100 станков сделают 100 деталей?',o:['100','20','5','1'],a:2,ex:'Каждый станок делает одну деталь за 5 минут. 100 станков работают одновременно и сделают 100 деталей за те же 5 минут.'}
+];
+const MEM=[
+ {mem:[6,2,9,4],show:4,q:'Какая цифра была второй?',o:['9','4','2','6','7'],a:2,ex:'Последовательность была 6 – 2 – 9 – 4. Второй была цифра 2.'},
+ {mem:[2,7,4,9,1,6],show:5,q:'Какая цифра была четвёртой?',o:['4','1','9','7','6'],a:2,ex:'Последовательность была 2 – 7 – 4 – 9 – 1 – 6. Четвёртой была цифра 9.'}
+];
+const LIK=[
+ {key:'prac',q:'Мне проще учиться на практике, чем по книгам'},
+ {key:'det',q:'Я быстро замечаю мелкие детали и ошибки'},
+ {key:'puz',q:'Мне нравится решать головоломки и сложные задачи'},
+ {key:'vis',q:'Я легко представляю трёхмерные объекты в уме'},
+ {key:'plan',q:'Прежде чем действовать, я обычно продумываю план'}
+];
+const PAT=[
+ {p:{k:'grid',s:22,w:3,a:0},opts:[{k:'grid',s:14,w:2,a:0},{k:'grid',s:22,w:3,a:20},{k:'grid',s:22,w:3,a:0},{k:'grid',s:22,w:3,a:45},{k:'grid',s:40,w:3,a:0},{k:'grid',s:22,w:7,a:0}],a:2,ex:'Узор — ровная сетка с одинаковым шагом и толщиной линий без наклона. Подходит только фрагмент с тем же шагом, толщиной и углом.'},
+ {p:{k:'cross',s:34,L:9,w:4,a:22},opts:[{k:'cross',s:34,L:9,w:4,a:0},{k:'cross',s:22,L:6,w:3,a:22},{k:'cross',s:34,L:9,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:45},{k:'cross',s:34,L:15,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:-22}],a:2,ex:'Крестики стоят рядами, повёрнутыми примерно на 22°, на одинаковом расстоянии и одного размера. Совпадают угол, шаг и размер только у одного фрагмента.'},
+ {p:{k:'tile',s:58,a:0,inner:1},opts:[{k:'tile',s:58,a:0,inner:0},{k:'tile',s:58,a:0,inner:1,dx:29},{k:'tile',s:29,a:0,inner:1},{k:'tile',s:58,a:0,inner:1},{k:'tile',s:58,a:45,inner:1},{k:'tile',s:58,a:0,inner:1,dy:29}],a:3,ex:'Узор состоит из ромбов с перекрестием и точкой в центре, уложенных ровной сеткой. Правильный фрагмент совпадает не только по форме и размеру, но и по положению ромбов — он продолжает соседние ряды.'},
+ {p:{k:'dot',s:18,r:3.5,a:30},opts:[{k:'dot',s:18,r:3.5,a:0},{k:'dot',s:12,r:3.5,a:30},{k:'dot',s:18,r:6.5,a:30},{k:'dot',s:18,r:3.5,a:60},{k:'stripe',s:18,w:4,a:30},{k:'dot',s:18,r:3.5,a:30}],a:5,ex:'Точки расположены рядами под наклоном 30°, с одинаковым шагом и размером. Совпадают все три признака только у одного варианта.'}
+];
+const ANA=[
+ {A:{k:'sh',s:'circle',f:0,d:1},B:{k:'sh',s:'circle',f:2,d:1},C:{k:'sh',s:'hexagon',f:0,d:1},
+  opts:[{k:'sh',s:'hexagon',f:0,d:1},{k:'sh',s:'circle',f:2,d:1},{k:'sh',s:'hexagon',f:2,d:1},{k:'sh',s:'hexagon',f:2,d:0},{k:'sh',s:'square',f:2,d:1},{k:'sh',s:'hexagon',f:1,d:1}],a:2,
+  ex:'Из первой фигуры во вторую меняется только заливка: белая становится тёмной, точка остаётся. Значит, шестиугольник тоже становится тёмным с точкой.'},
+ {A:{k:'ar',a:0},B:{k:'ar',a:90},C:{k:'ar',a:45},
+  opts:[{k:'ar',a:45},{k:'ar',a:90},{k:'ar',a:135},{k:'ar',a:225},{k:'ar',a:315},{k:'ar',a:180}],a:2,
+  ex:'Первая стрелка поворачивается на 90° по часовой стрелке. Поворачиваем стрелку, смотрящую на 45°, ещё на 90° — получаем 135°.'},
+ {A:{k:'pc',c:[[0,0,1],[0,1,0],[1,1,0],[2,1,0]]},B:{k:'pc',c:[[2,0,1],[2,1,0],[1,1,0],[0,1,0]]},C:{k:'pc',c:[[0,0,0],[1,0,0],[1,1,1],[1,2,0]]},
+  opts:[{k:'pc',c:[[0,0,0],[1,0,0],[1,1,1],[1,2,0]]},{k:'pc',c:[[1,0,0],[0,0,0],[0,1,1],[0,2,0]]},{k:'pc',c:[[0,2,0],[1,2,0],[1,1,1],[1,0,0]]},{k:'pc',c:[[1,0,0],[0,0,1],[0,1,0],[0,2,0]]},{k:'pc',c:[[0,0,0],[1,0,0],[2,0,0],[2,1,1]]},{k:'pc',c:[[1,0,0],[0,0,0],[0,1,0],[0,2,1]]}],a:1,
+  ex:'Вторая фигура — зеркальное отражение первой слева направо (чёрная клетка тоже отражается). Отражаем третью фигуру так же.'},
+ {A:{k:'sh',s:'circle',f:0,d:1,ln:1},B:{k:'sh',s:'circle',f:0,d:0,ln:1},C:{k:'sh',s:'square',f:1,d:1,ln:1},
+  opts:[{k:'sh',s:'square',f:1,d:1,ln:0},{k:'sh',s:'square',f:1,d:0,ln:0},{k:'sh',s:'circle',f:0,d:0,ln:1},{k:'sh',s:'square',f:1,d:1,ln:1},{k:'sh',s:'square',f:1,d:0,ln:1},{k:'sh',s:'square',f:2,d:0,ln:1}],a:4,
+  ex:'Из первой фигуры во вторую исчезает точка, а линия и форма остаются. Значит, у квадрата тоже убираем только точку.'},
+ {A:{k:'sh',s:'pentagon',f:0,d:0,ln:0},B:{k:'sh',s:'pentagon',f:0,d:0,ln:1},C:{k:'sh',s:'pentagon',f:2,d:0,ln:0},
+  opts:[{k:'sh',s:'pentagon',f:2,d:0,ln:0},{k:'sh',s:'pentagon',f:0,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:1,ln:0},{k:'sh',s:'hexagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:1,d:0,ln:1}],a:4,
+  ex:'К фигуре добавляется горизонтальная линия, а форма и цвет не меняются. Тёмный пятиугольник получает линию и остаётся тёмным.'}
+];
+const WORD='ГОРИЗОНТ';
+const DEMO=[
+ {q:'Сколько вам лет?',o:['До 18','18–25','26–34','35–44','45–59','60 и старше'],key:'age'},
+ {q:'Ваше образование?',o:['Среднее школьное','Среднее специальное (колледж)','Высшее (бакалавриат)','Высшее (магистратура и выше)','Учусь сейчас']}
+];
+const NM=[
+ {g:[[2,5,10],[3,4,12],[6,2,null]],o:['8','10','12','14','4','16'],a:2,ex:'В каждой строке третье число равно произведению первых двух: 6 × 2 = 12.'},
+ {g:[[9,4,5],[12,5,7],[15,6,null]],o:['8','9','10','11','21','7'],a:1,ex:'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.'}
+];
+const NUMR='5839';
+const LIKO=['Совершенно верно','Скорее верно','Затрудняюсь ответить','Скорее неверно','Совершенно неверно'];
+const LVLS=[0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2];
+const MAT=buildQuestions().map((m,i)=>({...m,lvl:LVLS[i]}));
+// лёгкий старт → «ага»-вопросы → рост сложности → пик → финиш на посильном задании
+const SEQ='T0 M0 T2 L0 A0 R0 T5 M3 T4 M4 N0 L1 T3 A1 T9 M7 T6 T8 A2 L4 T10 M6 M10 T11 M8 P1 T12 W0 D0 D1'.split(' ');
+const Q=SEQ.map(t=>{const k=t[0],i=+t.slice(1);
+  if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};
+  if(k==='U')return{text:1,cat:'mem',q:'Какое число мы просили запомнить в середине теста?',o:['5893','5839','5398','8539','5938'],a:1,ex:'Число было 5839. Это задание на отложенное запоминание чисел.'};
+  if(k==='W')return{text:1,cat:'mem',q:'Какое слово мы просили запомнить в самом начале теста?',o:['Граница','Галактика','Горизонт','Гармония','Город'],a:2,ex:'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.'};return MAT[i]});
+Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
+  const o=idx.map(k=>q.o[k]),na=idx.indexOf(q.a);Q[i]={...q,o,a:na}});
+const SC=Q.map((q,i)=>i).filter(i=>!Q[i].likert),NS=SC.length;
+const TOTAL=Q.length,TIME=24*3600,L='АБВГДЕ';
+const LV=['лёгкая','средняя','высокая'];
+const CHEER={5:'Отличное начало! 👍',10:'Уже 10 вопросов позади — так держать!',15:'Отлично идёте! Дальше будет интереснее.',20:'Половина позади — так держать!'};
+
+let _u=0;const uniq=s=>{const n=++_u;return s.replace(/id="(\w+)"/g,`id="$1_${n}"`).replace(/url\(#(\w+)\)/g,`url(#$1_${n})`)};
+function matrixSVG(q){const R=FAM[q.fam];let s=`<svg class="matrix" viewBox="0 0 330 330">${DEFS}`;
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=c*110+5,y=r*110+5,last=r==2&&c==2;
+    s+=`<rect x="${x}" y="${y}" width="100" height="100" rx="14" fill="#fff" stroke="${last?'#2f6fe4':'none'}" stroke-width="${last?3.5:0}"/>`;
+    s+=last?`<text x="${x+50}" y="${y+66}" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`:R.render(q.cells[r][c],x+50,y+50);}
+  return uniq(s+'</svg>')}
+function patDef(p){const id='pt',S=p.s;let inner;
+  if(p.k==='grid')inner=`<rect x="0" y="0" width="${p.w}" height="${S}" fill="${INK}"/><rect x="0" y="0" width="${S}" height="${p.w}" fill="${INK}"/>`;
+  else if(p.k==='dot')inner=`<circle cx="${S/2}" cy="${S/2}" r="${p.r}" fill="${ACC}"/>`;
+  else if(p.k==='stripe')inner=`<rect x="0" y="0" width="${p.w}" height="${S}" fill="${INK}"/>`;
+  else if(p.k==='cross'){const c=S/2,L=p.L;inner=`<path d="M${c-L} ${c}H${c+L}M${c} ${c-L}V${c+L}" stroke="${INK}" stroke-width="${p.w}" stroke-linecap="butt"/>`}
+  else if(p.k==='tile'){const m=2,q=S/4;inner=`<polygon points="${S/2},${m} ${S-m},${S/2} ${S/2},${S-m} ${m},${S/2}" fill="none" stroke="${INK}" stroke-width="2"/>`+
+    (p.inner?`<path d="M${q} ${q}L${3*q} ${3*q}M${3*q} ${q}L${q} ${3*q}" stroke="${INK}" stroke-width="2"/><rect x="${S/2-3}" y="${S/2-3}" width="6" height="6" fill="${ACC}"/>`:'')}
+  return `<pattern id="${id}" width="${S}" height="${S}" patternUnits="userSpaceOnUse" patternTransform="translate(${p.dx||0} ${p.dy||0}) rotate(${p.a||0})">${inner}</pattern>`}
+const HOLE=[196,128,100,80];
+function patMain(q){const[x,y,w,h]=HOLE;return uniq(`<svg class="matrix pat" viewBox="0 0 320 230"><defs>${patDef(q.p)}</defs><rect x="0" y="0" width="320" height="230" rx="16" fill="#fff"/><rect x="0" y="0" width="320" height="230" rx="16" fill="url(#pt)"/>
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff" stroke="#2f6fe4" stroke-width="3.5"/><text x="${x+w/2}" y="${y+h/2+17}" text-anchor="middle" font-size="48" font-weight="900" fill="#2f6fe4">?</text></svg>`)}
+function patOpt(p,sz){const[x,y,w,h]=HOLE;sz=sz||88;return uniq(`<svg viewBox="${x} ${y} ${w} ${h}" width="${sz}" height="${sz*.8}" style="vertical-align:middle"><defs>${patDef(p)}</defs><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#pt)"/></svg>`)}
+function anaCell(v,x,y){if(v.k==='ar')return FAM.rotate.render({a:v.a},x,y);
+  if(v.k==='pc'){const S=19,mx=Math.max(...v.c.map(c=>c[0])),my=Math.max(...v.c.map(c=>c[1])),ox=x-(mx+1)*S/2,oy=y-(my+1)*S/2;
+    return `<g filter="url(#sh)">${v.c.map(([cx,cy,b])=>`<rect x="${ox+cx*S}" y="${oy+cy*S}" width="${S}" height="${S}" fill="${b?'#111':'#fff'}" stroke="#111" stroke-width="2.2"/>`).join('')}</g>`}
+  const lc=v.f===2?'#fff':INK;
+  return shp(v.s,x,y,30,FILLS[v.f])+(v.ln?`<line x1="${x-19}" y1="${y+9}" x2="${x+19}" y2="${y+9}" stroke="${lc}" stroke-width="3.5" stroke-linecap="round"/>`:'')+(v.d?`<circle cx="${x}" cy="${y-6}" r="6" fill="${v.f===2?'#fff':ACC}"/>`:'')}
+function nmMain(q){let s=`<svg class="matrix" viewBox="0 0 330 330">`;
+  q.g.forEach((r,ri)=>r.forEach((v,ci)=>{const x=ci*110+5,y=ri*110+5,last=v===null;
+    s+=`<rect x="${x}" y="${y}" width="100" height="100" rx="14" fill="#fff" stroke="${last?'#2f6fe4':'#111'}" stroke-width="${last?3.5:1.8}" />`+
+    `<text x="${x+50}" y="${y+67}" text-anchor="middle" font-size="46" font-weight="800" fill="${last?'#2f6fe4':'#111'}">${last?'?':v}</text>`}));return s+'</svg>'}
+function anaMain(q){let s=`<svg class="matrix" viewBox="0 0 330 230">${DEFS}`;
+  const cell=(x,y,last)=>`<rect x="${x}" y="${y}" width="100" height="100" fill="#fff" stroke="${last?'#2f6fe4':'none'}" stroke-width="${last?3.5:0}"/>`;
+  const arr=(y)=>`<path d="M140 ${y}H186M178 ${y-8}L188 ${y}L178 ${y+8}" stroke="#9aa0ad" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s+=cell(15,10)+anaCell(q.A,65,60)+arr(60)+cell(215,10)+anaCell(q.B,265,60);
+  s+=cell(15,120)+anaCell(q.C,65,170)+arr(170)+cell(215,120,1)+`<text x="265" y="188" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`;
+  return uniq(s+'</svg>')}
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const optView=(q,k,sz)=>q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
+const nOpts=q=>q.text?q.o.length:q.opts.length;
+
+let ans=[],cur=0,left=TIME,tick=null,userName='';
+const $=id=>document.getElementById(id);
+function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
+function start(){if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
+document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
+$('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
+function begin(){paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
+  clearInterval(tick);tick=setInterval(()=>{left--},1000)}
+function drawTimer(){return;const t=Math.max(left,0);$('timer').textContent=`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;$('timer').classList.toggle('low',left<=120)}
+const CATN={attn:'Внимательность',num:'Числовое мышление',logic:'Логика',verb:'Вербальное мышление',mem:'Кратковременная память',spat:'Пространственное мышление'};
+function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text?CATN[q.cat]:'Пространственное мышление')}
+function confetti(n){try{const c=$('confetti'),x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,C=['#4f46e5','#a855f7','#22c55e','#f59e0b','#ec4899','#06b6d4'];
+  const P=Array.from({length:n},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*11,vy:-Math.random()*12-4,r:Math.random()*6+4,c:C[Math.random()*C.length|0],a:Math.random()*6,va:(Math.random()-.5)*.3}));
+  const t0=performance.now();(function f(now){x.clearRect(0,0,W,H);const el=now-t0;P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-el/2200);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(el<2200)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})(t0)}catch(e){}}
+function pwObs(){try{if(window._pwio)return;window._pwio=new IntersectionObserver(es=>{const st=!$('paywall').classList.contains('hidden');document.querySelector('.pwsticky').classList.toggle('on',st&&!es[0].isIntersecting)});window._pwio.observe($('payBtn'))}catch(e){}}
+let memT=null;
+function render(){const q=Q[cur];clearTimeout(memT);
+  $('qcount').textContent=`${cur+1} / ${TOTAL}`;
+  $('qleft').textContent=cur<TOTAL-1?L2(`осталось ${TOTAL-cur-1}`,`тағы ${TOTAL-cur-1} қалды`):T('последний вопрос');
+  $('qcat').textContent=tagOf(q);
+  const done=ans.filter(a=>a!==null).length;$('prog').style.width=(done/TOTAL*100)+'%';
+  $('prevBtn').classList.toggle('invisible',cur===0);
+  $('skipBtn').textContent=T(cur===TOTAL-1?'Завершить тест ✓':(ans[cur]===null?'Пропустить →':'Далее →'));
+  $('dots').innerHTML=Q.map((_,i)=>`<button class="${ans[i]!==null?'done':''} ${i===cur?'cur':''}" data-i="${i}">${i+1}</button>`).join('');
+  $('dots').querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render()});
+  const card=$('qcard');card.classList.remove('enter','enterBack');void card.offsetWidth;card.classList.add(window._back?'enterBack':'enter');window._back=false;
+  if(q.mem&&!q.seen){ // фаза запоминания
+    $('qtext').textContent=T('Запомните эту последовательность цифр');
+    $('qvis').innerHTML=`<div class="memb"><div class="digs">${q.mem.map(d=>`<span>${d}</span>`).join('')}</div><div class="mbar"><i style="animation-duration:${q.show}s"></i></div></div><div class="fine" id="memc">${L2(`Исчезнет через <b>${q.show}</b> сек.`,`<b>${q.show}</b> секундтан кейін жоғалады`)}</div>`;
+    $('opts').innerHTML='';$('skipBtn').classList.add('invisible');
+    let t=q.show;const step=()=>{t--;if(t<=0){q.seen=1;$('skipBtn').classList.remove('invisible');render();return}const c=$('memc');if(c)c.innerHTML=L2(`Исчезнет через <b>${t}</b> сек.`,`<b>${t}</b> секундтан кейін жоғалады`);memT=setTimeout(step,1000)};
+    memT=setTimeout(step,1000);return}
+  $('skipBtn').classList.remove('invisible');
+  $('qtext').textContent=T(q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
+  $('qvis').innerHTML=q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
+  $('opts').className=q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
+  let h='';for(let k=0;k<nOpts(q);k++)h+=q.demo?`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span><span>${T(q.o[k])}</span></button>`:q.likert?`<button class="opt lk${k}${ans[cur]===k?' sel':''}" data-i="${k}">${T(LIKO[k])}</button>`:`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span>${optView(q,k)}</button>`;
+  $('opts').innerHTML=h;
+  $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),1800)}
+function choose(k){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}const first=ans[cur]===null;ans[cur]=k;
+  $('opts').querySelectorAll('.opt').forEach(b=>b.classList.toggle('sel',+b.dataset.i===k));
+  const done=ans.filter(a=>a!==null).length;
+  if(first&&CHEER[done])toast(T(CHEER[done]));
+  setTimeout(()=>{if(cur<TOTAL-1){cur++;render();inter()}else askFinish()},280)}
+let paceShown=false,shownI={};
+const NUMAT=Math.floor(TOTAL*0.4),RADAT=Math.floor(TOTAL*0.7);
+function inter(){const once=k=>!shownI[k]&&(shownI[k]=1);
+  if(cur===Math.floor(TOTAL/2)&&!paceShown){showPace();return}
+  if(cur===RADAT&&once('rad')){showRadar();return}
+  if(TOTAL-cur===5&&once('prog')){showProg();return}}
+const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>!q.text||q.cat==='spat']];
+function showRadar(){const cx=110,cy=105,R=80,n=5;let s=`<svg viewBox="-40 0 300 210" width="300" height="210" style="max-width:100%">`;
+  const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
+  [1,.66,.33].forEach(f=>{s+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#e3e5f0"/>`});
+  const v=GRP.map(([,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)&&ans[i]!==null?i:-1).filter(i=>i>=0);return idx.length?idx.filter(i=>ans[i]===Q[i].a).length/idx.length:null});
+  const vv=v.map(x=>x===null?.35:Math.max(.15,x));
+  s+=`<polygon class="rd" points="${vv.map((x,i)=>pt(i,R*x).join(',')).join(' ')}" fill="rgba(99,102,241,.18)" stroke="#5b4ff0" stroke-width="2.5"/>`;
+  vv.forEach((x,i)=>{const[p,q2]=pt(i,R*x);s+=`<circle cx="${p}" cy="${q2}" r="5" fill="${v[i]===null?'#fff':'#5b4ff0'}" stroke="#5b4ff0" stroke-width="2"/>`;const[lx,ly]=pt(i,R+14);s+=`<text x="${lx}" y="${ly+4}" font-size="10" font-weight="700" text-anchor="middle" fill="#676b85">${T(GRP[i][0])}</text>`});
+  $('radarBox').innerHTML=s+'</svg>';$('radarModal').classList.add('on')}
+function showProg(){confetti(40);const p=Math.round(cur/TOTAL*100),a2=Math.PI*(1-p/100);
+  $('progT').innerHTML=L2(`Вы почти у цели! Осталось всего <em>5</em> вопросов ⚡`,`Мақсатқа аз қалды! Небәрі <em>5</em> сұрақ қалды ⚡`);
+  $('progG').innerHTML=`<svg viewBox="0 0 200 110" width="200" height="110"><path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#e3e5f0" stroke-width="12" stroke-linecap="round"/><path d="M20 100 A80 80 0 0 1 ${(100+80*Math.cos(a2)).toFixed(1)} ${(100-80*Math.sin(a2)).toFixed(1)}" fill="none" stroke="#5b4ff0" stroke-width="12" stroke-linecap="round"/><text x="100" y="92" text-anchor="middle" font-size="34" font-weight="800" fill="#4f46e5">${p}%</text></svg>`;
+  $('progModal').classList.add('on')}
+['radarBtn','progBtn'].forEach(id=>$(id).onclick=()=>$(id).closest('.modal').classList.remove('on'));
+function showPace(){paceShown=true;const n=Math.max(1,ans.filter(x=>x!==null).length),avg=Math.round((TIME-left)/n);
+  $('paceT').innerHTML=avg<=35?L2(`Отличный темп! Вы отвечаете в среднем за <em>${avg} сек.</em> ⚡`,`Керемет қарқын! Орта есеппен <em>${avg} секундта</em> жауап бересіз ⚡`):L2(`Половина теста позади! В среднем <em>${avg} сек.</em> на вопрос 👍`,`Тесттің жартысы артта! Бір сұраққа орта есеппен <em>${avg} сек.</em> 👍`);
+  $('paceModal').classList.add('on')}
+$('paceBtn').onclick=()=>$('paceModal').classList.remove('on');
+function askFinish(){const miss=ans.filter(a=>a===null).length;
+  $('confirmText').textContent=miss?L2(`Без ответа осталось вопросов: ${miss}. Можно вернуться к ним или завершить тест сейчас.`,`Жауапсыз қалған сұрақтар: ${miss}. Оларға оралуға немесе тестті қазір аяқтауға болады.`):T('Вы ответили на все вопросы. Готовы узнать результат?');
+  $('confirmModal').classList.add('on')}
+$('prevBtn').onclick=()=>{if(cur>0){cur--;window._back=true;render()}};
+$('skipBtn').onclick=()=>{if(cur<TOTAL-1){cur++;render()}else askFinish()};
+$('cNo').onclick=()=>{$('confirmModal').classList.remove('on');const i=ans.indexOf(null);if(i>=0){cur=i;render()}};
+$('cYes').onclick=()=>{$('confirmModal').classList.remove('on');finish()};
+
+function iqFrom(raw){const m=NS*0.55,sd=NS/6;return Math.max(55,Math.min(150,Math.round(100+15*(raw-m)/sd)))}
+function pctOf(iq){const z=(iq-100)/15,t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return Math.round((z>0?1-p:p)*100)}
+function levelOf(iq){
+  if(iq>=130)return'Очень высокий интеллект';if(iq>=115)return'Выше среднего';
+  if(iq>=100)return'Средний (верхняя граница)';if(iq>=85)return'Средний';return'Ниже среднего'}
+function finish(){clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));show('analyze');
+  const steps=[...document.querySelectorAll('#steps li')];steps.forEach(s=>s.className='');
+  steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*900));
+  const T=steps.length*900+200,t0=performance.now();(function tk(now){const p=Math.min(1,(now-t0)/T);$('ringC').style.strokeDashoffset=327*(1-p);$('ringP').textContent=Math.round(p*100)+'%';if(p<1)requestAnimationFrame(tk)})(t0);
+  setTimeout(showPaywall,steps.length*900+300)}
+function showPaywall(re){
+  const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
+  $('pwStats').textContent=L2(`Вы прошли ${done} из ${TOTAL} заданий за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} тапсырманың ${done}-ін ${Math.floor(used/60)} мин ${used%60} с ішінде орындадыңыз — IQ-ыңыз есептеліп қойды.`);
+  const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
+  const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
+  $('pwRadar').innerHTML=radarSVG(gv,RGRP.map(g=>T(g[2])));
+  const st=styleList()[0];
+  $('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2(`Ещё ${styleList().length-1} черты — в полном отчёте.`,`Тағы ${styleList().length-1} ерекшелік — толық есепте.`)}</span></div>`;
+  $('pwReview').textContent=L2(`объяснение всех ${NS} заданий`,`барлық ${NS} тапсырманың түсіндірмесі`);
+  show('paywall');if(!re)confetti(70);pwObs()}
+$('payBtn').onclick=$('payBtn2').onclick=()=>$('payModal').classList.add('on');
+$('payClose').onclick=()=>$('payModal').classList.remove('on');
+$('demoUnlock').onclick=()=>{$('payModal').classList.remove('on');showResult()};
+function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
+  let s=`<svg viewBox="0 0 260 200" width="260" height="200">`;
+  [1,.66,.33].forEach(f=>{s+=`<polygon points="${vals.map((_,i)=>pt(i,Rr*f).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.18)"/>`});
+  vals.forEach((_,i)=>{const[p,q]=pt(i,Rr);s+=`<line x1="${cx}" y1="${cy}" x2="${p}" y2="${q}" stroke="rgba(255,255,255,.12)"/>`});
+  const vv=vals.map(v=>Math.max(.12,v));
+  s+=`<polygon class="rd" points="${vv.map((v,i)=>pt(i,Rr*v).join(',')).join(' ')}" fill="rgba(165,180,252,.35)" stroke="#c7d2fe" stroke-width="2.5" stroke-linejoin="round"/>`;
+  vv.forEach((v,i)=>{const[p,q]=pt(i,Rr*v);s+=`<circle cx="${p}" cy="${q}" r="4" fill="#fff"/>`;const[lx,ly]=pt(i,Rr+16);
+    s+=`<text x="${lx}" y="${ly+4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="rgba(255,255,255,.85)">${labels[i]}</text>`});
+  return s+'</svg>'}
+const RGRP=[['🧩','Логика','Логика',q=>q.cat==='logic'],['🔍','Внимательность','Внимание',q=>q.cat==='attn'],['🧠','Память','Память',q=>q.cat==='mem'],
+  ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>!q.text||q.cat==='spat']];
+const qTitle=q=>q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
+function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const has=k=>Q.some(q=>q.key===k);const st=[];
+  if(has('prac'))st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
+  if(has('det'))st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);
+  if(has('puz'))st.push(yes(lk('puz'))?['🧩','Любитель сложных задач','Интеллектуальные вызовы вас заряжают.']:['⚡','Прагматик','Лучше всего думаете, когда видна практическая цель.']);
+  if(has('vis'))st.push(yes(lk('vis'))?['🧊','Пространственное воображение','Легко вращаете объекты в уме.']:['🗺','Словесно-логический тип','Опираетесь на слова, схемы и правила.']);
+  if(has('plan'))st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);return st}
+function showResult(re){
+  const ok=Q.map((q,i)=>!q.likert&&ans[i]===q.a);const correct=ok.filter(Boolean).length;
+  const iq=iqFrom(correct),lv=levelOf(iq),used=TIME-Math.max(left,0),pc=Math.min(99,Math.max(1,pctOf(iq)));
+  $('level').textContent=T(lv);$('shDate').textContent=new Date().toLocaleDateString('ru-RU');
+  $('pctLine').innerHTML=L2(`Ваш результат выше, чем примерно у <b>${pc}%</b> людей`,`Нәтижеңіз адамдардың шамамен <b>${pc}%</b>-ынан жоғары`);
+  $('fCorrect').textContent=`${correct}/${NS}`;$('fTime').textContent=`${Math.floor(used/60)}:${String(used%60).padStart(2,'0')}`;$('fPct').textContent=pc+'%';
+  const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>ok[i]).length;return{e,n,sn,k,t:idx.length,p:idx.length?k/idx.length:0}});
+  $('shRadar').innerHTML=radarSVG(gv.map(g=>g.p),gv.map(g=>T(g.sn)));
+  const best=gv.slice().sort((a,b)=>b.p-a.p)[0];
+  $('shStr').innerHTML=L2(`Сильная сторона: <b>${best.n}</b>`,`Мықты жағыңыз: <b>${T(best.n)}</b>`);
+  $('bars').innerHTML=gv.map(g=>`<div class="ab"><div class="ae">${g.e}</div><div><div class="an">${T(g.n)}${g===best?`<span class="tagS">${T('сильная сторона')}</span>`:''}</div><div class="at"><i data-w="${Math.round(g.p*100)}"></i></div></div><div class="ap">${Math.round(g.p*100)}%</div></div>`).join('');
+  setTimeout(()=>document.querySelectorAll('#bars .at i').forEach(i=>i.style.width=i.dataset.w+'%'),250);
+  // IQ ring count-up
+  (function(){const t0=performance.now(),D=1500,L=433.5;(function tk(now){const p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,3),v=Math.round(55+(iq-55)*e);
+    $('iqNum').textContent=v;$('iqArc').setAttribute('stroke-dasharray',`${(L*Math.max(0,(v-55)/(150-55))).toFixed(1)} 578`);if(p<1)requestAnimationFrame(tk)})(t0)})();
+  if(iq>=100&&!re)setTimeout(()=>confetti(110),900);
+  // style
+  const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const has=k=>Q.some(q=>q.key===k);const st=[];
+  if(has('prac'))st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
+  if(has('det'))st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);
+  if(has('puz'))st.push(yes(lk('puz'))?['🧩','Любитель сложных задач','Интеллектуальные вызовы вас заряжают.']:['⚡','Прагматик','Лучше всего думаете, когда видна практическая цель.']);
+  if(has('vis'))st.push(yes(lk('vis'))?['🧊','Пространственное воображение','Легко вращаете объекты в уме.']:['🗺','Словесно-логический тип','Опираетесь на слова, схемы и правила.']);
+  if(has('plan'))st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);
+  $('style').innerHTML=st.map(([e,t,d])=>`<div class="stc"><div class="se">${e}</div><b>${T(t)}</b><p>${T(d)}</p></div>`).join('');
+  $('shChips').innerHTML=st.slice(0,3).map(([e,t])=>`<span>${e} ${T(t)}</span>`).join('');
+  // review
+  const sc=Q.map((q,i)=>i).filter(i=>!Q[i].likert),bad=sc.filter(i=>ans[i]!==null&&!ok[i]).length,skip=sc.filter(i=>ans[i]===null).length;
+  $('rvSum').innerHTML=`<div class="rv-ok"><b>${correct}</b>${L2('верно','дұрыс')}</div><div class="rv-bad"><b>${bad}</b>${L2('ошибок','қате')}</div>${skip?`<div class="rv-skip"><b>${skip}</b>${L2('пропущено','өткізілген')}</div>`:''}`;
+  window._rv=f=>{let n=0;const h=sc.filter(i=>f==='all'||!ok[i]).map(i=>{const q=Q[i];n++;const cls=ok[i]?'g':ans[i]===null?'s':'r';
+    return `<details class="rv"><summary><span class="rn ${cls}">${i+1}</span><span class="rt">${esc(qTitle(q))}</span><span class="chev">⌄</span></summary><div class="rb">
+      <div class="cmp"><div class="y ${ok[i]?'ok':''}">${L2('Ваш ответ','Сіздің жауабыңыз')}<div class="vv">${ans[i]===null?'—':optView(q,ans[i],46)}</div></div><div class="c">${L2('Правильный','Дұрыс жауап')}<div class="vv">${optView(q,q.a,46)}</div></div></div>
+      <div class="rx">💡 ${T(q.ex)}</div></div></details>`}).join('');
+    $('review').innerHTML=h||`<div class="empty">${L2('🎉 Ошибок нет — отличный результат!','🎉 Қате жоқ — керемет нәтиже!')}</div>`;
+    $('tBad').classList.toggle('on',f==='bad');$('tAll').classList.toggle('on',f==='all')};
+  $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все задания');window._rv(bad+skip?'bad':'all');
+  window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — MindMetric`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — MindMetric`);
+  saveHist({d:new Date().toLocaleString('ru-RU'),n:userName||'—',c:correct,iq,age:ans[SEQ.indexOf('D0')],edu:ans[SEQ.indexOf('D1')]});show('result');if(!re)window.scrollTo(0,0)}
+$('tBad').onclick=()=>window._rv('bad');$('tAll').onclick=()=>window._rv('all');
+$('againBtn').onclick=()=>show('start');
+$('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(window._lastResult);$('copyBtn').textContent=T('Текст скопирован ✓')}catch(e){$('copyBtn').textContent=T('Сделайте скриншот 📸')}setTimeout(()=>$('copyBtn').textContent=T('Поделиться результатом'),2200)};
+const HK='iqtest_history_v1';
+function getHist(){try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){return[]}}
+function saveHist(r){try{const h=getHist();h.unshift(r);localStorage.setItem(HK,JSON.stringify(h.slice(0,20)))}catch(e){}}
+window._hist=()=>{const h=getHist();
+  $('histBody').innerHTML=h.length?`<table class="hist"><tr><th>Дата</th><th>Имя</th><th>Верно</th><th>IQ</th></tr>${h.map(r=>`<tr><td>${esc(r.d)}</td><td>${esc(r.n)}</td><td>${r.c}</td><td><b>${r.iq}</b></td></tr>`).join('')}</table>`:'<p>Пока нет пройденных тестов.</p>';
+  $('histModal').classList.add('on')};
+$('histClose').onclick=()=>$('histModal').classList.remove('on');
+$('histClear').onclick=()=>{try{localStorage.removeItem(HK)}catch(e){}window._hist()};
+$('startBtn').onclick=start;$('startBtn2').onclick=start;$('startBtn3').onclick=start;
+document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);
+document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
+(function(){const seq=['?',87,96,104,112,121,'?'];let i=0;setInterval(()=>{const el=$('hvNum');if(!el||$('start').classList.contains('hidden'))return;i=(i+1)%seq.length;el.textContent=seq[i]},600)})();
+// sticky start CTA on mobile when main button scrolled away
+try{const io=new IntersectionObserver(es=>{const vis=es[0].isIntersecting;const st=!$('start').classList.contains('hidden');$('stickyCta').classList.toggle('on',!vis&&st)});io.observe($('startBtn'))}catch(e){}
+/* ===== landing widgets ===== */
+// warm-up puzzle (not part of the test)
+const WARM={fam:'count',cells:[[{s:'circle',n:1},{s:'circle',n:2},{s:'circle',n:3}],[{s:'square',n:1},{s:'square',n:2},{s:'square',n:3}],[{s:'triangle',n:1},{s:'triangle',n:2},null]],
+  opts:[{s:'triangle',n:2},{s:'triangle',n:3},{s:'square',n:3}],a:1};
+function renderWarm(){const q=WARM;let s=`<svg viewBox="0 0 330 330">${DEFS}`;
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=c*110+5,y=r*110+5,last=r==2&&c==2;
+    s+=`<rect x="${x}" y="${y}" width="100" height="100" fill="#fff" stroke="${last?'#2f6fe4':'none'}" stroke-width="${last?3.5:0}"/>`;
+    s+=last?`<text x="${x+50}" y="${y+66}" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`:FAM.count.render(q.cells[r][c],x+50,y+50)}
+  $('warmBox').innerHTML=uniq(s+'</svg>');
+  $('warmOpts').innerHTML=q.opts.map((v,k)=>`<button data-i="${k}">${uniq(`<svg viewBox="0 0 100 100">${DEFS}${FAM.count.render(v,50,50)}</svg>`)}</button>`).join('');
+  $('warmRes').innerHTML='';
+  $('warmOpts').querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=+b.dataset.i,ok=k===q.a;
+    $('warmOpts').querySelectorAll('button').forEach(x=>x.classList.remove('ok','no'));
+    b.classList.add(ok?'ok':'no');if(!ok)$('warmOpts').querySelector(`[data-i="${q.a}"]`).classList.add('ok');
+    try{navigator.vibrate&&navigator.vibrate(ok?15:[20,40,20])}catch(e){}
+    $('warmRes').innerHTML=`<div class="msg ${ok?'g':'r'}">${ok?L2('Верно! 🎉 У вас получается — дальше интереснее.','Дұрыс! 🎉 Жақсы бастадыңыз — әрі қарай қызығырақ.'):L2('Почти! В каждой строке фигур становится на одну больше.','Аз қалды! Әр жолда фигуралар бір-бірден көбейеді.')}</div>
+      <button class="btn big cta" onclick="start()">${L2('Начать полный тест →','Толық тестті бастау →')}</button>`;
+    if(ok)confetti(45)})}
+// bell curve
+function renderBell(){const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>Math.exp(-Math.pow((v-100)/15,2)/2),my=v=>H-28-pdf(v)*(H-48);
+  const seg=(a,b,c)=>{let d=`M${mx(a)} ${H-28}`;for(let v=a;v<=b;v+=1)d+=`L${mx(v).toFixed(1)} ${my(v).toFixed(1)}`;return `<path d="${d}L${mx(b)} ${H-28}Z" fill="${c}"/>`};
+  let s=`<svg viewBox="0 0 ${W} ${H}">`+seg(55,85,'#cbd5e1')+seg(85,115,'#a5b4fc')+seg(115,130,'#818cf8')+seg(130,145,'#7c3aed');
+  let d='';for(let v=55;v<=145;v++)d+=(v===55?'M':'L')+mx(v).toFixed(1)+' '+my(v).toFixed(1);
+  s+=`<path d="${d}" fill="none" stroke="#312e81" stroke-width="2"/><line x1="20" y1="${H-28}" x2="${W-20}" y2="${H-28}" stroke="#94a3b8"/>`;
+  [70,85,100,115,130].forEach(v=>{s+=`<line x1="${mx(v)}" y1="${H-28}" x2="${mx(v)}" y2="${H-23}" stroke="#94a3b8"/><text x="${mx(v)}" y="${H-10}" font-size="11" font-weight="700" text-anchor="middle" fill="#64748b">${v}</text>`});
+  s+=`<text x="${mx(100)}" y="${my(100)-8}" font-size="11" font-weight="800" text-anchor="middle" fill="#312e81">${L2('средний','орташа')}</text>`;
+  $('bell').innerHTML=s+'</svg>'}
+function renderSample(){$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
+/* ===== language switch ===== */
+function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
+  document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});
+  document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
+  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();
+  document.querySelectorAll('.lsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
+  document.title=L2('MindMetric — тест IQ','MindMetric — IQ тест');
+  if(!$('test').classList.contains('hidden'))render();
+  if(!$('result').classList.contains('hidden'))showResult(1);
+  if(!$('paywall').classList.contains('hidden'))showPaywall(1)}
+document.querySelectorAll('.lsw button').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang()});
+applyLang();
+
+</script>
+</body>
+</html>

@@ -8,4 +8,8 @@ g = (src / "gen.js").read_text(encoding="utf-8").replace(
 app = (src / "i18n.js").read_text(encoding="utf-8") + "\n" + (src / "app.js").read_text(encoding="utf-8")
 out = t.replace("/*GEN*/", g).replace("/*APP*/", app)
 (Path(__file__).parent / "index.html").write_text(out, encoding="utf-8")
-print("index.html собран:", len(out), "байт")
+for d in ("kz", "ru"):
+    p = Path(__file__).parent / d
+    p.mkdir(exist_ok=True)
+    (p / "index.html").write_text(out, encoding="utf-8")
+print("index.html, kz/index.html, ru/index.html собраны:", len(out), "байт")
