@@ -7,7 +7,7 @@ const box=$('t-re');
 
 // ---------- fonts ----------
 const FF=[['latin',700],['latin',800],['cyrillic',700],['cyrillic',800],['cyrillic-ext',700],['cyrillic-ext',800]];
-let fontsP=null;window.__mime=()=>pickMime();function loadFonts(){if(fontsP)return fontsP;fontsP=Promise.all(FF.map(([s,w])=>{const f=new FontFace('Manrope',`url(fonts/manrope-${s}-${w}-normal.woff2)`,{weight:String(w)});return f.load().then(x=>document.fonts.add(x)).catch(()=>{})}));return fontsP}
+let fontsP=null;window.__mime=()=>pickMime();function loadFonts(){if(fontsP)return fontsP;fontsP=Promise.all([...['latin','cyrillic','cyrillic-ext'].map(s=>new FontFace('Balsamiq Sans',`url(fonts/balsamiq-sans-${s}-700-normal.woff2)`,{weight:'700'}).load().then(x=>document.fonts.add(x)).catch(()=>{})),...FF.map(([s,w])=>{const f=new FontFace('Manrope',`url(fonts/manrope-${s}-${w}-normal.woff2)`,{weight:String(w)});return f.load().then(x=>document.fonts.add(x)).catch(()=>{})})]);return fontsP}
 
 // ---------- UI ----------
 box.innerHTML=`
@@ -23,7 +23,7 @@ box.innerHTML=`
  <div class="form">
   <label class="fld"><span>Сұрақ көзі</span><select id="reSrc"><option value="bank">Дайын база (тегін, тексерілген)</option><option value="ai">Claude ойлап табады</option></select></label>
   <label class="fld"><span>Тіл</span><select id="reLang"><option value="kz">Қазақша</option><option value="ru">Орысша</option></select></label>
-  <label class="fld"><span>Формат</span><select id="reFmt"><option value="comment">Жауапсыз — «Комментке жазыңыз»</option><option value="answer">Жауабымен — «Подробнее»</option></select></label>
+  <label class="fld"><span>Формат</span><select id="reFmt"><option value="quiz" selected>🎯 Викторина: 4 сұрақ × 3 нұсқа (соңы — коммент)</option><option value="comment">Жауапсыз — «Комментке жазыңыз»</option><option value="answer">Жауабымен — «Подробнее»</option></select></label>
   <label class="fld" id="reHintL" style="grid-column:span 2;display:none"><span>Қосымша тілек (міндетті емес)</span><input id="reHint" placeholder="мысалы: жас туралы, күнтізбе туралы, оңайырақ…"></label>
  </div>
  <button class="btn" id="reGen" style="width:100%">✨ 5 сұрақ ұсыну</button><div class="err" id="reGenErr"></div>
@@ -38,13 +38,14 @@ box.innerHTML=`
 <div class="card" style="margin-top:12px"><h3>Жасалған Reels</h3><div id="reHist" class="muted">—</div></div>`;
 
 async function status(){try{const s=await RL({action:'status'});S.ai=s.connected;$('reInfoS').textContent=s.connected?'· қосулы':'· қосылмаған';$('reInfo').innerHTML=s.connected?`<span class="pill ok">Қосулы</span> Модель: <b>${esc(s.model)}</b>`:`<span class="pill w">Қосылмаған</span> Claude-сыз да жұмыс істейді — «Дайын база» таңдаңыз.`;$('reKeyBox').open=!s.connected}catch(e){$('reInfo').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
+$('reFmt').onchange=()=>{const q=$('reFmt').value==='quiz';$('reSrc').closest('label').style.display=q?'none':''};$('reFmt').onchange();
 $('reSrc').onchange=()=>{$('reHintL').style.display=$('reSrc').value==='ai'?'':'none'};
 async function elStatus(){try{const st=await EL({action:'status'});S.el=st.connected;$('elInfo2').innerHTML=st.connected?`<span class="pill ok">Қосулы</span> Тариф: <b>${esc(st.tier)}</b> · ${(st.used||0).toLocaleString('ru-RU')} / ${(st.limit||0).toLocaleString('ru-RU')} таңба`:`<span class="pill bad">Қосылмаған</span> ${esc(st.error||'API кілтті енгізіңіз')}`;$('elKeyBox2').open=!st.connected}catch(e){$('elInfo2').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}}
 $('elKeyBtn2').onclick=async()=>{$('elKeyErr2').textContent='';$('elKeyBtn2').disabled=true;try{await EL({action:'save_key',key:$('elKey2').value});$('elKey2').value='';S.voices=[];await elStatus()}catch(e){$('elKeyErr2').textContent=e.message}$('elKeyBtn2').disabled=false};
 $('reKeyBtn').onclick=async()=>{$('reKeyErr').textContent='';$('reKeyBtn').disabled=true;try{await RL({action:'save_key',key:$('reKey').value});$('reKey').value='';await status()}catch(e){$('reKeyErr').textContent=e.message}$('reKeyBtn').disabled=false};
 
 const busy=(b,on,txt)=>{b.disabled=on;if(txt)b.textContent=txt};
-$('reGen').onclick=async()=>{S.lang=$('reLang').value;S.format=$('reFmt').value;$('reGenErr').textContent='';S.src=$('reSrc').value;busy($('reGen'),true,S.src==='ai'?'Claude ойлап жатыр… (30–60 сек)':'Таңдалуда…');
+$('reGen').onclick=async()=>{if($('reFmt').value==='quiz')return genQuiz();S.lang=$('reLang').value;S.format=$('reFmt').value;$('reGenErr').textContent='';S.src=$('reSrc').value;busy($('reGen'),true,S.src==='ai'?'Claude ойлап жатыр… (30–60 сек)':'Таңдалуда…');
   try{if(S.src==='ai'){const r=await RL({action:'questions',lang:S.lang,hint:$('reHint').value,avoid:S.qs.map(q=>q.q_screen)});S.qs=r.questions||[]}
     else{const {data:prev}=await sb.from('reels').select('question').order('created_at',{ascending:false}).limit(200);S.qs=RBANK.pick5(S.lang,[...(prev||[]).map(p=>p.question&&p.question.q_screen),...S.qs.map(q=>q.q_screen)])}
     S.q=null;drawQs()}
@@ -71,15 +72,7 @@ function drawPlan(){const p=S.plan,q=S.q,st=p.settings||{},ans=S.format==='answe
     <div>${fld('pHookS','Экрандағы hook',p.hook_screen,2)}${fld('pQS','Экрандағы сұрақ',q.q_screen,4)}${ans?fld('pAns','Жауап (экран)',q.answer)+fld('pWhy','Түсіндірме (экран)',q.why)+fld('pTrap','Қате жауап (сызылады)',q.trap):''}
       ${fld('pOT','Соңғы экран — тақырып',p.outro_screen_title,2)}${fld('pOS','Соңғы экран — астыңғы мәтін',p.outro_screen_sub,2)}${fld('pOB','Батырма',p.outro_button)}</div>
     <div>${fld('pVQ','🎙 Дауыс: hook + сұрақ',(p.hook_voice||'')+' '+(p.question_voice||q.q_voice||''),4)}${ans?fld('pVA','🎙 Дауыс: жауап',p.answer_voice||q.answer_voice||'',2):''}${fld('pVO','🎙 Дауыс: соңы',p.outro_voice,2)}
-      <div class="card" style="background:#faf8ff;border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
-       <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmD" class="on" style="flex:1">✨ Жаңа дауыс (Voice Design)</button><button type="button" id="vmE" style="flex:1">📚 Бар дауыс</button></div>
-       <div id="vpD"><label class="fld"><span>Образ</span><select id="vdPre">${Object.keys(VPRE).map(k=>`<option value="${k}">${VPRE[k].n}</option>`).join('')}</select></label>
-        <label class="fld"><span>Дауыс сипаттамасы (ағылшынша жақсы түсінеді — өзгертуге болады)</span><textarea id="vdDesc" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
-        <button type="button" class="btn sec" id="vdGo" style="width:100%">🎨 3 дауыс нұсқасын жасау</button><div class="err" id="vdErr"></div><div id="vdPrev" class="grid" style="gap:8px;margin-top:8px"></div></div>
-       <div id="vpE" class="hide"><label class="fld"><span>Дауыс</span><select id="pVoice">${vopt}</select></label></div>
-       <div class="muted" style="font-size:12px" id="vSel"></div></div>
-      <div class="form" style="grid-template-columns:repeat(2,1fr)">
-       ${[['pStab','Тұрақтылық',st.stability??.5,0,1],['pSim','Ұқсастық',st.similarity??.75,0,1],['pSty','Стиль',st.style??.2,0,1],['pSpd','Жылдамдық',st.speed??1,.7,1.2]].map(([id,l,v,a,b])=>`<label class="fld"><span>${l} <b id="${id}v">${v}</b></span><input type="range" id="${id}" min="${a}" max="${b}" step="0.05" value="${v}" oninput="document.getElementById('${id}v').textContent=this.value"></label>`).join('')}</div></div></div>
+      ${narr(vopt,st)}</div></div>
    <button class="btn" id="reGo" style="width:100%;margin-top:6px">✅ Келісемін — дауыс пен видео жасау</button><div class="err" id="reGoErr"></div>`;
   $('reGo').onclick=build;voiceUI()}
 const VPRE={
@@ -111,6 +104,59 @@ async function pickPrev(i){const p=PREV[i],b=$('vdPrev').querySelector(`button[d
   catch(e){$('vdErr').textContent=e.message;if(b)busy(b,false,'Осыны таңдаймын');throw e}}
 
 function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.voices.find(x=>x.id===id);$('vSel').innerHTML=id&&v?`Таңдалған диктор: <b>${esc(v.name)}</b>`:VMODE==='design'?'Нұсқаларды тыңдап, ұнағанын таңдаңыз. Таңдамасаңыз, 1-нұсқа алынады.':''}
+
+
+function narr(vopt,st){return `<div class="card" style="background:#faf8ff;border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
+       <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmD" class="on" style="flex:1">✨ Жаңа дауыс (Voice Design)</button><button type="button" id="vmE" style="flex:1">📚 Бар дауыс</button></div>
+       <div id="vpD"><label class="fld"><span>Образ</span><select id="vdPre">${Object.keys(VPRE).map(k=>`<option value="${k}">${VPRE[k].n}</option>`).join('')}</select></label>
+        <label class="fld"><span>Дауыс сипаттамасы (ағылшынша жақсы түсінеді — өзгертуге болады)</span><textarea id="vdDesc" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
+        <button type="button" class="btn sec" id="vdGo" style="width:100%">🎨 3 дауыс нұсқасын жасау</button><div class="err" id="vdErr"></div><div id="vdPrev" class="grid" style="gap:8px;margin-top:8px"></div></div>
+       <div id="vpE" class="hide"><label class="fld"><span>Дауыс</span><select id="pVoice">${vopt}</select></label></div>
+       <div class="muted" style="font-size:12px" id="vSel"></div></div>
+      <div class="form" style="grid-template-columns:repeat(2,1fr)">
+       ${[['pStab','Тұрақтылық',st.stability??.5,0,1],['pSim','Ұқсастық',st.similarity??.75,0,1],['pSty','Стиль',st.style??.2,0,1],['pSpd','Жылдамдық',st.speed??1,.7,1.2]].map(([id,l,v,a,b])=>`<label class="fld"><span>${l} <b id="${id}v">${v}</b></span><input type="range" id="${id}" min="${a}" max="${b}" step="0.05" value="${v}" oninput="document.getElementById('${id}v').textContent=this.value"></label>`).join('')}</div>`}
+// ---------- quiz (викторина) ----------
+async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';busy($('reGen'),true,'Таңдалуда…');
+  try{const {data:prev}=await sb.from('reels').select('question').eq('format','quiz').order('created_at',{ascending:false}).limit(100);
+    const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(x)));S.set=QUIZ.pick4(S.lang,used);drawSet()}
+  catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Басқа 4 сұрақ')}
+function drawSet(){$('reQs').innerHTML=`<div class="card" style="grid-column:1/-1">${S.set.map((q,i)=>`<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+   <div style="font-size:40px;width:52px;text-align:center">${q.emo}</div><div style="flex:1"><b>${i+1}. ${esc(q.q.replace(/\n/g,' '))}</b><div style="font-size:13px;margin-top:4px">${q.o.map((o,k)=>k===q.a&&i<3?`<span class="pill ok">${esc(o)}</span>`:`<span class="pill">${esc(o)}</span>`).join(' ')}${i===3?' <span class="muted">— жауабы айтылмайды, комментке</span>':''}</div></div>
+   <button class="btn sec sm" data-s="${i}">🔄</button></div>`).join('')}
+   <button class="btn" id="qzNext" style="width:100%;margin-top:12px">Осы 4 сұрақпен жалғастыру →</button></div>`;
+  $('reQs').querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{QUIZ.swap(S.lang,S.set,+b.dataset.s);drawSet()});$('qzNext').onclick=pickQuiz}
+async function pickQuiz(){$('reS2').classList.remove('hide');$('reS3').classList.add('hide');$('rePlan').innerHTML='<div class="muted">Дайындалуда…</div>';$('reS2').scrollIntoView({behavior:'smooth'});
+  try{const vs=await voices();const pv=localStorage.getItem('el_voice');const vo=QUIZ.voices(S.set,S.lang);const st={stability:.45,similarity:.8,style:.25,speed:1.05};
+    const vopt=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===pv?'selected':''}>${esc(v.name)}${v.category&&v.category!=='premade'?' · '+esc(v.category):''}</option>`).join('');
+    $('rePlan').innerHTML=`<div class="grid two" style="margin-top:0"><div>${S.set.map((q,i)=>`<div class="card" style="margin-bottom:10px"><b>${i+1}-сұрақ</b>${i===3?' <span class="muted">(жауабы айтылмайды)</span>':''}
+       <div class="form" style="grid-template-columns:70px 1fr"><label class="fld"><span>Сурет</span><input id="qe${i}" value="${esc(q.emo)}" style="font-size:22px;text-align:center"></label>${fld('qq'+i,'Сұрақ (экран)',q.q,2)}</div>
+       <div class="form" style="grid-template-columns:repeat(3,1fr)">${q.o.map((o,k)=>`<label class="fld"><span>${k===q.a?'✅ ':''}${k+1}-нұсқа</span><input id="qo${i}_${k}" value="${esc(o)}"></label>`).join('')}</div>
+       <label class="fld"><span>Дұрыс жауап</span><select id="qa${i}">${[0,1,2].map(k=>`<option value="${k}" ${k===q.a?'selected':''}>${k+1}-нұсқа</option>`).join('')}</select></label>
+       ${fld('qvq'+i,'🎙 Дауыс: сұрақ',vo[i].q,2)}${fld('qva'+i,i===3?'🎙 Дауыс: соңы':'🎙 Дауыс: жауап',vo[i].a,2)}</div>`).join('')}</div>
+     <div><textarea id="pVQ" class="hide">${esc(vo[0].q)}</textarea><textarea id="pVO" class="hide">${esc(vo[1].a)}</textarea>${narr(vopt,st)}</div></div>
+     <button class="btn" id="reGo" style="width:100%;margin-top:6px">✅ Келісемін — дауыс пен видео жасау</button><div class="err" id="reGoErr"></div>`;
+    $('reGo').onclick=buildQuiz;voiceUI()}
+  catch(e){$('rePlan').innerHTML=`<div class="err">${esc(e.message)}</div>`}}
+async function buildQuiz(){$('reGoErr').textContent='';busy($('reGo'),true,'Дауыс жасалуда…');
+  if(VMODE==='design'&&!VPICK){try{busy($('reGo'),true,'Диктор дайындалуда…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — «📚 Бар дауыс» арқылы жасап көріңіз.';busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау');return}}
+  const set=S.set.map((q,i)=>({emo:val('qe'+i)||q.emo,col:q.col,q:val('qq'+i),o:[0,1,2].map(k=>val(`qo${i}_${k}`)),a:+$('qa'+i).value}));
+  const D={set,draw:QUIZ.draw};const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,sets={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
+  $('reS3').classList.remove('hide');$('reS3').scrollIntoView({behavior:'smooth'});
+  try{await loadFonts();const parts=[];set.forEach((q,i)=>{parts.push(['q'+i,val('qvq'+i)]);parts.push(['a'+i,val('qva'+i)])});const clips={},paths={};
+    for(const [k,t] of parts){if(!t)continue;$('reStat').textContent=`ElevenLabs: дауыс жасалуда (${Object.keys(clips).length+1}/${parts.length})…`;const r=await tts(t,vid,vname,sets);clips[k]=await decode(r.url);paths[k]=r.job&&r.job.path}
+    D.tl=QUIZ.timeline(D,clips);
+    const {data:row}=await sb.from('reels').insert({lang:S.lang,format:'quiz',question:{quiz:set.map(q=>q.q),set,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts},voice:{id:vid,name:vname,settings:sets},audio_paths:paths,status:'audio'}).select().single();S.reelId=row&&row.id;
+    $('reStat').textContent='Дыбыс жолы жиналуда…';const audio=QUIZ.mix(D.tl,clips);QUIZ.draw($('reCv').getContext('2d'),D,1);
+    $('reStat').innerHTML='Видео жазылуда — бұл бетті жаппаңыз және басқа қойындыға ауыспаңыз (≈'+Math.ceil(D.tl.dur)+' сек)…';
+    const blob=await record(D,audio,D.tl.dur);await finishVideo(blob)}
+  catch(e){$('reGoErr').textContent=e.message;$('reStat').textContent='Қате: '+e.message}
+  busy($('reGo'),false,'✅ Келісемін — дауыс пен видео жасау')}
+async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm',url=URL.createObjectURL(blob),fn=`iqly_reels_${S.reelId||Date.now()}.${ext}`;
+  $('reOut').innerHTML=`<video src="${url}" controls playsinline style="width:270px;border-radius:14px;display:block;margin-bottom:8px"></video><a class="btn" href="${url}" download="${fn}" style="display:inline-block;text-decoration:none">⬇ Видеоны жүктеу (${ext.toUpperCase()})</a> <button class="btn sec" id="reNew">＋ Жаңа Reels</button>`;
+  $('reNew').onclick=()=>{$('reS2').classList.add('hide');$('reS3').classList.add('hide');window.scrollTo({top:0,behavior:'smooth'});if(S.format==='quiz')genQuiz()};
+  $('reStat').textContent='Дайын ✓ Сақталуда…';
+  if(S.reelId){const path=`${new Date().toISOString().slice(0,10)}/${S.reelId}.${ext}`;const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(!up.error)await sb.from('reels').update({video_path:path,status:'done'}).eq('id',S.reelId)}
+  $('reStat').textContent='Дайын ✓';loadHist()}
 
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
@@ -208,10 +254,10 @@ function drawFrame(ctx,D,t){const T=D.tl;ctx.textAlign='center';ctx.textBaseline
 function pickMime(){const c=['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.4D0028,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4;codecs=avc1,opus','video/mp4','video/webm;codecs=vp9,opus','video/webm'];return c.find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''}
 async function record(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const ac=new AudioContext({sampleRate:SR});await ac.resume();
   const buf=ac.createBuffer(1,samples.length,SR);buf.copyToChannel(samples,0);const src=ac.createBufferSource();src.buffer=buf;const dest=ac.createMediaStreamDestination();src.connect(dest);
-  drawFrame(ctx,D,0);const vs=cv.captureStream(FPS);const stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);
+  (D.draw||drawFrame)(ctx,D,0);const vs=cv.captureStream(FPS);const stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);
   const mime=pickMime();const rec=new MediaRecorder(stream,{mimeType:mime||undefined,videoBitsPerSecond:8e6,audioBitsPerSecond:192e3});const chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const done=new Promise(r=>rec.onstop=r);rec.start(250);const t0=ac.currentTime+.1;src.start(t0);
-  await new Promise(res=>{const loop=()=>{const t=ac.currentTime-t0;drawFrame(ctx,D,Math.max(0,t));$('reProg').style.width=(cl(t/dur)*100)+'%';if(t>=dur){res();return}requestAnimationFrame(loop)};requestAnimationFrame(loop)});
+  await new Promise(res=>{const loop=()=>{const t=ac.currentTime-t0;(D.draw||drawFrame)(ctx,D,Math.max(0,t));$('reProg').style.width=(cl(t/dur)*100)+'%';if(t>=dur){res();return}requestAnimationFrame(loop)};requestAnimationFrame(loop)});
   rec.stop();await done;src.stop();ac.close();return new Blob(chunks,{type:rec.mimeType||mime||'video/webm'})}
 
 // ---------- history ----------
