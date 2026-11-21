@@ -116,7 +116,7 @@ let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
 function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
 function start(){if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
-document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
+document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
 function begin(){paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
@@ -314,6 +314,8 @@ function renderBell(){const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>M
   $('bell').innerHTML=s+'</svg>'}
 function renderSample(){$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 /* ===== language switch ===== */
+function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want='/'+LANG+'/';const p=location.pathname;
+  if(/^\/(kz|ru)(\/|$)/i.test(p)||p==='/'||p==='/index.html'){if(p!==want)history.replaceState(null,'',want+location.search+location.hash)}}catch(e){}}
 function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});
   document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
@@ -323,5 +325,5 @@ function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   if(!$('test').classList.contains('hidden'))render();
   if(!$('result').classList.contains('hidden'))showResult(1);
   if(!$('paywall').classList.contains('hidden'))showPaywall(1)}
-document.querySelectorAll('.lsw button').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang()});
+document.querySelectorAll('.lsw button').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl()});
 applyLang();
