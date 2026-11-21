@@ -81,7 +81,7 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
 <header>
   <div class="hrow"><div class="brand">IQ<em>ly</em> <span class="muted" style="font-size:13px;font-weight:600">Админ</span></div><div class="sp"></div><span class="who" id="who"></span><button class="btn sec sm" id="logout">Шығу</button></div>
   <nav id="tabs">
-    <button data-t="ov" class="on">📊 Шолу</button><button data-t="us">👥 Қолданушылар</button><button data-t="lg">🧾 Логтар</button><button data-t="py">💳 Төлемдер</button><button data-t="lk">🔗 Жарнама сілтемесі</button><button data-t="st">⚙️ Баптаулар</button>
+    <button data-t="ov" class="on">📊 Шолу</button><button data-t="us">👥 Қолданушылар</button><button data-t="lg">🧾 Логтар</button><button data-t="py">💳 Төлемдер</button><button data-t="vo">🎙 Дауыс</button><button data-t="lk">🔗 Жарнама сілтемесі</button><button data-t="st">⚙️ Баптаулар</button>
   </nav>
 </header>
 <main>
@@ -130,6 +130,33 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
       <label class="fld"><span>Ескертпе</span><input id="pyN"></label>
       <button class="btn">Қосу</button></form><div class="err" id="pyErr"></div></div>
     <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Провайдер</th><th>ID</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
+  </div>
+
+  <div id="t-vo" class="hide">
+    <div class="card" id="elStat" style="margin-bottom:12px"><h3>ElevenLabs</h3><div id="elInfo" class="muted">Тексерілуде…</div>
+      <details id="elKeyBox" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">API кілтті енгізу / ауыстыру</summary>
+        <p class="muted" style="font-size:12px">ElevenLabs → Profile → API Keys → Create. Кілт тек серверде сақталады, бұл бетке қайта көрсетілмейді.</p>
+        <div class="form"><label class="fld"><span>API кілт</span><input type="password" id="elKey" autocomplete="off" placeholder="sk_…"></label><button class="btn" id="elKeyBtn">Сақтау</button></div>
+        <div class="err" id="elKeyErr"></div></details></div>
+    <div class="grid two" style="margin-top:0">
+      <div class="card"><h3>Мәтіннен дауыс жасау</h3>
+        <div class="form">
+          <label class="fld"><span>Дауыс</span><select id="elVoice"></select></label>
+          <label class="fld"><span>Модель</span><select id="elModel"></select></label>
+        </div>
+        <label class="fld"><span>Дайын үлгі</span><select id="elTpl"><option value="">— таңдау —</option></select></label>
+        <label class="fld"><span>Мәтін <b id="elCnt" class="muted"></b></span><textarea id="elText" rows="8" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;resize:vertical"></textarea></label>
+        <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <label class="fld"><span>Тұрақтылық <b id="vStab"></b></span><input type="range" id="sStab" min="0" max="1" step="0.05" value="0.5"></label>
+          <label class="fld"><span>Ұқсастық <b id="vSim"></b></span><input type="range" id="sSim" min="0" max="1" step="0.05" value="0.7"></label>
+          <label class="fld"><span>Стиль <b id="vSty"></b></span><input type="range" id="sSty" min="0" max="1" step="0.05" value="0"></label>
+          <label class="fld"><span>Жылдамдық <b id="vSpd"></b></span><input type="range" id="sSpd" min="0.7" max="1.2" step="0.05" value="1"></label>
+        </div>
+        <button class="btn" id="elGo" style="width:100%">🎙 Дауыс жасау</button><div class="err" id="elErr"></div>
+        <div id="elOut"></div>
+      </div>
+      <div class="card"><h3>Тарих</h3><div id="elHist" class="muted">—</div></div>
+    </div>
   </div>
 
   <div id="t-lk" class="hide">
@@ -190,9 +217,9 @@ function rng(){return{from:new Date($('dFrom').value+'T00:00:00+05:00').toISOStr
 
 // ---------- tabs ----------
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['ov','us','lg','py','lk','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==TAB));$('range').classList.toggle('hide',TAB==='lk'||TAB==='st');load()});
+  ['ov','us','lg','py','vo','lk','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==TAB));$('range').classList.toggle('hide',['lk','st','vo'].includes(TAB));load()});
 function load(){R=rng();$('upd').textContent='жүктелуде…';
-  const f={ov:loadOv,us:loadUs,lg:loadLg,py:loadPy,lk:mkLink,st:()=>{}}[TAB];Promise.resolve(f()).then(()=>$('upd').textContent='жаңартылды '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='қате: '+(e.message||e)})}
+  const f={ov:loadOv,us:loadUs,lg:loadLg,py:loadPy,vo:loadVo,lk:mkLink,st:()=>{}}[TAB];Promise.resolve(f()).then(()=>$('upd').textContent='жаңартылды '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='қате: '+(e.message||e)})}
 
 // ---------- overview ----------
 function hbars(rows,keyL,cols){if(!rows.length)return'<div class="empty">Әзірге дерек жоқ</div>';
@@ -255,6 +282,47 @@ async function loadPy(){const {data,error}=await sb.from('payments').select('*')
   $('pyB').innerHTML=data.length?data.map(p=>`<tr><td>${fmtT(p.created_at)}</td><td><b>${(p.amount||0).toLocaleString('ru-RU')} ₸</b></td><td><span class="pill ${p.status==='paid'?'ok':p.status==='refund'?'bad':'w'}">${esc(p.status)}</span></td><td>${esc(p.provider)}</td><td class="muted">${esc(p.ext_id||'')}</td><td class="muted">${esc(p.note||'')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">Төлем әзірге жоқ</td></tr>'}
 $('pyF').onsubmit=async e=>{e.preventDefault();$('pyErr').textContent='';const {error}=await sb.from('payments').insert({amount:+$('pyA').value,status:$('pyS').value,ext_id:$('pyE').value||null,note:$('pyN').value||null,provider:'manual'});
   if(error){$('pyErr').textContent=error.message;return}$('pyE').value=$('pyN').value='';loadPy()};
+
+// ---------- voice (ElevenLabs) ----------
+const EL=async(body)=>{const {data,error}=await sb.functions.invoke('eleven',{body});if(error){let m=error.message;try{const j=await error.context.json();m=j.error||m}catch(e){}throw new Error(m)}if(data&&data.error)throw new Error(data.error);return data};
+const TPL=[
+ ['1 сұрақ · коммент (KZ)','Шеше алмасаңыз, IQ-іңізді тексерген жөн. [СҰРАҚ] Жауабыңыз қандай? Комментке жазыңыз!'],
+ ['1 сұрақ · Подробнее (KZ)','[СҰРАҚ] ... Дұрыс жауап: [ЖАУАП]. Ал сіздің IQ деңгейіңіз қанша? «Подробнее» батырмасын басып, тестті тапсырыңыз!'],
+ ['3 сұрақ (KZ)','Логикаңызды тексерейік? Үш сұрақ, әрқайсысына бес секунд. Бірінші сұрақ. [1] ... [Ж1]! Екінші сұрақ. [2] ... [Ж2]! Үшінші сұрақ. [3] ... [Ж3]! Ал сіздің IQ деңгейіңіз қанша? «Подробнее» батырмасын басып, тестті тапсырыңыз!'],
+ ['1 вопрос · коммент (RU)','Если не решите — стоит проверить свой IQ. [ВОПРОС] Какой ваш ответ? Пишите в комментариях!'],
+ ['3 вопроса (RU)','Проверим вашу логику? Три вопроса, на каждый пять секунд. Первый вопрос. [1] ... [О1]! Второй вопрос. [2] ... [О2]! Третий вопрос. [3] ... [О3]! А какой у вас IQ? Нажмите «Подробнее» и пройдите тест!']];
+$('elTpl').innerHTML+=TPL.map((t,i)=>`<option value="${i}">${esc(t[0])}</option>`).join('');
+$('elTpl').onchange=()=>{const t=TPL[$('elTpl').value];if(t){$('elText').value=t[1];cnt()}};
+const cnt=()=>$('elCnt').textContent=`· ${$('elText').value.length} таңба`;$('elText').oninput=cnt;
+[['sStab','vStab'],['sSim','vSim'],['sSty','vSty'],['sSpd','vSpd']].forEach(([s,v])=>{const f=()=>$(v).textContent=$(s).value;$(s).oninput=f;f()});
+let VO_LOADED=false;
+async function loadVo(){try{const st=await EL({action:'status'});
+  if(st.connected){$('elInfo').innerHTML=`<span class="pill ok">Қосулы</span> Тариф: <b>${esc(st.tier)}</b> · Қолданылды: <b>${(st.used||0).toLocaleString('ru-RU')}</b> / ${(st.limit||0).toLocaleString('ru-RU')} таңба${st.reset?` · жаңарады: ${new Date(st.reset*1000).toLocaleDateString('ru-RU')}`:''}`;$('elKeyBox').open=false}
+  else{$('elInfo').innerHTML=`<span class="pill bad">Қосылмаған</span> ${esc(st.error||'API кілтті енгізіңіз')}`;$('elKeyBox').open=true}
+  if(st.connected&&!VO_LOADED){const [v,m]=await Promise.all([EL({action:'voices'}),EL({action:'models'})]);VO_LOADED=true;
+    const pv=localStorage.getItem('el_voice'),pm=localStorage.getItem('el_model');
+    $('elVoice').innerHTML=v.voices.sort((a,b)=>(a.category==='cloned'||a.category==='professional'?0:1)-(b.category==='cloned'||b.category==='professional'?0:1)).map(x=>`<option value="${esc(x.id)}" ${x.id===pv?'selected':''}>${esc(x.name)}${x.category&&x.category!=='premade'?' · '+esc(x.category):''}</option>`).join('');
+    const kk=x=>x.langs.some(l=>/^kk|kaz/i.test(l));
+    $('elModel').innerHTML=m.models.map(x=>`<option value="${esc(x.id)}" ${x.id===pm?'selected':''}>${esc(x.name)}${kk(x)?' · қазақша ✓':''}</option>`).join('');
+    if(!pm){const k=m.models.find(kk);if(k)$('elModel').value=k.id}}
+  }catch(e){$('elInfo').innerHTML=`<span class="pill bad">Қате</span> ${esc(e.message)}`}
+  loadHist()}
+$('elKeyBtn').onclick=async()=>{$('elKeyErr').textContent='';$('elKeyBtn').disabled=true;try{await EL({action:'save_key',key:$('elKey').value});$('elKey').value='';VO_LOADED=false;await loadVo()}catch(e){$('elKeyErr').textContent=e.message}$('elKeyBtn').disabled=false};
+$('elGo').onclick=async()=>{const text=$('elText').value.trim();$('elErr').textContent='';if(!text){$('elErr').textContent='Мәтін жазыңыз';return}
+  localStorage.setItem('el_voice',$('elVoice').value);localStorage.setItem('el_model',$('elModel').value);
+  $('elGo').disabled=true;$('elGo').textContent='Жасалуда…';
+  try{const r=await EL({action:'tts',text,voice_id:$('elVoice').value,voice_name:$('elVoice').selectedOptions[0]?.textContent,model_id:$('elModel').value,settings:{stability:+$('sStab').value,similarity:+$('sSim').value,style:+$('sSty').value,speed:+$('sSpd').value}});
+    $('elOut').innerHTML=`<div style="margin-top:12px"><audio controls autoplay src="${r.url}" style="width:100%"></audio><a class="btn sec sm" style="display:inline-block;margin-top:6px;text-decoration:none" href="${r.url}" download="iqly_voice.mp3">⬇ MP3 жүктеу</a></div>`;loadHist();loadVoStat()}
+  catch(e){$('elErr').textContent=e.message}$('elGo').disabled=false;$('elGo').textContent='🎙 Дауыс жасау'};
+async function loadVoStat(){try{const st=await EL({action:'status'});if(st.connected)$('elInfo').innerHTML=`<span class="pill ok">Қосулы</span> Тариф: <b>${esc(st.tier)}</b> · Қолданылды: <b>${(st.used||0).toLocaleString('ru-RU')}</b> / ${(st.limit||0).toLocaleString('ru-RU')} таңба`}catch(e){}}
+async function loadHist(){const {data,error}=await sb.from('tts_jobs').select('*').order('created_at',{ascending:false}).limit(50);if(error){$('elHist').textContent=error.message;return}
+  $('elHist').innerHTML=data.length?data.map(j=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px" class="muted">${fmtT(j.created_at)} · ${esc(j.voice_name||'')} · ${j.chars} таңба</div><div style="margin:4px 0;color:var(--ink);font-size:13px">${esc(j.text.length>160?j.text.slice(0,160)+'…':j.text)}</div>
+    <button class="btn sec sm" data-p="${esc(j.path)}" data-a="play">▶ Тыңдау</button> <button class="btn sec sm" data-p="${esc(j.path)}" data-a="dl">⬇ MP3</button> <button class="btn sec sm" data-t="${esc(j.text)}" data-a="use">✎ Мәтінді алу</button> <button class="btn sec sm" data-id="${j.id}" data-p="${esc(j.path)}" data-a="del" style="color:var(--bad)">🗑</button><div class="pl"></div></div>`).join(''):'<div class="empty">Әзірге жоқ</div>';
+  $('elHist').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const a=b.dataset.a;
+    if(a==='use'){$('elText').value=b.dataset.t;cnt();window.scrollTo({top:0,behavior:'smooth'});return}
+    if(a==='del'){if(!confirm('Өшіру керек пе?'))return;await sb.storage.from('tts').remove([b.dataset.p]);await sb.from('tts_jobs').delete().eq('id',b.dataset.id);loadHist();return}
+    const {data:s}=await sb.storage.from('tts').createSignedUrl(b.dataset.p,3600,a==='dl'?{download:'iqly_voice.mp3'}:undefined);if(!s)return;
+    if(a==='dl'){location.href=s.signedUrl;return}b.parentElement.querySelector('.pl').innerHTML=`<audio controls autoplay src="${s.signedUrl}" style="width:100%;margin-top:6px"></audio>`})}
 
 // ---------- links ----------
 function mkLink(){const slug=s=>s.trim().toLowerCase().replace(/[^a-z0-9а-яәіңғүұқөһ_-]+/gi,'_').replace(/^_|_$/g,'');
