@@ -367,6 +367,11 @@ details.rv summary::-webkit-details-marker{display:none}
 .howpay ol{margin:0;padding-left:20px;font-size:13.5px;line-height:1.7;color:#3f4361}
 .faq.mini{text-align:left;margin-top:6px}
 .faq.mini summary{font-size:14px;padding:12px 28px 12px 0}
+.lpicks{display:grid;gap:10px}
+.lpick{display:grid;grid-template-columns:54px 1fr;column-gap:14px;align-items:center;text-align:left;background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px 16px;transition:border-color .15s,background .15s}
+.lpick:hover,.lpick:focus-visible{border-color:var(--acc);background:var(--accSoft)}
+.lpick .lf{grid-row:span 2;width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:800;font-size:15px;display:grid;place-items:center}
+.lpick b{font-size:18px}.lpick small{font-size:13px;color:var(--muted)}
 .hidden{display:none!important}
 @media (max-width:600px){
   h1{font-size:27px}.card{padding:18px;border-radius:20px}.hero{grid-template-columns:1fr}.demo{order:-1}.demo svg{max-width:200px}
@@ -622,6 +627,13 @@ details.rv summary::-webkit-details-marker{display:none}
 <div class="modal" id="payModal"><div class="card"><h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
   <p data-kz="Мұнда Kaspi арқылы төлем болады (келесі қадамда қосамыз).">Здесь будет оплата через Kaspi (подключим на следующем шаге).</p>
   <div class="row"><button class="btn line" id="payClose" data-kz="Жабу">Закрыть</button><button class="btn" id="demoUnlock" data-kz="Нәтижені көрсету (демо)">Показать результат (демо)</button></div></div></div>
+<div class="modal" id="langModal"><div class="card" style="text-align:center">
+  <h2 style="margin-bottom:6px">Выберите язык теста</h2>
+  <p style="margin-bottom:18px">Тест тілін таңдаңыз</p>
+  <div class="lpicks">
+    <button class="lpick" data-l="ru"><span class="lf">RU</span><b>Русский</b><small>Пройти тест на русском</small></button>
+    <button class="lpick" data-l="kz"><span class="lf">ҚАЗ</span><b>Қазақша</b><small>Тестті қазақ тілінде тапсыру</small></button>
+  </div></div></div>
 <div class="modal" id="wordModal"><div class="card" style="text-align:center">
   <span class="tag" data-kz="Жадыға арналған тапсырма">Задание на память</span>
   <h2 data-kz="Мына сөзді есте сақтаңыз">Запомните это слово</h2>
@@ -982,7 +994,8 @@ const nOpts=q=>q.text?q.o.length:q.opts.length;
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
 function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
-function start(){$('wordModal').classList.add('on')}
+function start(){$('langModal').classList.add('on')}
+document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
 function begin(){paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
