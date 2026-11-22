@@ -21,12 +21,12 @@ box.innerHTML=`
   <div class="form"><label class="fld"><span>API-ключ Anthropic</span><input type="password" id="reKey" autocomplete="off" placeholder="sk-ant-…"></label><button class="btn" id="reKeyBtn">Сохранить</button></div><div class="err" id="reKeyErr"></div></details></div></details>
 <div class="card" id="reS1"><h3>1. Вопросы</h3>
  <div class="form">
-  <label class="fld"><span>Источник вопросов</span><select id="reSrc"><option value="bank">Готовая база (бесплатно, проверено)</option><option value="ai">Claude придумает</option></select></label>
+  <label class="fld"><span>Источник вопросов</span><select id="reSrc"><option value="ai" selected>ИИ (Claude) придумает</option></select></label>
   <label class="fld"><span>Язык</span><select id="reLang"><option value="kz">Казахский</option><option value="ru">Русский</option></select></label>
   <label class="fld"><span>Формат</span><select id="reFmt"><option value="quiz" selected>🎯 Викторина: 4 вопроса × 3 варианта (в конце — комментарий)</option><option value="comment">Без ответа — «Пишите в комментариях»</option><option value="answer">С ответом — «Подробнее»</option></select></label>
   <label class="fld" id="reHintL" style="grid-column:span 2;display:none"><span>Дополнительное пожелание (необязательно)</span><input id="reHint" placeholder="например: про возраст, про календарь, попроще…"></label>
  </div>
- <button class="btn" id="reGen" style="width:100%">✨ Предложить 5 вопросов</button><div class="err" id="reGenErr"></div>
+ <button class="btn" id="reGen" style="width:100%">✨ ИИ: предложить вопросы</button><div class="err" id="reGenErr"></div>
  <div id="reQs" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:12px"></div>
 </div>
 <div class="card hide" id="reS2" style="margin-top:12px"><h3>2. Озвучка: предложение</h3><div id="rePlan"></div></div>
@@ -117,15 +117,20 @@ function narr(vopt,st){return `<div class="card" style="background:#faf8ff;borde
       <div class="form" style="grid-template-columns:repeat(2,1fr)">
        ${[['pStab','Стабильность',st.stability??.5,0,1],['pSim','Сходство',st.similarity??.75,0,1],['pSty','Стиль',st.style??.2,0,1],['pSpd','Скорость',st.speed??1,.7,1.2]].map(([id,l,v,a,b])=>`<label class="fld"><span>${l} <b id="${id}v">${v}</b></span><input type="range" id="${id}" min="${a}" max="${b}" step="0.05" value="${v}" oninput="document.getElementById('${id}v').textContent=this.value"></label>`).join('')}</div>`}
 // ---------- quiz (викторина) ----------
-async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';busy($('reGen'),true,'Подбираем…');
-  try{const {data:prev}=await sb.from('reels').select('question').eq('format','quiz').order('created_at',{ascending:false}).limit(100);
-    const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(x)));S.set=QUIZ.pick4(S.lang,used);drawSet()}
-  catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Другие 4 вопроса')}
+// Questions come only from AI (Claude via /api/reels/quiz). Previously used questions are sent so they are not repeated.
+async function usedQs(){const {data:prev}=await sb.from('reels').select('question').eq('format','quiz').order('created_at',{ascending:false}).limit(60);
+  const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(String(x).replace(/\n/g,' '))));return used}
+async function aiQuiz(n,extra){const r=await fetch('/api/reels/quiz',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({lang:S.lang,n,avoid:[...(extra||[]),...await usedQs()]})});
+  const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — ИИ не может написать вопросы':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'). Нажмите ещё раз.');return QUIZ.fromAI(j.items)}
+async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGen'),true,'ИИ пишет вопросы… (≈20–40 сек)');
+  try{S.set=await aiQuiz(4);drawSet()}
+  catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Другие 4 вопроса (ИИ)')}
+async function swapQ(i,btn){btn.disabled=true;btn.textContent='⏳';try{const [x]=await aiQuiz(1,S.set.map(q=>q.q.replace(/\n/g,' ')));S.set[i]=x;drawSet()}catch(e){$('reGenErr').textContent=e.message;btn.disabled=false;btn.textContent='🔄'}}
 function drawSet(){$('reQs').innerHTML=`<div class="card" style="grid-column:1/-1">${S.set.map((q,i)=>`<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
    <div style="font-size:40px;width:52px;text-align:center">${q.emo}</div><div style="flex:1"><b>${i+1}. ${esc(q.q.replace(/\n/g,' '))}</b><div style="font-size:13px;margin-top:4px">${q.o.map((o,k)=>k===q.a&&i<3?`<span class="pill ok">${esc(o)}</span>`:`<span class="pill">${esc(o)}</span>`).join(' ')}${i===3?' <span class="muted">— ответ не озвучивается, в комментарии</span>':''}</div></div>
    <button class="btn sec sm" data-s="${i}">🔄</button></div>`).join('')}
    <button class="btn" id="qzNext" style="width:100%;margin-top:12px">Продолжить с этими 4 вопросами →</button></div>`;
-  $('reQs').querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{QUIZ.swap(S.lang,S.set,+b.dataset.s);drawSet()});$('qzNext').onclick=pickQuiz}
+  $('reQs').querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>swapQ(+b.dataset.s,b));$('qzNext').onclick=pickQuiz}
 async function pickQuiz(){$('reS2').classList.remove('hide');$('reS3').classList.add('hide');$('rePlan').innerHTML='<div class="muted">Готовим…</div>';$('reS2').scrollIntoView({behavior:'smooth'});
   try{const vs=await voices();const pv=localStorage.getItem('el_voice');const vo=QUIZ.voices(S.set,S.lang);const st={stability:.45,similarity:.8,style:.25,speed:1.05};
     const vopt=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===pv?'selected':''}>${esc(v.name)}${v.category&&v.category!=='premade'?' · '+esc(v.category):''}</option>`).join('');
