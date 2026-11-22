@@ -502,6 +502,15 @@ h2{letter-spacing:-.02em}
 #start .hist .hi-note{color:rgba(255,255,255,.62)}
 @media(min-width:820px){#start .hi-list{border-left-color:rgba(255,255,255,.22)}}
 #start .hi-pic img{filter:drop-shadow(0 10px 30px rgba(20,10,60,.35))}
+/* ===== conversion fixes ===== */
+.offer{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}.offer span{padding:7px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:#2e2a5a;box-shadow:0 2px 8px rgba(40,30,110,.06)}
+.offer #offFree{background:#ecfdf5;border-color:#bbf7d0;color:#047857}
+#hvNum{animation:hvq 1.6s ease-in-out infinite;display:inline-block}@keyframes hvq{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.hcount{font-size:14px;font-weight:600;color:#5b5b76;margin-top:12px}.hcount:empty{display:none}.hcount b{color:#4f46e5}
+#start>.fin{text-align:center;padding:34px 22px;border-radius:28px;background:linear-gradient(160deg,#ffffff,#f4f1ff);border:1px solid var(--line);box-shadow:0 1px 0 rgba(20,20,60,.03),0 22px 48px -22px rgba(40,30,110,.28)}
+.fin h2{margin:0 0 6px;font-size:28px;font-weight:900;color:#0f0d2e}.fin p{margin:0 0 18px;color:#5b5b76}.fin .btn{width:100%;max-width:520px;margin-top:14px}
+#start>.ft{text-align:center;font-size:13px;color:#7a7a95;padding:6px 8px 10px}.ft nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin:8px 0}.ft a{color:#4f46e5;text-decoration:none;font-weight:600}.ft p{margin:6px auto 0;max-width:560px;font-size:12px;line-height:1.5}
+@media(min-width:820px){#start>.fin,#start>.ft{width:var(--lpw);margin-left:calc((100% - var(--lpw))/2)}#start>.fin{padding:48px}.fin h2{font-size:38px}}
 </style>
 </head>
 <body>
@@ -516,9 +525,10 @@ h2{letter-spacing:-.02em}
       <div class="blob b1"></div><div class="blob b2"></div>
       <div class="hero">
         <div class="hero-txt">
-          <span class="livepill"><i></i><span data-kz="Онлайн IQ тест · 30 тапсырма">Онлайн IQ-тест · 30 заданий</span></span>
-          <h1 data-kz="Өз &lt;em&gt;IQ&lt;/em&gt; деңгейіңізді&lt;br&gt;қазір біліңіз">Узнайте свой <em>IQ</em><br>прямо сейчас</h1>
-          <p data-kz="Логикаға, жадыға және кеңістіктік ойлауға арналған &lt;b class=&quot;totalN&quot;&gt;40&lt;/b&gt; тапсырма. Арнайы білім қажет емес — тек зеректік."><b class="totalN">40</b> заданий на логику, память и пространственное мышление. Никаких специальных знаний — только смекалка.</p>
+          <span class="livepill"><i></i><span data-kz="Видеодағы сұрақты шештіңіз бе? 🔥">Решили вопрос из видео? 🔥</span></span>
+          <h1 data-kz="Енді толық тестпен&lt;br&gt;&lt;em&gt;IQ&lt;/em&gt;-іңізді біліңіз">Теперь узнайте свой<br><em>IQ</em> полным тестом</h1>
+          <p data-kz="Логика, зейін, жады, сандар және кеңістік — &lt;b class=&quot;totalN&quot;&gt;30&lt;/b&gt; тапсырма. Арнайы білім қажет емес.">Логика, внимание, память, числа и пространство — <b class="totalN">30</b> заданий. Специальные знания не нужны.</p>
+          <div class="offer"><span id="offFree" data-kz="✓ Тегін">✓ Бесплатно</span><span id="offTime" data-kz="⏱ ~15 минут">⏱ ~15 минут</span><span data-kz="⚡ Нәтиже бірден">⚡ Результат сразу</span></div>
         </div>
         <div class="demo hv" id="demo">
           <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
@@ -558,15 +568,6 @@ h2{letter-spacing:-.02em}
       </div>
       <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
     </div>
-    <section class="hist" id="hist">
-      <div class="hi-pic" id="hiPic"></div>
-      <div class="hi-mid">
-        <div class="hi-k" data-kz="НӘТИЖЕҢІЗДЕ ТАҒЫ БАР">ЕЩЁ В ВАШЕМ РЕЗУЛЬТАТЕ</div>
-        <h2 data-kz="Тарихи тұлғалармен салыстыру">Сравнение с историческими личностями</h2>
-        <p data-kz="IQ балыңыз Наполеон, Линкольн және Вашингтонның бағаланған IQ-імен қатар көрсетіледі.">Ваш балл IQ покажем рядом с оценочным IQ Наполеона, Линкольна и Вашингтона.</p>
-      </div>
-      <div class="hi-list" id="hiList"></div>
-    </section>
     <section class="steps">
       <h2 data-kz="IQ-іңізді 3 қадамда біліңіз">Ваш IQ за 3 шага</h2>
       <p class="st-sub" data-kz="Тестті тапсырыңыз, нәтижені алыңыз, мықты жақтарыңызды біліңіз.">Пройдите тест, получите результат и узнайте свои сильные стороны.</p>
@@ -578,7 +579,7 @@ h2{letter-spacing:-.02em}
           </div></div>
           <span class="st-n">01</span>
           <h3 data-kz="Тестті тапсырыңыз">Пройдите тест</h3>
-          <p data-kz="Логика, зейін, жады, сандар және кеңістік бойынша 30 тапсырма. Арнайы білім қажет емес — телефоннан да ыңғайлы.">30 заданий на логику, внимание, память, числа и пространство. Специальные знания не нужны — удобно и с телефона.</p>
+          <p data-kz="Әр тапсырма әр түрлі қабілетті тексереді. Телефоннан тапсыруға ыңғайлы.">Задания проверяют разные способности. Удобно проходить с телефона.</p>
         </div>
         <div class="st">
           <div class="st-art"><div class="st-card">
@@ -600,6 +601,26 @@ h2{letter-spacing:-.02em}
         </div>
       </div>
     </section>
+    <section class="hist" id="hist">
+      <div class="hi-pic" id="hiPic"></div>
+      <div class="hi-mid">
+        <div class="hi-k" data-kz="НӘТИЖЕҢІЗДЕ ТАҒЫ БАР">ЕЩЁ В ВАШЕМ РЕЗУЛЬТАТЕ</div>
+        <h2 data-kz="Тарихи тұлғалармен салыстыру">Сравнение с историческими личностями</h2>
+        <p data-kz="IQ балыңыз Наполеон, Линкольн және Вашингтонның бағаланған IQ-імен қатар көрсетіледі.">Ваш балл IQ покажем рядом с оценочным IQ Наполеона, Линкольна и Вашингтона.</p>
+      </div>
+      <div class="hi-list" id="hiList"></div>
+    </section>
+    <section class="fin">
+      <h2 data-kz="Дайынсыз ба?">Готовы?</h2>
+      <p data-kz="30 тапсырма — және IQ-іңізді, мықты жақтарыңызды білесіз.">30 заданий — и вы узнаете свой IQ и сильные стороны.</p>
+      <div class="hcount" id="hcount2"></div>
+      <button class="btn big cta" id="startBtn4" data-kz="Тестті бастау →">Начать тест →</button>
+    </section>
+    <footer class="ft">
+      <div class="ft-l"><b>iqtest.live</b> © 2026</div>
+      <nav><a href="/privacy/" data-kz="Құпиялық саясаты">Политика конфиденциальности</a><a href="/oferta/" data-kz="Оферта">Оферта</a><a href="mailto:batyrkhan.aff@gmail.com" data-kz="Байланыс">Контакты</a></nav>
+      <p data-kz="Тест танысу мақсатында жасалған және клиникалық психометриялық диагностика болып табылмайды.">Тест носит ознакомительный характер и не является клинической психометрической диагностикой.</p>
+    </footer>
 
     
 

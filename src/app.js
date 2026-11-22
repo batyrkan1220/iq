@@ -292,10 +292,13 @@ window._hist=()=>{const h=getHist();
   $('histModal').classList.add('on')};
 $('histClose').onclick=()=>$('histModal').classList.remove('on');
 $('histClear').onclick=()=>{try{localStorage.removeItem(HK)}catch(e){}window._hist()};
-$('startBtn').onclick=start;$('startBtn2').onclick=start;
+$('startBtn').onclick=start;$('startBtn2').onclick=start;if($('startBtn4'))$('startBtn4').onclick=start;
 document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);
 document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
-(function(){const seq=['?',87,96,104,112,121,'?'];let i=0;setInterval(()=>{const el=$('hvNum');if(!el||$('start').classList.contains('hidden'))return;i=(i+1)%seq.length;el.textContent=seq[i]},600)})();
+(function(){if(!FREE){const f=$('offFree');if(f)f.remove()}
+  try{fetch(SB_URL+'rpc/public_stats',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:'{}'}).then(r=>r.json()).then(d=>{
+    if(d&&d.n>=100){const n=d.n.toLocaleString('ru-RU').replace(/,/g,' ');const el=$('hcount2');if(el)el.innerHTML=L2(`👥 Тест прошли уже <b>${n}</b> человек`,`👥 Тестті <b>${n}</b> адам тапсырды`)}
+    if(d&&d.n>=50&&d.med_sec){const m=Math.max(5,Math.round(d.med_sec/60));const t=$('offTime');if(t){t.textContent=`⏱ ~${m} минут`;t.dataset.kz=`⏱ ~${m} минут`}}}).catch(()=>{})}catch(e){}})();
 // sticky start CTA on mobile when main button scrolled away
 try{const io=new IntersectionObserver(es=>{const vis=es[0].isIntersecting;const st=!$('start').classList.contains('hidden');$('stickyCta').classList.toggle('on',!vis&&st)});io.observe($('startBtn'))}catch(e){}
 /* ===== landing widgets ===== */
