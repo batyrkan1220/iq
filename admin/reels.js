@@ -48,7 +48,7 @@ box.innerHTML=`
   <canvas id="reCv" width="${W}" height="${H}" style="width:270px;height:480px;border-radius:14px;border:1px solid var(--line);background:#f7f8fb"></canvas>
   <div style="flex:1;min-width:240px"><div id="reStat" class="muted"></div><div class="fun"><div class="tr" style="height:12px;margin:10px 0"><i id="reProg" style="width:0"></i></div></div><div id="reOut"></div></div>
  </div></div>
-<div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎬 Созданные Reels <span class="muted" id="reHistN" style="font-weight:500"></span></h3><button class="btn sec sm" id="reHistR">↻ Обновить</button></div>
+<div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎬 Созданные Reels <span class="muted" id="reHistN" style="font-weight:500"></span></h3></div>
  <div id="reHist" class="rgal" style="margin-top:12px">—</div><button class="btn sec hide" id="reMore" style="width:100%;margin-top:12px">Показать ещё</button></div>
 <style>.rgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}.rgal .rv{display:flex;flex-direction:column;gap:6px;min-width:0}
 .rgal .rvv{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#111;border:1px solid var(--line)}.rgal video{width:100%;height:100%;object-fit:cover;display:block;background:#111}
@@ -76,8 +76,8 @@ function drawQs(){$('reQs').innerHTML=S.qs.map((q,i)=>`<div class="card" style="
   <button class="btn sm" data-i="${i}" style="margin-top:auto">Выбрать этот</button></div>`).join('');
   $('reQs').querySelectorAll('button').forEach(b=>b.onclick=()=>pick(+b.dataset.i))}
 
-async function voices(){if(S.voices.length)return S.voices;const v=await EL({action:'voices'});S.voices=v.voices;
-  if(!localStorage.getItem('el_model')){try{const m=await EL({action:'models'});const k=m.models.find(x=>x.langs.some(l=>/^kk|kaz/i.test(l)))||m.models.find(x=>/v3/.test(x.id))||m.models[0];if(k)localStorage.setItem('el_model',k.id)}catch(e){}}
+async function voices(){if(S.voices.length)return S.voices;const v=await EL({action:'voices'});S.voices=(v&&v.voices)||[];
+  if(!localStorage.getItem('el_model'))(async()=>{try{const m=await EL({action:'models'});const k=m.models.find(x=>x.langs.some(l=>/^kk|kaz/i.test(l)))||m.models.find(x=>/v3/.test(x.id))||m.models[0];if(k)localStorage.setItem('el_model',k.id)}catch(e){}})();
   return S.voices}
 async function pick(i){S.q=S.qs[i];drawQs();$('reS2').classList.remove('hide');$('reS3').classList.add('hide');$('rePlan').innerHTML='<div class="muted">Готовим предложение по озвучке…</div>';$('reS2').scrollIntoView({behavior:'smooth'});
   try{const vs=await voices();const p=S.src==='ai'?await RL({action:'voice_plan',lang:S.lang,format:S.format,question:S.q,voices:vs.map(v=>({id:v.id,name:v.name,category:v.category,labels:v.labels}))}):RBANK.plan(S.q,S.lang,S.format,vs);S.plan=p;drawPlan()}
@@ -329,33 +329,47 @@ async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d'
   rec.stop();await done;src.stop();ac.close();return new Blob(chunks,{type:rec.mimeType||mime||'video/webm'})}
 
 // ---------- history (video gallery, same size cards) ----------
-let HOFF=0;const HPAGE=24;
-async function loadHist(more){if(!more){HOFF=0;$('reHist').innerHTML='<div class="muted">Загрузка…</div>'}
-  const {data,error,count}=await sb.from('reels').select('id,created_at,lang,format,status,video_path,question',{count:'exact'}).order('created_at',{ascending:false}).range(HOFF,HOFF+HPAGE-1);
-  if(error){$('reHist').textContent=error.message;return}
-  const paths=data.filter(r=>r.video_path).map(r=>r.video_path);let urls={};
-  if(paths.length){const {data:su}=await sb.storage.from('reels').createSignedUrls(paths,3600*6);(su||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
+let HOFF=0,HCOUNT=0;const HPAGE=24,HSEEN=new Map();
+// Gallery is never cleared: new reels are added on top, changed ones are updated in place, old ones stay visible.
+async function loadHist(more){const box=$('reHist');if(!HSEEN.size&&!more)box.innerHTML='<div class="muted">Загрузка…</div>';
+  const from=more?HOFF:0;const {data,error,count}=await sb.from('reels').select('id,created_at,lang,format,status,video_path,question',{count:'exact'}).order('created_at',{ascending:false}).range(from,from+HPAGE-1);
+  if(error){if(!HSEEN.size)box.textContent=error.message;return}
+  const todo=data.filter(r=>{const h=HSEEN.get(r.id);return !h||h!==(r.status+'|'+(r.video_path||''))});
+  const paths=todo.filter(r=>r.video_path).map(r=>r.video_path);let urls={};
+  if(paths.length){const {data:su}=await sb.storage.from('reels').createSignedUrls(paths,3600*12);(su||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
   const card=r=>{const u=r.video_path&&urls[r.video_path],q=(r.question&&r.question.q_screen||'').replace(/\n/g,' ');
-    return `<div class="rv"><div class="rvv">${u?`<video data-src="${esc(u)}#t=1" preload="none" controls playsinline></video>`:`<div class="rvn">${r.status==='done'?'Видео нет':'⏳ '+esc(r.status||'')}</div>`}</div>
+    return `<div class="rv" data-id="${r.id}"><div class="rvv">${u?`<video data-src="${esc(u)}#t=1" preload="none" controls playsinline></video>`:`<div class="rvn">${r.status==='done'?'Видео нет':'⏳ '+esc(r.status||'')}</div>`}</div>
       <div class="rvm"><span>#${r.id}</span><span>${fmtT(r.created_at)}</span><span class="pill">${esc((r.lang||'').toUpperCase())}</span></div>
       <div class="rvq" title="${esc(q)}">${esc(q)}</div>
       ${u?`<button class="btn sec sm" data-p="${esc(r.video_path)}">⬇ Скачать</button>`:''}</div>`};
-  const html=data.map(card).join('');
-  if(!more)$('reHist').innerHTML=html||'<div class="empty">Пока пусто</div>';else $('reHist').insertAdjacentHTML('beforeend',html);
-  HOFF+=data.length;$('reHistN').textContent=count?`· ${count}`:'';$('reMore').classList.toggle('hide',!(count>HOFF));
+  if(!HSEEN.size)box.innerHTML='';
+  const tmp=document.createElement('div');
+  data.forEach(r=>{if(!todo.includes(r))return;tmp.innerHTML=card(r);const el=tmp.firstElementChild;const old=box.querySelector(`.rv[data-id="${r.id}"]`);
+    if(old)old.replaceWith(el);else if(more)box.appendChild(el);else{const after=[...box.children].find(c=>+c.dataset.id<r.id);box.insertBefore(el,after||null)}
+    HSEEN.set(r.id,r.status+'|'+(r.video_path||''))});
+  if(more)HOFF+=data.length;else HOFF=Math.max(HOFF,data.length);HCOUNT=count||HCOUNT;
+  if(!box.children.length)box.innerHTML='<div class="empty">Пока пусто</div>';
+  $('reHistN').textContent=HCOUNT?`· ${HCOUNT}`:'';$('reMore').classList.toggle('hide',!(HCOUNT>box.querySelectorAll('.rv').length));
   lazyVids();
-  $('reHist').querySelectorAll('button[data-p]:not([data-b])').forEach(b=>{b.dataset.b=1;b.onclick=async()=>{const {data:s}=await sb.storage.from('reels').createSignedUrl(b.dataset.p,3600,{download:b.dataset.p.split('/').pop()});if(s)location.href=s.signedUrl}})}
+  box.querySelectorAll('button[data-p]:not([data-b])').forEach(b=>{b.dataset.b=1;b.onclick=async()=>{const {data:s}=await sb.storage.from('reels').createSignedUrl(b.dataset.p,3600,{download:b.dataset.p.split('/').pop()});if(s)location.href=s.signedUrl}})}
 let IO=null;function lazyVids(){const vs=$('reHist').querySelectorAll('video[data-src]');if(!('IntersectionObserver' in window)){vs.forEach(v=>{v.src=v.dataset.src;v.preload='metadata';v.removeAttribute('data-src')});return}
   IO=IO||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const v=e.target;v.preload='metadata';v.src=v.dataset.src;v.removeAttribute('data-src');IO.unobserve(v)}}),{rootMargin:'300px'});vs.forEach(v=>IO.observe(v))}
-$('reMore').onclick=()=>loadHist(true);$('reHistR').onclick=()=>loadHist();
+$('reMore').onclick=()=>{HOFF=$('reHist').querySelectorAll('.rv').length;loadHist(true)};
+// auto-refresh while the Reels tab is open (no button needed)
+setInterval(()=>{if(!$('t-re').classList.contains('hide')&&!document.hidden)loadHist().catch(()=>{})},20000);
 // only one video plays at a time
 document.addEventListener('play',e=>{if(e.target.closest&&e.target.closest('.rgal'))document.querySelectorAll('.rgal video').forEach(v=>{if(v!==e.target)v.pause()})},true);
 
 // ---------- ⚡ quick launch / batch ----------
 const DEF_SET={stability:.45,similarity:.8,style:.25,speed:1.05};
 function kzText(t){return String(t).replace(/(^|[\s«(])қайсы\?/g,'$1қандай?').replace(/(^|[\s«(])Қайсы\?/g,'$1Қандай?').replace(/(жылы|қашан|қай жерде|қай қалада|қай елде)(\s+)туған(\b|\?|\s|$)/g,'$1$2туылған$3')}
-async function qkVoices(){try{const vs=await voices();const pv=localStorage.getItem('el_voice');const h=vs.find(v=>/^\s*Hale\b/i.test(v.name));const def=(vs.find(v=>v.id===pv)||h||vs[0]||{}).id;
-  $('qkVoice').innerHTML=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===def?'selected':''}>${esc(v.name)}</option>`).join('')}catch(e){$('qkVoice').innerHTML='<option value="">ElevenLabs не подключён</option>'}}
+let QKV=null;
+function qkVoices(force){if(QKV&&!force)return QKV;$('qkVoice').innerHTML='<option value="">Загрузка голосов…</option>';$('qkVErr')&&$('qkVErr').remove();
+  const to=new Promise((_,rej)=>setTimeout(()=>rej(new Error('ElevenLabs долго не отвечает')),25000));
+  QKV=Promise.race([qkVoicesLoad(),to]).catch(e=>{QKV=null;$('qkVoice').innerHTML='<option value="">Голоса не загрузились</option>';
+    $('qkVoice').insertAdjacentHTML('afterend',`<div id="qkVErr" style="font-size:12px;color:#b91c1c;margin-top:4px">${esc(e.message)} · <a href="#" id="qkVRe">Повторить</a></div>`);$('qkVRe').onclick=ev=>{ev.preventDefault();S.voices=[];qkVoices(true)}});return QKV}
+async function qkVoicesLoad(){{const vs=await voices();if(!vs||!vs.length)throw new Error('В ElevenLabs нет голосов');const pv=localStorage.getItem('el_voice');const h=vs.find(v=>/^\s*Hale\b/i.test(v.name));const def=(vs.find(v=>v.id===pv)||h||vs[0]||{}).id;
+  $('qkVoice').innerHTML=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===def?'selected':''}>${esc(v.name)}</option>`).join('')}}
 $('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
 async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a})});
   const j=await r.json().catch(()=>({}));if(!j.ok)return null;return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return null}}
