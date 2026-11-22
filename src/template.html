@@ -581,6 +581,9 @@ h2{letter-spacing:-.02em}
   .word{font-size:28px!important}
 }
 /* pay modal */
+.kl{display:inline-block;vertical-align:-5px;border-radius:6px;margin-right:6px;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.pm-logo{display:block;margin:0 auto 8px;border-radius:14px;box-shadow:0 8px 20px rgba(241,70,55,.3)}
+
 .pm-lbl{display:block;text-align:left;font-size:13.5px;font-weight:700;color:#2e2a5a;margin:4px 0 6px}.pm-in{width:100%;box-sizing:border-box;font:inherit;font-size:20px;font-weight:700;letter-spacing:.04em;padding:13px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:12px;text-align:center}.pm-in:focus{outline:none;border-color:#7c3aed}
 .pm-note{font-size:12.5px;color:#7a7a95;margin:0 0 12px}.pm-err{color:#dc2626;font-size:14px;font-weight:600;margin:0 0 10px}.pm-link{background:none;border:0;color:#4f46e5;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;margin:0 0 12px;text-decoration:underline}
 
@@ -766,9 +769,9 @@ h2{letter-spacing:-.02em}
       <div class="pricebx">
         <div class="pr-l"><b class="price">1 390 ₸</b><span data-kz="бір реттік төлем · жазылымсыз">разовый платёж · без подписки</span></div>
       </div>
-      <button class="btn big cta pulse" id="payBtn" data-kz="Нәтижемді ашу →">Открыть мой результат →</button>
+      <button class="btn big cta pulse" id="payBtn" data-kz="&lt;img class=&quot;kl&quot; src=&quot;/assets/img/kaspi.webp&quot; alt=&quot;&quot; width=&quot;22&quot; height=&quot;22&quot;&gt; Нәтижемді ашу →"><img class="kl" src="/assets/img/kaspi.webp" alt="" width="22" height="22"> Открыть мой результат →</button>
       <div class="trust2">
-        <span data-kz="🔒 Kaspi арқылы төлем">🔒 Оплата через Kaspi</span><span data-kz="⚡ Нәтиже бірден ашылады">⚡ Результат откроется сразу</span><span data-kz="🚫 Ақша қайта алынбайды">🚫 Без автосписаний</span>
+        <span data-kz="&lt;img class=&quot;kl&quot; src=&quot;/assets/img/kaspi.webp&quot; alt=&quot;&quot; width=&quot;16&quot; height=&quot;16&quot;&gt; Kaspi арқылы төлем"><img class="kl" src="/assets/img/kaspi.webp" alt="" width="16" height="16"> Оплата через Kaspi</span><span data-kz="⚡ Нәтиже бірден ашылады">⚡ Результат откроется сразу</span><span data-kz="🚫 Ақша қайта алынбайды">🚫 Без автосписаний</span>
       </div>
 
       <div class="howpay">
@@ -785,7 +788,7 @@ h2{letter-spacing:-.02em}
         <details><summary data-kz="Төлегеннен кейін не аламын?">Что я получу после оплаты?</summary><p data-kz="IQ бағасы, процентиль, 5 қабілет профилі, ойлау стилі және әр сұрақтың түсіндірмесі бар жауаптар талдауы.">Оценку IQ, процентиль, профиль 5 способностей, стиль мышления и разбор всех вопросов с объяснениями.</p></details>
       </div>
     </div>
-    <div class="sticky-cta pwsticky"><button class="btn big cta" id="payBtn2" data-kz="Нәтижемді ашу — &lt;span class=&quot;price&quot;&gt;1 390 ₸&lt;/span&gt;">Открыть результат — <span class="price">1 390 ₸</span></button></div>
+    <div class="sticky-cta pwsticky"><button class="btn big cta" id="payBtn2" data-kz="&lt;img class=&quot;kl&quot; src=&quot;/assets/img/kaspi.webp&quot; alt=&quot;&quot; width=&quot;22&quot; height=&quot;22&quot;&gt; Нәтижемді ашу — &lt;span class=&quot;price&quot;&gt;&lt;/span&gt;"><img class="kl" src="/assets/img/kaspi.webp" alt="" width="22" height="22"> Открыть результат — <span class="price"></span></button></div>
   </section>
 
   <section id="result" class="hidden">
@@ -829,12 +832,13 @@ h2{letter-spacing:-.02em}
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
 <div class="modal" id="payModal"><div class="card pm">
+  <img class="pm-logo" src="/assets/img/kaspi.webp" alt="Kaspi" width="56" height="56">
   <h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
   <div class="pm-amt"><span class="price"></span></div>
   <div id="pmStep1">
     <label class="pm-lbl" for="pmPhone" data-kz="Kaspi-ге тіркелген телефон нөміріңіз">Ваш номер, привязанный к Kaspi</label>
     <input class="pm-in" id="pmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" maxlength="18">
-    <button class="btn big cta pm-go" id="pmSend" data-kz="Kaspi-ге шот жіберу →">Отправить счёт в Kaspi →</button>
+    <button class="btn big cta pm-go" id="pmSend" data-kz="&lt;img class=&quot;kl&quot; src=&quot;/assets/img/kaspi.webp&quot; alt=&quot;&quot; width=&quot;22&quot; height=&quot;22&quot;&gt; Kaspi-ге шот жіберу →"><img class="kl" src="/assets/img/kaspi.webp" alt="" width="22" height="22"> Отправить счёт в Kaspi →</button>
     <p class="pm-note" data-kz="Нөміріңізге Kaspi шоты келеді. Нөмір тек төлем үшін қолданылады.">На ваш номер придёт счёт в Kaspi. Номер используется только для оплаты.</p>
   </div>
   <div id="pmStep2" class="hidden">
