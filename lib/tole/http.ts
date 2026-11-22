@@ -192,6 +192,16 @@ async function adminCheck(req: IncomingMessage, c: Ctx): Promise<Record<string, 
     received = w.status === 200 ? ((w.json as unknown[]) || []).length : 0;
   }
   out.webhookReceived = received > 0;
+  // 6) What does Tole say about its deliveries? Only statuses/counts and field names — never payloads or URLs.
+  try {
+    const list = await c.client.listWebhookDeliveries(c.client.environment);
+    const by: Record<string, number> = {};
+    for (const d of list) { const st = typeof d.status === "string" ? d.status : "unknown"; by[st] = (by[st] || 0) + 1; }
+    const last = list[0] || null;
+    const safe: Record<string, unknown> = {};
+    if (last) for (const [k, v] of Object.entries(last)) if (typeof v === "number" || typeof v === "boolean" || (typeof v === "string" && v.length < 60 && !/^https?:/i.test(v) && !/secret|token|url|body|payload|signature/i.test(k))) safe[k] = v;
+    out.toleDeliveries = { total: list.length, byStatus: by, latest: safe };
+  } catch (e) { out.toleDeliveries = "error:" + ((e as ToleError).kind || "internal") + ((e as ToleError).code ? ":" + (e as ToleError).code : ""); }
   return out;
 }
 

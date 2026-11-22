@@ -315,7 +315,7 @@ $('psCheck').onclick=async()=>{const o=$('psCheckOut'),b=$('psCheck');b.disabled
       r.configProblem?`<div>❌ Баптау қатесі: <b>${esc(r.configProblem)}</b></div>`:'',r.toleKey!==undefined?row('Tole кілтті қабылдады ма',r.toleKey):'',
       r.qrCreated!==undefined?row('Тест QR жасалды',r.qrCreated,r.qrCreated==='pending'||r.qrCreated==='paid'):'',r.simulate!==undefined?row('«Төленді» симуляциясы',r.simulate):'',
       r.sandboxPayment!==undefined?row('Тест төлемінің статусы',r.sandboxPayment,r.sandboxPayment==='paid'||r.sandboxPayment==='skipped_live'):'',
-      r.webhookReceived!==undefined?row('Webhook келді және қолтаңбасы дұрыс',r.webhookReceived?'иә':'жоқ',r.webhookReceived):''].join('');loadPy()}
+      r.webhookReceived!==undefined?row('Webhook келді және қолтаңбасы дұрыс',r.webhookReceived?'иә':'жоқ',r.webhookReceived):'',r.toleDeliveries!==undefined?`<div>ℹ️ Tole жеткізулері: <code style="font-size:12px">${esc(JSON.stringify(r.toleDeliveries))}</code></div>`:''].join('');loadPy()}
   catch(e){o.textContent='❌ '+e.message}finally{b.disabled=false}};
 async function loadPy(){loadPaySettings();
   const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;

@@ -350,12 +350,21 @@ export class ToleClient {
     return true;
   }
 
+  /** GET /webhook-deliveries (listWebhookDeliveries) — diagnostics only; returns the raw array. */
+  async listWebhookDeliveries(environment?: ToleEnvironment): Promise<Record<string, unknown>[]> {
+    const q = environment ? `?environment=${environment}` : "";
+    const j = await this.read<unknown>("listWebhookDeliveries", `${this.o.baseUrl}/webhook-deliveries${q}`, false);
+    const arr = Array.isArray(j) ? j : Array.isArray((j as { data?: unknown })?.data) ? (j as { data: unknown[] }).data : [];
+    return arr as Record<string, unknown>[];
+  }
+
   /** Sandbox-only helper used by the smoke script. */
   async sandboxSimulate(paymentIntentId: string, status: "paid" | "cancelled" | "expired" | "failed"): Promise<PaymentIntent> {
     if (this.environment !== "sandbox") throw new ToleError("config", "simulate is sandbox-only");
     const res = await this.raw("POST", `${this.o.baseUrl}/sandbox/payment-intents/${paymentIntentId}/simulate`, this.headers({}, true), { status });
-    if (res.status !== 200) throw await this.errorFrom(res);
-    return ((await res.json()) as { data: PaymentIntent }).data;
+    if (res.status < 200 || res.status >= 300) throw await this.errorFrom(res);
+    const j = (await res.json().catch(() => null)) as { data?: PaymentIntent } | null;
+    return (j?.data ?? null) as PaymentIntent;
   }
 }
 
