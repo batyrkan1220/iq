@@ -904,7 +904,8 @@ function L2(ru,kz){return LANG==='kz'?kz:ru}
 // ---- IQly analytics (Supabase) ----
 const SB_URL='https://dlhejkmuyyqvjzjxbwbg.supabase.co/rest/v1/',SB_KEY='sb_publishable_7F3dYw4mts2-rpJAgjkcKw_PnlYI2bR';
 const VID=(()=>{try{return crypto.randomUUID()}catch(e){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16)})}})();
-function sbIns(t,row){try{fetch(SB_URL+t,{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).catch(()=>{})}catch(e){}}
+const NOTRACK=(()=>{try{return window.top!==window||/[?&]notrack/.test(location.search)}catch(e){return true}})();
+function sbIns(t,row){if(NOTRACK)return;try{fetch(SB_URL+t,{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).catch(()=>{})}catch(e){}}
 let _visitP=null;
 function trVisit(){const u=new URLSearchParams(location.search),g=k=>(u.get(k)||'').slice(0,190)||null;const ua=navigator.userAgent||'';
   const dev=/iPad|Tablet/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'mobile':'desktop';
