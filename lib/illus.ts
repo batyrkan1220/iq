@@ -37,12 +37,16 @@ export async function makeIllus(input: { q: string; o: string[]; a: number; lang
 Question: "${q}"
 Answer options: ${opts.map((x) => `"${x}"`).join(", ")}
 
-Draw a picture about the TOPIC of the question so the viewer instantly understands what it is about.
-STRICT RULES:
-- The picture must NOT reveal or hint at the correct answer ("${correct}") and must not show or favour any of the options. Depict only the subject of the question (e.g. for "Who painted the Mona Lisa?" draw an easel with a blank canvas and brushes, NOT the painting or the painter; for "How many legs does a spider have?" draw a web, NOT a spider; for "Which country is the homeland of pizza?" a pizza is fine but no flags or landmarks).
-- No text, letters, digits, numbers or flags anywhere. Never draw a countable set whose count equals an option.
-- Style: modern flat vector illustration, friendly, bright but soft colours, clean shapes, subtle gradients and soft shadows, one clear central subject, full-bleed light background filling the whole canvas.
-- Output ONLY one valid SVG: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">…</svg>. No <text>, <image>, <script>, <foreignObject>, external links or CSS imports. Keep it under 12 KB.`;
+MAIN RULE: draw exactly the main object/subject NAMED IN THE QUESTION, large and clearly recognisable, as the central hero of the picture. Do not replace it with something else or a vague symbol.
+Examples:
+- "In which city is the Eiffel Tower?" → draw the Eiffel Tower itself (recognisable iron lattice tower) on a plain sky background. Do NOT draw any city, skyline, streets, river or other buildings.
+- "Where do kangaroos live?" → draw a kangaroo on a neutral background, no map, no continent shape.
+- "Which country is the homeland of pizza?" → draw a pizza, no flags, no landmarks.
+- "Who painted the Mona Lisa?" → draw an easel, palette and brushes (the painting would show the answer's work), no person.
+- "How many legs does a spider have?" / any "how many …" question → draw the subject in a way where the counted parts are NOT countable (e.g. a spider web with a spider partly hidden behind a leaf), or draw a related object instead.
+FORBIDDEN (would reveal the answer "${correct}"): anything depicting the answer or any option (${opts.map((x) => `"${x}"`).join(", ")}): their cities, countries, maps, flags, people, landmarks or symbols; text, letters, digits or numbers anywhere; a countable set whose count equals an option.
+STYLE: polished modern flat vector illustration with good detail (shading, highlights, a few secondary decorative elements like clouds, sparkles, leaves), friendly bright but soft colours, soft gradients and shadows, the hero object fills about 60–70% of the height, full-bleed light background covering the whole canvas.
+Output ONLY one valid SVG: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">…</svg>. No <text>, <image>, <script>, <foreignObject>, external links or CSS imports. Aim for 6–15 KB of SVG.`;
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
