@@ -127,7 +127,7 @@ export async function makeFlux(input: { q: string; o: string[]; a: number }): Pr
   try {
     const subject = await writeFluxPrompt(q, opts, opts[input.a] ?? "");
     const prompt = fluxPrompt(subject);
-    const r = await cfRun(CF_IMG, { prompt, steps: 8, seed: Math.floor(Math.random() * 1e9) });
+    const r = await cfRun(CF_IMG, { prompt, steps: 8 });
     const b64 = r.json?.result?.image || r.json?.image;
     if (!r.ok || !b64) {
       const msg = String(r.json?.errors?.[0]?.message || "").slice(0, 160);
