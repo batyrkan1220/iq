@@ -85,7 +85,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
     if (limited(ip)) { send(res, 429, { error: "rate_limited", retryAfterSec: 60 }, { "Retry-After": "60" }); return true; }
     const raw = await readRaw(req, 4 * 1024);
-    let body: { action?: string; orderId?: string; visitId?: string; method?: string; phone?: string } = {};
+    let body: { action?: string; orderId?: string; visitId?: string; method?: string; phone?: string; session?: string } = {};
     try { body = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
     const orderId = String(body.orderId || "");
     const visitId = body.visitId && UUID.test(String(body.visitId)) ? String(body.visitId) : null;
@@ -95,7 +95,13 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
       if (body.action === "create") {
         const s = await ctx.settings();
         if (!s.paywallEnabled || !s.priceKzt) { send(res, 403, { error: "paywall_disabled" }); return true; }
-        send(res, 200, body.method === "invoice" ? await ctx.svc.startInvoice(orderId, visitId, String(body.phone || "")) : await ctx.svc.startQr(orderId, visitId));
+        const out = body.method === "invoice" ? await ctx.svc.startInvoice(orderId, visitId, String(body.phone || "")) : await ctx.svc.startQr(orderId, visitId);
+        // Link the saved test session (result link in emails) to the order actually being paid.
+        if (ctx.call && body.session && UUID.test(String(body.session))) {
+          try { await ctx.call("PATCH", `/test_sessions?token=eq.${String(body.session)}`, { order_id: orderId }, { Prefer: "return=minimal" }); }
+          catch { log.log("warn", "session link failed", { orderId }); }
+        }
+        send(res, 200, out);
       } else if (body.action === "status") {
         const v = await ctx.svc.status(orderId);
         v ? send(res, 200, v) : send(res, 404, { error: "not_found" });

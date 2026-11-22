@@ -1572,7 +1572,7 @@ function pmView(v){const msg=$('pmMsg'),wait=$('pmWait'),retry=$('pmRetry');retr
   if(v.http===429){pmErr('Слишком много попыток. Попробуйте через несколько минут.','Тым көп әрекет. Бірнеше минуттан кейін қайталаңыз.');retry.classList.remove('hidden');return}
   pmErr('Оплата временно недоступна. Попробуйте позже.','Төлем уақытша қолжетімсіз. Кейінірек қайталаңыз.');retry.classList.remove('hidden')}
 function pmNewOrder(){try{localStorage.removeItem('iq_order')}catch(e){}}
-async function pmApi(action,extra){if(PM.busy)return;PM.busy=true;try{const r=await fetch(PAY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,orderId:orderId(),visitId:VID,...(extra||{})})});let j={};try{j=await r.json()}catch(e){}pmView({http:r.status,...j})}catch(e){pmView({http:0})}finally{PM.busy=false}}
+async function pmApi(action,extra){if(PM.busy)return;PM.busy=true;try{const r=await fetch(PAY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,orderId:orderId(),visitId:VID,session:(()=>{try{return localStorage.getItem('iq_session')||undefined}catch(e){}})(),...(extra||{})})});let j={};try{j=await r.json()}catch(e){}pmView({http:r.status,...j})}catch(e){pmView({http:0})}finally{PM.busy=false}}
 function pmPoll(){clearInterval(PM.timer);PM.timer=setInterval(()=>{if(document.hidden)return;if(!$('payModal').classList.contains('on')&&!PM.pending)return;pmApi('status')},3000)}
 async function pmOpen(){TR('pay_click');$('payModal').classList.add('on');pmErr();$('pmRetry').classList.add('hidden');
   let has=false;try{has=!!localStorage.getItem('iq_order')}catch(e){}
