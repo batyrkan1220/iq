@@ -780,6 +780,28 @@ function buildQuestions(){
 const PATH_LANG=(()=>{const p=(location.pathname||'').toLowerCase();return /^\/kz(\/|$)/.test(p)?'kz':/^\/ru(\/|$)/.test(p)?'ru':null})();
 let LANG=PATH_LANG||(()=>{try{return localStorage.getItem('iq_lang')||'ru'}catch(e){return 'ru'}})();
 const KZ={
+"Какая плитка стоит на месте «?»":"«?» орнына қай плитка келеді?",
+"В каждой строке точка сдвигается слева направо, а в каждом столбце — сверху вниз. На месте «?» точка должна быть справа посередине.":"Әр жолда нүкте солдан оңға, ал әр бағанда жоғарыдан төменге жылжиды. «?» орнында нүкте оң жақта, ортасында болуы керек.",
+"Какая линия продолжает ряд?":"Қатарды қай сызық жалғастырады?",
+"Линия каждый раз поворачивается на 45° по часовой стрелке: 0° → 45° → 90° → 135°.":"Сызық әр жолы сағат тілімен 45°-қа бұрылады: 0° → 45° → 90° → 135°.",
+"Какая клетка дополняет таблицу?":"Кестені қай ұяшық толықтырады?",
+"В каждой строке одна и та же фигура, а количество уменьшается: 3 → 2 → 1. Во второй строке — один треугольник.":"Әр жолда бір ғана фигура, ал саны азаяды: 3 → 2 → 1. Екінші жолда — бір үшбұрыш.",
+"В каждом столбце одинаковая заливка: полная → половина → пустая, а в каждой строке одна фигура. Значит, нужен квадрат, закрашенный наполовину слева.":"Әр бағанда бояу бірдей: толық → жартылай → бос, ал әр жолда бір фигура. Демек, сол жақ жартысы боялған шаршы керек.",
+"Какой будет эта стрелка, если повернуть её на 135° по часовой стрелке?":"Осы көрсеткіні сағат тілімен 135°-қа бұрсақ, ол қандай болады?",
+"Стрелка смотрела вверх. Поворот на 90° по часовой — вправо, ещё на 45° — вправо-вниз.":"Көрсеткі жоғары қарап тұрған. Сағат тілімен 90°-қа бұрсақ — оңға, тағы 45°-қа бұрсақ — оңға-төмен қарайды.",
+"Какой кубик стоит на месте «?»":"«?» орнына қай ойын сүйегі келеді?",
+"В каждой строке число точек уменьшается на 1, и каждая строка начинается на 1 меньше предыдущей: 4 → 3 → 2.":"Әр жолда нүктелер саны 1-ге азаяды, ал әр жол алдыңғысынан 1-ге кем басталады: 4 → 3 → 2.",
+"Загнутый уголок поворачивается на 90° по часовой стрелке: из правого верхнего угла — в правый нижний. Из левого нижнего он переходит в левый верхний.":"Бүгілген бұрыш сағат тілімен 90°-қа бұрылады: оң жақ жоғарғы бұрыштан оң жақ төменгі бұрышқа. Сол жақ төменгі бұрыштан сол жақ жоғарғы бұрышқа ауысады.",
+"Какой круг стоит на месте «?»":"«?» орнына қай шеңбер келеді?",
+"Слева направо круг становится больше, а сверху вниз линия становится толще. В первой строке — самый большой круг с самой тонкой линией.":"Солдан оңға қарай шеңбер үлкейеді, ал жоғарыдан төменге қарай сызығы қалыңдайды. Бірінші жолда — ең үлкен әрі ең жіңішке сызықты шеңбер.",
+"Тёмный кружок сдвигается на две позиции по часовой стрелке. Во второй паре он тоже сдвигается на две позиции.":"Қара дөңгелек сағат тілімен екі орынға жылжиды. Екінші жұпта да ол екі орынға жылжиды.",
+"Какая буква следующая?\nA, C, F, J, …":"Келесі әріп қандай?\nA, C, F, J, …",
+"Шаг между буквами растёт: +2, +3, +4, затем +5. J + 5 = O.":"Әріптер арасындағы қадам өсіп отырады: +2, +3, +4, сосын +5. J + 5 = O.",
+"Какое число следующее?\n4, 20, 6, 18, 8, 16, …":"Келесі сан қандай?\n4, 20, 6, 18, 8, 16, …",
+"Здесь чередуются два ряда: 4, 6, 8, … (+2) и 20, 18, 16, … (−2). Следующее число из первого ряда — 10.":"Мұнда екі қатар кезектесіп келеді: 4, 6, 8, … (+2) және 20, 18, 16, … (−2). Келесі сан бірінші қатардан — 10.",
+"Числа растут на 3 и вправо, и вниз: 16 + 3 = 19.":"Сандар оңға қарай да, төмен қарай да 3-ке өседі: 16 + 3 = 19.",
+"Фигура закрашивается, и в ней появляется точка, остальное не меняется. Треугольник с линией тоже становится тёмным с точкой.":"Фигура боялып, ішінде нүкте пайда болады, қалғаны өзгермейді. Сызығы бар үшбұрыш та қара түске боялып, ішінде нүкте пайда болады.",
+"Узор — наклонные полосы одинаковой толщины и шага. Подходит фрагмент с тем же наклоном, шагом и толщиной.":"Өрнек — қалыңдығы мен аралығы бірдей көлбеу жолақтар. Көлбеуі, аралығы және қалыңдығы дәл сондай фрагмент сәйкес келеді.",
 // --- questions ---
 'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?':'Фермердің 15 қойы болды. 8-інен басқасының бәрі өліп қалды. Қанша қой қалды?',
 '«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.':'«8-інен басқасының бәрі» дегені — тура 8 қой тірі қалды деген сөз. Сұрақ тұжырымға мұқият болуды тексереді.',
@@ -891,6 +913,67 @@ function trVisit(){const u=new URLSearchParams(location.search),g=k=>(u.get(k)||
 function TR(type,data){setTimeout(()=>sbIns('events',{visit_id:VID,type,data:data||null}),300)}
 trVisit();
 
+/* ===== Visual reasoning items (quiz2-style formats, original content) ===== */
+const VINK='#1f2433',VACC='#4f46e5',VGR='#d5d9e3',VSOFT='#f3f4f8';
+const vcell=(x,y,w,h,inner,q)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="14" fill="${q?'#fff':VSOFT}" stroke="${q?VACC:'#e3e6ee'}" stroke-width="${q?3:1.5}"${q?' stroke-dasharray="7 6"':''}/>`+(q?`<text x="${x+w/2}" y="${y+h/2+12}" text-anchor="middle" font-size="34" font-weight="800" fill="${VACC}" font-family="Manrope,Arial">?</text>`:inner);
+// 3×3 matrix; cells[r][c] = fn(cx,cy) → svg (null = «?»)
+function vMatrix(cells){let s=`<svg class="matrix" viewBox="0 0 330 330">`;for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=10+c*105,y=10+r*105,f=cells[r][c];s+=vcell(x,y,100,100,f?f(x+50,y+50):'',!f)}return s+'</svg>'}
+// 2×2 analogy A→B, C→?
+function vAna(a,b,c){let s=`<svg class="matrix" viewBox="0 0 330 230">`;const ar=(y)=>`<path d="M150 ${y}h22m-8-7l8 7-8 7" fill="none" stroke="#9aa0b4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s+=vcell(25,10,100,100,a(75,60))+ar(60)+vcell(195,10,100,100,b(245,60))+vcell(25,120,100,100,c(75,170))+ar(170)+vcell(195,120,100,100,'',1);return s+'</svg>'}
+// horizontal row of cards, last = «?»
+function vRow(items){const n=items.length+1,w=66,g=12,x0=(330-(n*w+(n-1)*g))/2;let s=`<svg class="matrix" viewBox="0 0 330 120">`;
+  items.forEach((f,i)=>{const x=x0+i*(w+g);s+=vcell(x,10,w,100,f(x+w/2,60))});s+=vcell(x0+(n-1)*(w+g),10,w,100,'',1);return s+'</svg>'}
+const vopt=(f)=>`<svg viewBox="0 0 100 100" width="80" height="80" style="vertical-align:middle">${f(50,50)}</svg>`;
+// primitives
+const vDot=(dx,dy)=>(cx,cy)=>`<rect x="${cx-32}" y="${cy-32}" width="64" height="64" rx="12" fill="#fff" stroke="${VINK}" stroke-width="2.5"/><circle cx="${cx+dx*20}" cy="${cy+dy*20}" r="7.5" fill="${VACC}"/>`;
+const vLine=(a)=>(cx,cy)=>`<line x1="${cx-26}" y1="${cy}" x2="${cx+26}" y2="${cy}" stroke="${VINK}" stroke-width="6" stroke-linecap="round" transform="rotate(${a} ${cx} ${cy})"/>`;
+function vShape(k,cx,cy,sz,fill){const h=sz/2;if(k==='c')return `<circle cx="${cx}" cy="${cy}" r="${h}" ${fill}/>`;if(k==='s')return `<rect x="${cx-h}" y="${cy-h}" width="${sz}" height="${sz}" rx="3" ${fill}/>`;return `<polygon points="${cx},${cy-h} ${cx+h},${cy+h*.8} ${cx-h},${cy+h*.8}" ${fill}/>`}
+const vCount=(k,n,rot)=>(cx,cy)=>{let s='';const sz=n>2?20:24,gap=sz+6,x0=cx-(n-1)*gap/2;for(let i=0;i<n;i++)s+=`<g transform="rotate(${rot||0} ${x0+i*gap} ${cy})">${vShape(k,x0+i*gap,cy,sz,`fill="${VINK}"`)}</g>`;return s};
+const vFill=(k,mode)=>(cx,cy)=>{const id='h'+Math.random().toString(36).slice(2,7),sz=56,h=sz/2;
+  const clip=`<clipPath id="${id}"><rect x="${mode==='R'?cx:cx-h-4}" y="${cy-h-4}" width="${h+4}" height="${sz+8}"/></clipPath>`;
+  const out=vShape(k,cx,cy,sz,`fill="none" stroke="${VINK}" stroke-width="3.5"`);
+  if(mode==='F')return vShape(k,cx,cy,sz,`fill="${VINK}" stroke="${VINK}" stroke-width="3.5"`);if(mode==='E')return out;
+  return `<defs>${clip}</defs><g clip-path="url(#${id})">${vShape(k,cx,cy,sz,`fill="${VINK}"`)}</g>`+out};
+const vArrow=(a,big)=>(cx,cy)=>{const s=big?1.7:1;return `<g transform="translate(${cx} ${cy}) rotate(${a}) scale(${s})"><path d="M0 -30 L24 -4 L9 -4 L9 28 L-9 28 L-9 -4 L-24 -4 Z" fill="${big?'#dfe3ec':VINK}" stroke="${VINK}" stroke-width="${big?2.2:0}" stroke-linejoin="round"/></g>`};
+const PIPS={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]};
+const vDie=(n)=>(cx,cy)=>`<rect x="${cx-30}" y="${cy-30}" width="60" height="60" rx="12" fill="#fff" stroke="${VINK}" stroke-width="3"/>`+PIPS[n].map(([x,y])=>`<circle cx="${cx+x*15}" cy="${cy+y*15}" r="5.5" fill="${VINK}"/>`).join('');
+// folded corner: c = 0 TL,1 TR,2 BR,3 BL ; big = solid triangle distractor
+const vFold=(cs,big)=>(cx,cy)=>{const h=30,f=big?30:16;let s=`<rect x="${cx-h}" y="${cy-h}" width="${2*h}" height="${2*h}" rx="4" fill="#fff" stroke="${VINK}" stroke-width="3"/>`;
+  cs.forEach(c=>{const sx=c===1||c===2?1:-1,sy=c===2||c===3?1:-1,X=cx+sx*h,Y=cy+sy*h;s+=`<polygon points="${X},${Y-sy*f} ${X-sx*f},${Y} ${X-sx*f},${Y-sy*f}" fill="#c9ced9" stroke="${VINK}" stroke-width="2" stroke-linejoin="round"/>`});return s};
+const vRing=(r,w,full)=>(cx,cy)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${full?VINK:'none'}" stroke="${VINK}" stroke-width="${w}"/>`;
+const vFlower=(ps)=>(cx,cy)=>{let s='';for(let k=0;k<5;k++){const an=(-90+72*k)*Math.PI/180,x=cx+Math.cos(an)*22,y=cy+Math.sin(an)*22;s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="${ps.includes(k)?VINK:'#fff'}" stroke="${VINK}" stroke-width="2.5"/>`}return s};
+
+const VIS=[
+ {cat:'logic',q:'Какая плитка стоит на месте «?»',main:()=>vMatrix([[vDot(-1,-1),vDot(0,-1),vDot(1,-1)],[vDot(-1,0),vDot(0,0),null],[vDot(-1,1),vDot(0,1),vDot(1,1)]]),
+  opts:[vDot(1,0),vDot(1,-1),vDot(1,1),vDot(0,0),vDot(-1,0),vDot(0,1)],a:0,
+  ex:'В каждой строке точка сдвигается слева направо, а в каждом столбце — сверху вниз. На месте «?» точка должна быть справа посередине.'},
+ {cat:'spat',q:'Какая линия продолжает ряд?',main:()=>vRow([vLine(0),vLine(45),vLine(90)]),
+  opts:[vLine(135),vLine(45),vLine(90),vLine(0),vLine(120),vLine(160)],a:0,
+  ex:'Линия каждый раз поворачивается на 45° по часовой стрелке: 0° → 45° → 90° → 135°.'},
+ {cat:'num',q:'Какая клетка дополняет таблицу?',main:()=>vMatrix([[vCount('c',3),vCount('c',2),vCount('c',1)],[vCount('t',3),vCount('t',2),null],[vCount('s',3),vCount('s',2),vCount('s',1)]]),
+  opts:[vCount('t',1),vCount('t',2),vCount('t',1,180),vCount('c',1),vCount('s',1),vCount('t',3)],a:0,
+  ex:'В каждой строке одна и та же фигура, а количество уменьшается: 3 → 2 → 1. Во второй строке — один треугольник.'},
+ {cat:'spat',q:'Какая клетка дополняет таблицу?',main:()=>vMatrix([[vFill('c','F'),vFill('c','H'),vFill('c','E')],[vFill('t','F'),vFill('t','H'),vFill('t','E')],[vFill('s','F'),null,vFill('s','E')]]),
+  opts:[vFill('s','H'),vFill('s','R'),vFill('s','F'),vFill('s','E'),vFill('c','H'),vFill('t','H')],a:0,
+  ex:'В каждом столбце одинаковая заливка: полная → половина → пустая, а в каждой строке одна фигура. Значит, нужен квадрат, закрашенный наполовину слева.'},
+ {cat:'spat',q:'Какой будет эта стрелка, если повернуть её на 135° по часовой стрелке?',main:()=>`<svg class="matrix" viewBox="0 0 330 160"><rect x="0" y="0" width="330" height="160" rx="16" fill="${VSOFT}"/>${vArrow(0,1)(165,82)}</svg>`,
+  opts:[vArrow(135),vArrow(45),vArrow(225),vArrow(90),vArrow(180),vArrow(315)],a:0,
+  ex:'Стрелка смотрела вверх. Поворот на 90° по часовой — вправо, ещё на 45° — вправо-вниз.'},
+ {cat:'num',q:'Какой кубик стоит на месте «?»',main:()=>vMatrix([[vDie(6),vDie(5),vDie(4)],[vDie(5),vDie(4),vDie(3)],[vDie(4),vDie(3),null]]),
+  opts:[vDie(2),vDie(1),vDie(3),vDie(5),vDie(4),vDie(6)],a:0,
+  ex:'В каждой строке число точек уменьшается на 1, и каждая строка начинается на 1 меньше предыдущей: 4 → 3 → 2.'},
+ {cat:'logic',q:'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?',main:()=>vAna(vFold([1]),vFold([2]),vFold([3])),
+  opts:[vFold([0]),vFold([1]),vFold([2]),vFold([3]),vFold([0,2]),vFold([0],1)],a:0,
+  ex:'Загнутый уголок поворачивается на 90° по часовой стрелке: из правого верхнего угла — в правый нижний. Из левого нижнего он переходит в левый верхний.'},
+ {cat:'spat',q:'Какой круг стоит на месте «?»',main:()=>vMatrix([[vRing(14,2),vRing(22,2),null],[vRing(14,4),vRing(22,4),vRing(32,4)],[vRing(14,7),vRing(22,7),vRing(32,7)]]),
+  opts:[vRing(32,2),vRing(32,7),vRing(22,2),vRing(32,4),vRing(14,2),vRing(32,2,1)],a:0,
+  ex:'Слева направо круг становится больше, а сверху вниз линия становится толще. В первой строке — самый большой круг с самой тонкой линией.'},
+ {cat:'logic',q:'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?',main:()=>vAna(vFlower([0]),vFlower([2]),vFlower([1])),
+  opts:[vFlower([3]),vFlower([1]),vFlower([2]),vFlower([4]),vFlower([0]),vFlower([1,3])],a:0,
+  ex:'Тёмный кружок сдвигается на две позиции по часовой стрелке. Во второй паре он тоже сдвигается на две позиции.'}
+];
+
 /* ===== App ===== */
 const PRICE='1 390 ₸';
 const FREE=true; // временно: результат открывается без оплаты
@@ -907,6 +990,8 @@ const TEXT=[
  {cat:'num',q:'Какое число лишнее?\n3, 5, 7, 9, 11, 13',o:['3','9','11','13','7'],a:1,ex:'Все числа, кроме 9, — простые: делятся только на 1 и на самих себя. А 9 делится на 3.'},
  {cat:'logic',q:'Ручка и тетрадь вместе стоят 1 100 ₸. Ручка дороже тетради на 1 000 ₸. Сколько стоит тетрадь?',o:['100 ₸','50 ₸','1 000 ₸','550 ₸'],a:1,ex:'Если тетрадь стоит x, то ручка — x + 1000. Вместе: 2x + 1000 = 1100 → x = 50 ₸. Ответ «100 ₸» — интуитивная ловушка.'},
  {cat:'num',q:'Какое число следующее?\n2, 6, 12, 20, 30, …',o:['36','40','42','44'],a:2,ex:'Разница растёт на 2: +4, +6, +8, +10, затем +12. 30 + 12 = 42.'},
+ {cat:'verb',q:'Какая буква следующая?\nA, C, F, J, …',o:['O','N','M','P','K'],a:0,ex:'Шаг между буквами растёт: +2, +3, +4, затем +5. J + 5 = O.'},
+ {cat:'num',q:'Какое число следующее?\n4, 20, 6, 18, 8, 16, …',o:['10','14','12','9','18'],a:0,ex:'Здесь чередуются два ряда: 4, 6, 8, … (+2) и 20, 18, 16, … (−2). Следующее число из первого ряда — 10.'},
  {cat:'logic',q:'5 станков за 5 минут делают 5 деталей. За сколько минут 100 станков сделают 100 деталей?',o:['100','20','5','1'],a:2,ex:'Каждый станок делает одну деталь за 5 минут. 100 станков работают одновременно и сделают 100 деталей за те же 5 минут.'}
 ];
 const MEM=[
@@ -925,6 +1010,9 @@ const PAT=[
  {p:{k:'cross',s:34,L:9,w:4,a:22},opts:[{k:'cross',s:34,L:9,w:4,a:0},{k:'cross',s:22,L:6,w:3,a:22},{k:'cross',s:34,L:9,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:45},{k:'cross',s:34,L:15,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:-22}],a:2,ex:'Крестики стоят рядами, повёрнутыми примерно на 22°, на одинаковом расстоянии и одного размера. Совпадают угол, шаг и размер только у одного фрагмента.'},
  {p:{k:'tile',s:58,a:0,inner:1},opts:[{k:'tile',s:58,a:0,inner:0},{k:'tile',s:58,a:0,inner:1,dx:29},{k:'tile',s:29,a:0,inner:1},{k:'tile',s:58,a:0,inner:1},{k:'tile',s:58,a:45,inner:1},{k:'tile',s:58,a:0,inner:1,dy:29}],a:3,ex:'Узор состоит из ромбов с перекрестием и точкой в центре, уложенных ровной сеткой. Правильный фрагмент совпадает не только по форме и размеру, но и по положению ромбов — он продолжает соседние ряды.'},
  {p:{k:'dot',s:18,r:3.5,a:30},opts:[{k:'dot',s:18,r:3.5,a:0},{k:'dot',s:12,r:3.5,a:30},{k:'dot',s:18,r:6.5,a:30},{k:'dot',s:18,r:3.5,a:60},{k:'stripe',s:18,w:4,a:30},{k:'dot',s:18,r:3.5,a:30}],a:5,ex:'Точки расположены рядами под наклоном 30°, с одинаковым шагом и размером. Совпадают все три признака только у одного варианта.'}
+,
+ {p:{k:'stripe',s:16,w:5,a:35},opts:[{k:'stripe',s:16,w:5,a:35},{k:'stripe',s:16,w:5,a:0},{k:'stripe',s:16,w:5,a:-35},{k:'stripe',s:26,w:5,a:35},{k:'stripe',s:16,w:10,a:35},{k:'dot',s:16,r:3.5,a:35}],a:0,
+  ex:'Узор — наклонные полосы одинаковой толщины и шага. Подходит фрагмент с тем же наклоном, шагом и толщиной.'}
 ];
 const ANA=[
  {A:{k:'sh',s:'circle',f:0,d:1},B:{k:'sh',s:'circle',f:2,d:1},C:{k:'sh',s:'hexagon',f:0,d:1},
@@ -942,6 +1030,10 @@ const ANA=[
  {A:{k:'sh',s:'pentagon',f:0,d:0,ln:0},B:{k:'sh',s:'pentagon',f:0,d:0,ln:1},C:{k:'sh',s:'pentagon',f:2,d:0,ln:0},
   opts:[{k:'sh',s:'pentagon',f:2,d:0,ln:0},{k:'sh',s:'pentagon',f:0,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:1,ln:0},{k:'sh',s:'hexagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:1,d:0,ln:1}],a:4,
   ex:'К фигуре добавляется горизонтальная линия, а форма и цвет не меняются. Тёмный пятиугольник получает линию и остаётся тёмным.'}
+,
+ {A:{k:'sh',s:'square',f:0,d:0,ln:0},B:{k:'sh',s:'square',f:2,d:1,ln:0},C:{k:'sh',s:'triangle',f:0,d:0,ln:1},
+  opts:[{k:'sh',s:'triangle',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:0,ln:1},{k:'sh',s:'triangle',f:0,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:1,ln:0},{k:'sh',s:'square',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:1,d:1,ln:1}],a:0,
+  ex:'Фигура закрашивается, и в ней появляется точка, остальное не меняется. Треугольник с линией тоже становится тёмным с точкой.'}
 ];
 const WORD='ГОРИЗОНТ';
 const DEMO=[
@@ -950,20 +1042,22 @@ const DEMO=[
 ];
 const NM=[
  {g:[[2,5,10],[3,4,12],[6,2,null]],o:['8','10','12','14','4','16'],a:2,ex:'В каждой строке третье число равно произведению первых двух: 6 × 2 = 12.'},
- {g:[[9,4,5],[12,5,7],[15,6,null]],o:['8','9','10','11','21','7'],a:1,ex:'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.'}
+ {g:[[9,4,5],[12,5,7],[15,6,null]],o:['8','9','10','11','21','7'],a:1,ex:'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.'},
+ {g:[[7,10,13],[10,13,16],[13,16,null]],o:['19','17','18','16','21','13'],a:0,ex:'Числа растут на 3 и вправо, и вниз: 16 + 3 = 19.'}
 ];
 const NUMR='5839';
 const LIKO=['Совершенно верно','Скорее верно','Затрудняюсь ответить','Скорее неверно','Совершенно неверно'];
 const LVLS=[0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2];
 const MAT=buildQuestions().map((m,i)=>({...m,lvl:LVLS[i]}));
 // лёгкий старт → «ага»-вопросы → рост сложности → пик → финиш на посильном задании
-const SEQ='T0 M0 T2 L0 A0 R0 T5 M3 T4 M4 N0 L1 T3 A1 T9 M7 T6 T8 A2 L4 T10 M6 M10 T11 M8 P1 T12 W0 D0 D1'.split(' ');
+const SEQ='T0 M0 T12 V0 A0 R0 V1 M3 V2 M4 N2 V3 T3 V4 V5 M7 V6 T13 A2 V7 V8 M6 M10 A5 P4 P1 T14 W0 D0 D1'.split(' ');
 const Q=SEQ.map(t=>{const k=t[0],i=+t.slice(1);
-  if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};
+  if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};if(k==='V')return{vq:1,...VIS[i]};
   if(k==='U')return{text:1,cat:'mem',q:'Какое число мы просили запомнить в середине теста?',o:['5893','5839','5398','8539','5938'],a:1,ex:'Число было 5839. Это задание на отложенное запоминание чисел.'};
   if(k==='W')return{text:1,cat:'mem',q:'Какое слово мы просили запомнить в самом начале теста?',o:['Граница','Галактика','Горизонт','Гармония','Город'],a:2,ex:'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.'};return MAT[i]});
 Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
   const o=idx.map(k=>q.o[k]),na=idx.indexOf(q.a);Q[i]={...q,o,a:na}});
+Q.forEach((q,i)=>{if(!q.vq)return;const R=mkR(i*9173+57),idx=perm(R,q.opts.map((_,k)=>k));Q[i]={...q,opts:idx.map(k=>q.opts[k]),a:idx.indexOf(q.a)}});
 const SC=Q.map((q,i)=>i).filter(i=>!Q[i].likert),NS=SC.length;
 const TOTAL=Q.length,TIME=24*3600,L='АБВГДЕ';
 const LV=['лёгкая','средняя','высокая'];
@@ -1003,8 +1097,8 @@ function anaMain(q){let s=`<svg class="matrix" viewBox="0 0 330 230">${DEFS}`;
   s+=cell(15,120)+anaCell(q.C,65,170)+arr(170)+cell(215,120,1)+`<text x="265" y="188" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`;
   return uniq(s+'</svg>')}
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const optView=(q,k,sz)=>q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
-const nOpts=q=>q.text?q.o.length:q.opts.length;
+const optView=(q,k,sz)=>q.vq?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${q.opts[k](50,50)}</svg>`):q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
+const nOpts=q=>q.text&&!q.vq?q.o.length:q.opts.length;
 
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
@@ -1016,7 +1110,7 @@ function begin(){TR('begin',{l:LANG});paceShown=false;shownI={};userName='';Q.fo
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
 function drawTimer(){return;const t=Math.max(left,0);$('timer').textContent=`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;$('timer').classList.toggle('low',left<=120)}
 const CATN={attn:'Внимательность',num:'Числовое мышление',logic:'Логика',verb:'Вербальное мышление',mem:'Кратковременная память',spat:'Пространственное мышление'};
-function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text?CATN[q.cat]:'Пространственное мышление')}
+function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text||q.vq?CATN[q.cat]:'Пространственное мышление')}
 function confetti(n){try{const c=$('confetti'),x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,C=['#4f46e5','#a855f7','#22c55e','#f59e0b','#ec4899','#06b6d4'];
   const P=Array.from({length:n},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*11,vy:-Math.random()*12-4,r:Math.random()*6+4,c:C[Math.random()*C.length|0],a:Math.random()*6,va:(Math.random()-.5)*.3}));
   const t0=performance.now();(function f(now){x.clearRect(0,0,W,H);const el=now-t0;P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-el/2200);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(el<2200)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})(t0)}catch(e){}}
@@ -1039,9 +1133,9 @@ function render(){const q=Q[cur];clearTimeout(memT);
     let t=q.show;const step=()=>{t--;if(t<=0){q.seen=1;$('skipBtn').classList.remove('invisible');render();return}const c=$('memc');if(c)c.innerHTML=L2(`Исчезнет через <b>${t}</b> сек.`,`<b>${t}</b> секундтан кейін жоғалады`);memT=setTimeout(step,1000)};
     memT=setTimeout(step,1000);return}
   $('skipBtn').classList.remove('invisible');
-  $('qtext').textContent=T(q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
-  $('qvis').innerHTML=q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
-  $('opts').className=q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
+  $('qtext').textContent=T(q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
+  $('qvis').innerHTML=q.vq?uniq(q.main()):q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
+  $('opts').className=q.vq?'opts vis':q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
   let h='';for(let k=0;k<nOpts(q);k++)h+=q.demo?`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span><span>${T(q.o[k])}</span></button>`:q.likert?`<button class="opt lk${k}${ans[cur]===k?' sel':''}" data-i="${k}">${T(LIKO[k])}</button>`:`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span>${optView(q,k)}</button>`;
   $('opts').innerHTML=h;
   $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
@@ -1058,7 +1152,7 @@ function inter(){const once=k=>!shownI[k]&&(shownI[k]=1);
   if(cur===Math.floor(TOTAL/2)&&!paceShown){showPace();return}
   if(cur===RADAT&&once('rad')){showRadar();return}
   if(TOTAL-cur===5&&once('prog')){showProg();return}}
-const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>!q.text||q.cat==='spat']];
+const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
 function showRadar(){const cx=110,cy=105,R=80,n=5;let s=`<svg viewBox="-40 0 300 210" width="300" height="210" style="max-width:100%">`;
   const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
   [1,.66,.33].forEach(f=>{s+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#e3e5f0"/>`});
@@ -1117,8 +1211,8 @@ function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(
     s+=`<text x="${lx}" y="${ly+4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="rgba(255,255,255,.85)">${labels[i]}</text>`});
   return s+'</svg>'}
 const RGRP=[['🧩','Логика','Логика',q=>q.cat==='logic'],['🔍','Внимательность','Внимание',q=>q.cat==='attn'],['🧠','Память','Память',q=>q.cat==='mem'],
-  ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>!q.text||q.cat==='spat']];
-const qTitle=q=>q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
+  ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
+const qTitle=q=>q.vq?T(q.q):q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
 function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const has=k=>Q.some(q=>q.key===k);const st=[];
   if(has('prac'))st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
   if(has('det'))st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);

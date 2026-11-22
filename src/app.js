@@ -14,6 +14,8 @@ const TEXT=[
  {cat:'num',q:'Какое число лишнее?\n3, 5, 7, 9, 11, 13',o:['3','9','11','13','7'],a:1,ex:'Все числа, кроме 9, — простые: делятся только на 1 и на самих себя. А 9 делится на 3.'},
  {cat:'logic',q:'Ручка и тетрадь вместе стоят 1 100 ₸. Ручка дороже тетради на 1 000 ₸. Сколько стоит тетрадь?',o:['100 ₸','50 ₸','1 000 ₸','550 ₸'],a:1,ex:'Если тетрадь стоит x, то ручка — x + 1000. Вместе: 2x + 1000 = 1100 → x = 50 ₸. Ответ «100 ₸» — интуитивная ловушка.'},
  {cat:'num',q:'Какое число следующее?\n2, 6, 12, 20, 30, …',o:['36','40','42','44'],a:2,ex:'Разница растёт на 2: +4, +6, +8, +10, затем +12. 30 + 12 = 42.'},
+ {cat:'verb',q:'Какая буква следующая?\nA, C, F, J, …',o:['O','N','M','P','K'],a:0,ex:'Шаг между буквами растёт: +2, +3, +4, затем +5. J + 5 = O.'},
+ {cat:'num',q:'Какое число следующее?\n4, 20, 6, 18, 8, 16, …',o:['10','14','12','9','18'],a:0,ex:'Здесь чередуются два ряда: 4, 6, 8, … (+2) и 20, 18, 16, … (−2). Следующее число из первого ряда — 10.'},
  {cat:'logic',q:'5 станков за 5 минут делают 5 деталей. За сколько минут 100 станков сделают 100 деталей?',o:['100','20','5','1'],a:2,ex:'Каждый станок делает одну деталь за 5 минут. 100 станков работают одновременно и сделают 100 деталей за те же 5 минут.'}
 ];
 const MEM=[
@@ -32,6 +34,9 @@ const PAT=[
  {p:{k:'cross',s:34,L:9,w:4,a:22},opts:[{k:'cross',s:34,L:9,w:4,a:0},{k:'cross',s:22,L:6,w:3,a:22},{k:'cross',s:34,L:9,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:45},{k:'cross',s:34,L:15,w:4,a:22},{k:'cross',s:34,L:9,w:4,a:-22}],a:2,ex:'Крестики стоят рядами, повёрнутыми примерно на 22°, на одинаковом расстоянии и одного размера. Совпадают угол, шаг и размер только у одного фрагмента.'},
  {p:{k:'tile',s:58,a:0,inner:1},opts:[{k:'tile',s:58,a:0,inner:0},{k:'tile',s:58,a:0,inner:1,dx:29},{k:'tile',s:29,a:0,inner:1},{k:'tile',s:58,a:0,inner:1},{k:'tile',s:58,a:45,inner:1},{k:'tile',s:58,a:0,inner:1,dy:29}],a:3,ex:'Узор состоит из ромбов с перекрестием и точкой в центре, уложенных ровной сеткой. Правильный фрагмент совпадает не только по форме и размеру, но и по положению ромбов — он продолжает соседние ряды.'},
  {p:{k:'dot',s:18,r:3.5,a:30},opts:[{k:'dot',s:18,r:3.5,a:0},{k:'dot',s:12,r:3.5,a:30},{k:'dot',s:18,r:6.5,a:30},{k:'dot',s:18,r:3.5,a:60},{k:'stripe',s:18,w:4,a:30},{k:'dot',s:18,r:3.5,a:30}],a:5,ex:'Точки расположены рядами под наклоном 30°, с одинаковым шагом и размером. Совпадают все три признака только у одного варианта.'}
+,
+ {p:{k:'stripe',s:16,w:5,a:35},opts:[{k:'stripe',s:16,w:5,a:35},{k:'stripe',s:16,w:5,a:0},{k:'stripe',s:16,w:5,a:-35},{k:'stripe',s:26,w:5,a:35},{k:'stripe',s:16,w:10,a:35},{k:'dot',s:16,r:3.5,a:35}],a:0,
+  ex:'Узор — наклонные полосы одинаковой толщины и шага. Подходит фрагмент с тем же наклоном, шагом и толщиной.'}
 ];
 const ANA=[
  {A:{k:'sh',s:'circle',f:0,d:1},B:{k:'sh',s:'circle',f:2,d:1},C:{k:'sh',s:'hexagon',f:0,d:1},
@@ -49,6 +54,10 @@ const ANA=[
  {A:{k:'sh',s:'pentagon',f:0,d:0,ln:0},B:{k:'sh',s:'pentagon',f:0,d:0,ln:1},C:{k:'sh',s:'pentagon',f:2,d:0,ln:0},
   opts:[{k:'sh',s:'pentagon',f:2,d:0,ln:0},{k:'sh',s:'pentagon',f:0,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:1,ln:0},{k:'sh',s:'hexagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:2,d:0,ln:1},{k:'sh',s:'pentagon',f:1,d:0,ln:1}],a:4,
   ex:'К фигуре добавляется горизонтальная линия, а форма и цвет не меняются. Тёмный пятиугольник получает линию и остаётся тёмным.'}
+,
+ {A:{k:'sh',s:'square',f:0,d:0,ln:0},B:{k:'sh',s:'square',f:2,d:1,ln:0},C:{k:'sh',s:'triangle',f:0,d:0,ln:1},
+  opts:[{k:'sh',s:'triangle',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:0,ln:1},{k:'sh',s:'triangle',f:0,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:1,ln:0},{k:'sh',s:'square',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:1,d:1,ln:1}],a:0,
+  ex:'Фигура закрашивается, и в ней появляется точка, остальное не меняется. Треугольник с линией тоже становится тёмным с точкой.'}
 ];
 const WORD='ГОРИЗОНТ';
 const DEMO=[
@@ -57,20 +66,22 @@ const DEMO=[
 ];
 const NM=[
  {g:[[2,5,10],[3,4,12],[6,2,null]],o:['8','10','12','14','4','16'],a:2,ex:'В каждой строке третье число равно произведению первых двух: 6 × 2 = 12.'},
- {g:[[9,4,5],[12,5,7],[15,6,null]],o:['8','9','10','11','21','7'],a:1,ex:'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.'}
+ {g:[[9,4,5],[12,5,7],[15,6,null]],o:['8','9','10','11','21','7'],a:1,ex:'В каждой строке третье число равно разности первых двух: 15 − 6 = 9.'},
+ {g:[[7,10,13],[10,13,16],[13,16,null]],o:['19','17','18','16','21','13'],a:0,ex:'Числа растут на 3 и вправо, и вниз: 16 + 3 = 19.'}
 ];
 const NUMR='5839';
 const LIKO=['Совершенно верно','Скорее верно','Затрудняюсь ответить','Скорее неверно','Совершенно неверно'];
 const LVLS=[0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2];
 const MAT=buildQuestions().map((m,i)=>({...m,lvl:LVLS[i]}));
 // лёгкий старт → «ага»-вопросы → рост сложности → пик → финиш на посильном задании
-const SEQ='T0 M0 T2 L0 A0 R0 T5 M3 T4 M4 N0 L1 T3 A1 T9 M7 T6 T8 A2 L4 T10 M6 M10 T11 M8 P1 T12 W0 D0 D1'.split(' ');
+const SEQ='T0 M0 T12 V0 A0 R0 V1 M3 V2 M4 N2 V3 T3 V4 V5 M7 V6 T13 A2 V7 V8 M6 M10 A5 P4 P1 T14 W0 D0 D1'.split(' ');
 const Q=SEQ.map(t=>{const k=t[0],i=+t.slice(1);
-  if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};
+  if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};if(k==='V')return{vq:1,...VIS[i]};
   if(k==='U')return{text:1,cat:'mem',q:'Какое число мы просили запомнить в середине теста?',o:['5893','5839','5398','8539','5938'],a:1,ex:'Число было 5839. Это задание на отложенное запоминание чисел.'};
   if(k==='W')return{text:1,cat:'mem',q:'Какое слово мы просили запомнить в самом начале теста?',o:['Граница','Галактика','Горизонт','Гармония','Город'],a:2,ex:'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.'};return MAT[i]});
 Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
   const o=idx.map(k=>q.o[k]),na=idx.indexOf(q.a);Q[i]={...q,o,a:na}});
+Q.forEach((q,i)=>{if(!q.vq)return;const R=mkR(i*9173+57),idx=perm(R,q.opts.map((_,k)=>k));Q[i]={...q,opts:idx.map(k=>q.opts[k]),a:idx.indexOf(q.a)}});
 const SC=Q.map((q,i)=>i).filter(i=>!Q[i].likert),NS=SC.length;
 const TOTAL=Q.length,TIME=24*3600,L='АБВГДЕ';
 const LV=['лёгкая','средняя','высокая'];
@@ -110,8 +121,8 @@ function anaMain(q){let s=`<svg class="matrix" viewBox="0 0 330 230">${DEFS}`;
   s+=cell(15,120)+anaCell(q.C,65,170)+arr(170)+cell(215,120,1)+`<text x="265" y="188" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`;
   return uniq(s+'</svg>')}
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const optView=(q,k,sz)=>q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
-const nOpts=q=>q.text?q.o.length:q.opts.length;
+const optView=(q,k,sz)=>q.vq?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${q.opts[k](50,50)}</svg>`):q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
+const nOpts=q=>q.text&&!q.vq?q.o.length:q.opts.length;
 
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
@@ -123,7 +134,7 @@ function begin(){TR('begin',{l:LANG});paceShown=false;shownI={};userName='';Q.fo
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
 function drawTimer(){return;const t=Math.max(left,0);$('timer').textContent=`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;$('timer').classList.toggle('low',left<=120)}
 const CATN={attn:'Внимательность',num:'Числовое мышление',logic:'Логика',verb:'Вербальное мышление',mem:'Кратковременная память',spat:'Пространственное мышление'};
-function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text?CATN[q.cat]:'Пространственное мышление')}
+function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text||q.vq?CATN[q.cat]:'Пространственное мышление')}
 function confetti(n){try{const c=$('confetti'),x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,C=['#4f46e5','#a855f7','#22c55e','#f59e0b','#ec4899','#06b6d4'];
   const P=Array.from({length:n},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*11,vy:-Math.random()*12-4,r:Math.random()*6+4,c:C[Math.random()*C.length|0],a:Math.random()*6,va:(Math.random()-.5)*.3}));
   const t0=performance.now();(function f(now){x.clearRect(0,0,W,H);const el=now-t0;P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-el/2200);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(el<2200)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})(t0)}catch(e){}}
@@ -146,9 +157,9 @@ function render(){const q=Q[cur];clearTimeout(memT);
     let t=q.show;const step=()=>{t--;if(t<=0){q.seen=1;$('skipBtn').classList.remove('invisible');render();return}const c=$('memc');if(c)c.innerHTML=L2(`Исчезнет через <b>${t}</b> сек.`,`<b>${t}</b> секундтан кейін жоғалады`);memT=setTimeout(step,1000)};
     memT=setTimeout(step,1000);return}
   $('skipBtn').classList.remove('invisible');
-  $('qtext').textContent=T(q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
-  $('qvis').innerHTML=q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
-  $('opts').className=q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
+  $('qtext').textContent=T(q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
+  $('qvis').innerHTML=q.vq?uniq(q.main()):q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
+  $('opts').className=q.vq?'opts vis':q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
   let h='';for(let k=0;k<nOpts(q);k++)h+=q.demo?`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span><span>${T(q.o[k])}</span></button>`:q.likert?`<button class="opt lk${k}${ans[cur]===k?' sel':''}" data-i="${k}">${T(LIKO[k])}</button>`:`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span>${optView(q,k)}</button>`;
   $('opts').innerHTML=h;
   $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
@@ -165,7 +176,7 @@ function inter(){const once=k=>!shownI[k]&&(shownI[k]=1);
   if(cur===Math.floor(TOTAL/2)&&!paceShown){showPace();return}
   if(cur===RADAT&&once('rad')){showRadar();return}
   if(TOTAL-cur===5&&once('prog')){showProg();return}}
-const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>!q.text||q.cat==='spat']];
+const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
 function showRadar(){const cx=110,cy=105,R=80,n=5;let s=`<svg viewBox="-40 0 300 210" width="300" height="210" style="max-width:100%">`;
   const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
   [1,.66,.33].forEach(f=>{s+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#e3e5f0"/>`});
@@ -224,8 +235,8 @@ function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(
     s+=`<text x="${lx}" y="${ly+4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="rgba(255,255,255,.85)">${labels[i]}</text>`});
   return s+'</svg>'}
 const RGRP=[['🧩','Логика','Логика',q=>q.cat==='logic'],['🔍','Внимательность','Внимание',q=>q.cat==='attn'],['🧠','Память','Память',q=>q.cat==='mem'],
-  ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>!q.text||q.cat==='spat']];
-const qTitle=q=>q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
+  ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
+const qTitle=q=>q.vq?T(q.q):q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
 function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const has=k=>Q.some(q=>q.key===k);const st=[];
   if(has('prac'))st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
   if(has('det'))st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);
