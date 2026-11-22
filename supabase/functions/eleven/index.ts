@@ -1,5 +1,5 @@
 // IQly admin ↔ ElevenLabs bridge. Only users listed in public.admins may call it.
-// Actions: status | save_key | voices | models | tts
+// Actions: status | save_key | voices | models | design | save_voice | tts | music
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const CORS = {
@@ -133,6 +133,29 @@ Deno.serve(async (req) => {
       }).select().single();
       const { data: s } = await admin.storage.from("tts").createSignedUrl(path, 3600);
       return json({ ok: true, job, url: s?.signedUrl });
+    }
+    if (action === "music") {
+      // Eleven Music: instrumental background track for Reels, stored in the private "reels" bucket under music/
+      const prompt = String(body.prompt || "").trim().slice(0, 1500);
+      if (!prompt) return json({ error: "Пустой промпт" }, 400);
+      const len = Math.max(10000, Math.min(90000, Number(body.length_ms) || 45000));
+      let r: Response | null = null, last = "";
+      for (const model_id of ["music_v2_5", "music_v2", "music_v1"]) {
+        r = await fetch(`${EL}/music?output_format=mp3_44100_128`, {
+          method: "POST", headers: { ...H, "Content-Type": "application/json", Accept: "audio/mpeg" },
+          body: JSON.stringify({ prompt, music_length_ms: len, model_id, force_instrumental: true }),
+        });
+        if (r.ok) break;
+        last = r.status + " " + (await r.text()).slice(0, 300);
+        if (r.status !== 400 && r.status !== 422 && r.status !== 404) break; // only retry when the model id is rejected
+      }
+      if (!r || !r.ok) return json({ error: "ElevenLabs Music: " + last }, 502);
+      const buf = new Uint8Array(await r.arrayBuffer());
+      const path = `music/${new Date().toISOString().slice(0, 10)}-${crypto.randomUUID().slice(0, 8)}.mp3`;
+      const up = await admin.storage.from("reels").upload(path, buf, { contentType: "audio/mpeg" });
+      if (up.error) return json({ error: "storage: " + up.error.message }, 500);
+      const { data: s } = await admin.storage.from("reels").createSignedUrl(path, 3600);
+      return json({ ok: true, path, url: s?.signedUrl });
     }
     return json({ error: "unknown action" }, 400);
   } catch (e) {

@@ -26,7 +26,8 @@ function mix(T,c,bg){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mu
   // light music: plucky arpeggio + soft kick
   const notes=[523.3,659.3,784,659.3,587.3,698.5,880,698.5],beat=60/110/2;const pl=f=>{const n=.25*SR|0,o=new Float32Array(n);for(let k=0;k<n;k++){const t=k/SR;o[k]=(.06*Math.sin(2*Math.PI*f*t)+.02*Math.sin(4*Math.PI*f*t))*Math.exp(-t*12)}return o};
   const kick=(()=>{const n=.3*SR|0,o=new Float32Array(n);let ph=0;for(let k=0;k<n;k++){const t=k/SR;ph+=2*Math.PI*(50+80*Math.exp(-t*30))/SR;o[k]=.35*Math.sin(ph)*Math.exp(-t*10)}return o})();
-  if(bg&&bg.length>SR*4){
+  if(bg===false){/* no music */}
+  else if(bg&&bg.length>SR*4){
     // uploaded background track, looped with a 1 s crossfade so it never stops
     const X=SR|0,stp=bg.length-X;for(let st=0,k=0;st<N;st+=stp,k++){const o=new Float32Array(bg.length);for(let j=0;j<bg.length;j++){let g=1;if(k>0&&j<X)g=j/X;if(j>bg.length-X)g=(bg.length-j)/X;o[j]=bg[j]*g*.42}add(mus,st/SR,o)}}
   else{const P=notes.map(pl);for(let b=0;b*beat<T.dur+1;b++){add(mus,b*beat,P[b%8]);if(b%4===0)add(mus,b*beat,kick)}}

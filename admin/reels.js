@@ -26,6 +26,20 @@ box.innerHTML=`
   <label class="fld"><span>Голос</span><select id="qkVoice"><option value="">Загрузка…</option></select></label>
   <label class="fld"><span>Сколько видео</span><input id="qkN" type="number" min="1" max="30" value="1"></label>
  </div>
+ <div class="card" style="padding:12px;margin:4px 0 12px;background:#fff">
+  <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+   <label class="fld" style="flex:1;min-width:220px;margin:0"><span>🎵 Фоновая музыка</span><select id="qkMus"><option value="builtin">🎧 Quiz Show (загруженная)</option></select></label>
+   <button type="button" class="btn sec" id="qkMusPlay">▶ Послушать</button></div>
+  <audio id="qkMusA" style="display:none"></audio>
+  <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">✨ Создать новую уникальную музыку (ElevenLabs Music)</summary>
+   <div class="form" style="grid-template-columns:1fr;margin-top:8px">
+    <label class="fld"><span>Стиль</span><select id="qkMusSt"></select></label>
+    <label class="fld"><span>Описание (можно менять, лучше по-английски)</span><textarea id="qkMusP" rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
+   </div>
+   <button type="button" class="btn" id="qkMusGo" style="width:100%">🎼 Сгенерировать трек (~45 сек, 1–2 мин)</button>
+   <div class="muted" style="font-size:12px;margin-top:6px">Трек уникальный, без вокала, для коммерческого использования (платный тариф ElevenLabs). Тратит кредиты ElevenLabs.</div>
+   <div class="err" id="qkMusErr"></div></details>
+ </div>
  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qkGo" style="flex:1;min-width:200px">⚡ Создать</button><button class="btn sec hide" id="qkStop">⏹ Остановить после текущего</button></div>
  <div class="muted" id="qkNote" style="font-size:12px;margin-top:8px">Пока идёт создание, держите эту вкладку открытой. Одно видео ≈ 1–2 мин. Расход ElevenLabs ≈ 400–500 символов на видео.</div>
  <div id="qkQ" style="display:grid;gap:6px;margin-top:10px"></div>
@@ -208,8 +222,36 @@ async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
-// background music for quiz reels (admin/audio/quiz-bg.m4a), decoded once
-let BGM=null;function bgm(){if(!BGM)BGM=decode('audio/quiz-bg.m4a?v=1').catch(e=>{console.warn('bg music',e);BGM=null;return null});return BGM}
+// ---------- background music: built-in track, AI-generated tracks (ElevenLabs Music) or none ----------
+const MUS_PRE={
+ phonk:['🔥 Phonk (TikTok-тренд)','Modern Brazilian phonk instrumental, punchy cowbell melody, distorted 808 bass, hard-hitting drums, energetic and catchy, 130 BPM, perfect background for a fast TikTok quiz video, no vocals'],
+ future:['💎 Future bass / hyperpop','Bright modern future bass and hyperpop instrumental, sparkling synth chords, playful vocal-chop-like synth leads (no words), bouncy drums, uplifting and curious mood, 140 BPM, background for a social media quiz, no vocals'],
+ afro:['🌴 Afro house groove','Modern afro house instrumental, groovy percussion and shakers, warm deep bass, catchy marimba hook, positive confident energy, 122 BPM, background for a short quiz video, no vocals'],
+ tension:['⏱ Напряжение + тиканье','Modern minimal electronic tension track for a game show countdown, subtle ticking clock rhythm, pulsing synth bass, rising suspense, clean punchy drums, 120 BPM, no vocals'],
+ arcade:['🕹 Synthwave / аркада','Retro synthwave arcade game show instrumental, bright 80s synth arpeggios, punchy drum machine, fun and nostalgic but modern mix, 118 BPM, no vocals'],
+ lofi:['☕ Lo-fi chill','Modern lo-fi hip hop instrumental with a curious playful vibe, dusty drums, warm keys, soft bass, light vinyl texture, 88 BPM, background for a calm quiz video, no vocals']};
+let MUS={tracks:[],current:'builtin'};const BGC={};
+async function musLoad(){try{const {data}=await sb.from('app_settings').select('value').eq('key','reels_music').maybeSingle();if(data&&data.value)MUS=Object.assign({tracks:[],current:'builtin'},data.value)}catch(e){}
+  const cur=localStorage.getItem('reels_music_cur');if(cur)MUS.current=cur;musDraw()}
+async function musSave(){try{await sb.from('app_settings').upsert({key:'reels_music',value:MUS,updated_at:new Date().toISOString()})}catch(e){}}
+function musDraw(){const sel=$('qkMus');sel.innerHTML=`<option value="builtin">🎧 Quiz Show (загруженная)</option>${MUS.tracks.map(t=>`<option value="${esc(t.path)}">🎼 ${esc(t.name)}</option>`).join('')}<option value="none">🔇 Без музыки</option>`;
+  sel.value=[...sel.options].some(o=>o.value===MUS.current)?MUS.current:'builtin'}
+async function musUrl(v){if(v==='builtin')return 'audio/quiz-bg.m4a?v=1';const {data}=await sb.storage.from('reels').createSignedUrl(v,3600);if(!data)throw new Error('Трек не найден');return data.signedUrl}
+// returns Float32Array, or false for "no music"; built-in synth only if loading fails
+function bgm(){const v=MUS.current||'builtin';if(v==='none')return Promise.resolve(false);
+  if(!BGC[v])BGC[v]=musUrl(v).then(decode).catch(e=>{console.warn('bg music',e);delete BGC[v];return null});return BGC[v]}
+$('qkMus').onchange=()=>{MUS.current=$('qkMus').value;localStorage.setItem('reels_music_cur',MUS.current);$('qkMusA').pause();$('qkMusPlay').textContent='▶ Послушать'};
+$('qkMusPlay').onclick=async()=>{const a=$('qkMusA');if(!a.paused){a.pause();$('qkMusPlay').textContent='▶ Послушать';return}const v=$('qkMus').value;if(v==='none')return;
+  try{a.src=await musUrl(v);await a.play();$('qkMusPlay').textContent='⏸ Стоп'}catch(e){$('qkMusErr').textContent=e.message}};
+$('qkMusA').onended=()=>$('qkMusPlay').textContent='▶ Послушать';
+$('qkMusSt').innerHTML=Object.keys(MUS_PRE).map(k=>`<option value="${k}">${MUS_PRE[k][0]}</option>`).join('');
+$('qkMusSt').onchange=()=>{$('qkMusP').value=MUS_PRE[$('qkMusSt').value][1]};$('qkMusSt').onchange();
+$('qkMusGo').onclick=async()=>{$('qkMusErr').textContent='';busy($('qkMusGo'),true,'🎼 ElevenLabs пишет музыку… (1–2 мин)');
+  try{const r=await EL({action:'music',prompt:$('qkMusP').value,length_ms:45000});
+    const name=MUS_PRE[$('qkMusSt').value][0].replace(/^\S+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    MUS.tracks.unshift({path:r.path,name,created_at:new Date().toISOString()});MUS.tracks=MUS.tracks.slice(0,30);MUS.current=r.path;localStorage.setItem('reels_music_cur',r.path);await musSave();musDraw();
+    const a=$('qkMusA');a.src=r.url;a.play().then(()=>$('qkMusPlay').textContent='⏸ Стоп').catch(()=>{})}
+  catch(e){$('qkMusErr').textContent=e.message}busy($('qkMusGo'),false,'🎼 Сгенерировать трек (~45 сек, 1–2 мин)')};
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
 async function build(){kzFix();const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
   if(VMODE==='design'&&!VPICK){try{$('reGoErr').textContent='';busy($('reGo'),true,'Готовим диктора…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — попробуйте через «📚 Мои голоса».';busy($('reGo'),false,'✅ Согласен — создать озвучку и видео');return}}
@@ -413,6 +455,6 @@ $('qkGo').onclick=async()=>{if(QK_RUN)return;const vid=$('qkVoice').value,vname=
   $('qkNote').innerHTML=`Готово: <b>${ok}</b> видео${fail?`, ошибок: <b style="color:#b91c1c">${fail}</b>`:''}. Все видео ниже в «Созданные Reels».`}
 window.addEventListener('beforeunload',e=>{if(QK_RUN){e.preventDefault();e.returnValue=''}});
 
-window.loadRe=async()=>{elStatus();status();loadHist();loadFonts();qkVoices()};
+window.loadRe=async()=>{elStatus();status();loadHist();loadFonts();qkVoices();musLoad()};
 window.__reelsTest={drawFrame,timeline,mixAudio,S,loadFonts};
 })();
