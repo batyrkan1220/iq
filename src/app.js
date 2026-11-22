@@ -128,7 +128,7 @@ const nOpts=q=>q.text&&!q.vq?q.o.length:q.opts.length;
 
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
-function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
+function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','email','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
 function start(){TR('start');if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
 document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;TR('lang',{l:LANG});try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
@@ -209,11 +209,32 @@ function pctOf(iq){const z=(iq-100)/15,t=1/(1+.2316419*Math.abs(z)),d=.3989423*M
 function levelOf(iq){
   if(iq>=130)return'Очень высокий интеллект';if(iq>=115)return'Выше среднего';
   if(iq>=100)return'Средний (верхняя граница)';if(iq>=85)return'Средний';return'Ниже среднего'}
-function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));show('analyze');
-  const steps=[...document.querySelectorAll('#steps li')];steps.forEach(s=>s.className='');
-  steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*900));
-  const T=steps.length*900+200,t0=performance.now();(function tk(now){const p=Math.min(1,(now-t0)/T);$('ringC').style.strokeDashoffset=327*(1-p);$('ringP').textContent=Math.round(p*100)+'%';if(p<1)requestAnimationFrame(tk)})(t0);
-  setTimeout(()=>PAYCFG.then(()=>FREE?showResult():showPaywall()),steps.length*900+300)}
+function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));
+  let em=null;try{em=localStorage.getItem('iq_email')}catch(e){}
+  if(em){runAnalyze();return}
+  show('email');TR('email_view');setTimeout(()=>{try{$('emIn').focus()}catch(e){}},350)}
+const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
+function emSubmit(){const v=$('emIn').value.trim().toLowerCase(),er=$('emErr');
+  if(!EMAIL_RE.test(v)||v.length>254){er.textContent=L2('Введите корректный email, например name@mail.com','Дұрыс email жазыңыз, мысалы name@mail.com');er.classList.remove('hidden');return}
+  er.classList.add('hidden');try{localStorage.setItem('iq_email',v)}catch(e){}
+  sbIns('leads',{visit_id:VID,email:v,lang:LANG});TR('email');runAnalyze()}
+$('emBtn').onclick=emSubmit;$('emIn').addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()});
+function runAnalyze(){show('analyze');const box=document.querySelector('#analyze .az');box.classList.remove('fin');
+  const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
+  const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
+  $('azBars').innerHTML=RGRP.map((g,i)=>`<div class="az-bar" data-i="${i}"><span>${g[0]}</span><span class="t">${T(g[2])}<span class="tr"><i></i></span></span><span class="v">…</span></div>`).join('');
+  $('azH').textContent=L2('Анализируем ваши ответы','Жауаптарыңызды талдап жатырмыз');
+  const steps=[...document.querySelectorAll('#steps li')],SD=1500,TT=steps.length*SD;steps.forEach(s=>s.className='');
+  steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*SD));
+  const bars=[...document.querySelectorAll('#azBars .az-bar')];
+  bars.forEach((el,i)=>setTimeout(()=>{el.classList.add('on');const p=Math.round(gv[i]*100);el.querySelector('i').style.width=Math.max(4,p)+'%';
+    let c=0;const iv=setInterval(()=>{c=Math.min(p,c+Math.max(1,Math.round(p/12)));el.querySelector('.v').textContent=c+'%';if(c>=p)clearInterval(iv)},70)},2*SD+i*420));
+  const done=ans.filter(a=>a!==null).length,t0=performance.now();
+  (function tk(now){const p=Math.min(1,(now-t0)/TT),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    $('azRing').style.strokeDashoffset=641*(1-e);$('azPct').textContent=Math.round(e*100);$('azCnt').textContent=Math.min(done,Math.round(done*Math.min(1,p*2.2)))+' / '+TOTAL;
+    if(p<1)requestAnimationFrame(tk)})(t0);
+  setTimeout(()=>{steps[steps.length-1].className='done';box.classList.add('fin');$('azH').textContent=L2('Готово! ✨','Дайын! ✨');try{confetti(60)}catch(e){}},TT+100);
+  setTimeout(()=>PAYCFG.then(()=>FREE?showResult():showPaywall()),TT+1300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
   $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-іңіз есептеліп қойды.`);
