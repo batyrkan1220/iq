@@ -1,4 +1,4 @@
-// ===== IQly admin · Reels studio: Claude questions → voice plan → ElevenLabs → in-browser video =====
+// ===== iqtest.live admin · Reels studio: Claude questions → voice plan → ElevenLabs → in-browser video =====
 (function(){
 const W=1080,H=1920,FPS=30,SR=44100;
 const RL=async(body)=>{const {data,error}=await sb.functions.invoke('reels',{body});if(error){let m=error.message;try{const j=await error.context.json();m=j.error||m}catch(e){}throw new Error(m)}if(data&&data.error)throw new Error(data.error);return data};
@@ -98,7 +98,7 @@ function doDesign(){if(DESIGNING)return DESIGNING;$('vdErr').textContent='';busy
     catch(e){$('vdErr').textContent=e.message;$('vdPrev').innerHTML='';throw e}
     finally{busy($('vdGo'),false,'🎨 Тағы 3 нұсқа жасау');DESIGNING=null}})();return DESIGNING}
 async function pickPrev(i){const p=PREV[i],b=$('vdPrev').querySelector(`button[data-i="${i}"]`);if(b)busy(b,true,'Сақталуда…');
-  try{const nm='IQly · '+$('vdPre').selectedOptions[0].textContent.replace(/^[^\s]+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU');
+  try{const nm='iqtest.live · '+$('vdPre').selectedOptions[0].textContent.replace(/^[^\s]+\s/,'')+' · '+new Date().toLocaleDateString('ru-RU');
     const s=await EL({action:'save_voice',generated_voice_id:p.id,name:nm.slice(0,60),description:$('vdDesc').value});
     S.voices.unshift({id:s.voice_id,name:s.name,category:'generated'});const o=document.createElement('option');o.value=s.voice_id;o.textContent=s.name+' · generated';$('pVoice').prepend(o);$('pVoice').value=s.voice_id;
     VPICK=s.voice_id;localStorage.setItem('el_voice',s.voice_id);$('vdPrev').querySelectorAll('.card').forEach((c,k)=>c.style.outline=k===i?'2px solid var(--pri)':'');$('vdPrev').querySelectorAll('button').forEach((x,k)=>{x.disabled=false;x.textContent=k===i?'✓ Таңдалды':'Осыны таңдаймын'});selInfo();return VPICK}

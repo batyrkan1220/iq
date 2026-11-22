@@ -278,7 +278,7 @@ function showResult(re){
     $('review').innerHTML=h||`<div class="empty">${L2('🎉 Ошибок нет — отличный результат!','🎉 Қате жоқ — керемет нәтиже!')}</div>`;
     $('tBad').classList.toggle('on',f==='bad');$('tAll').classList.toggle('on',f==='all')};
   $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все задания');window._rv(bad+skip?'bad':'all');
-  window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — IQly`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — IQly`);
+  window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — iqtest.live`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — iqtest.live`);
   if(!re){const di=Q.findIndex(q=>q.key==='age'),de=Q.findIndex(q=>q.demo&&q.key!=='age');sbIns('results',{visit_id:VID,lang:LANG,iq,correct,total:NS,age:di>=0&&ans[di]!==null?Q[di].o[ans[di]]:null,edu:de>=0&&ans[de]!==null?Q[de].o[ans[de]]:null,duration_sec:used,traits:st.map(x=>x[1]),answers:ans});TR('result',{iq})}
   saveHist({d:new Date().toLocaleString('ru-RU'),n:userName||'—',c:correct,iq,age:ans[SEQ.indexOf('D0')],edu:ans[SEQ.indexOf('D1')]});show('result');if(!re)window.scrollTo(0,0)}
 $('tBad').onclick=()=>window._rv('bad');$('tAll').onclick=()=>window._rv('all');
@@ -335,7 +335,7 @@ function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
   $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();
   document.querySelectorAll('.lsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
-  document.title=L2('IQly — тест IQ','IQly — IQ тест');
+  document.title=L2('iqtest.live — тест IQ','iqtest.live — IQ тест');
   if(!$('test').classList.contains('hidden'))render();
   if(!$('result').classList.contains('hidden'))showResult(1);
   if(!$('paywall').classList.contains('hidden'))showPaywall(1)}

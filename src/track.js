@@ -1,4 +1,4 @@
-// ---- IQly analytics (Supabase) ----
+// ---- iqtest.live analytics (Supabase) ----
 const SB_URL='https://dlhejkmuyyqvjzjxbwbg.supabase.co/rest/v1/',SB_KEY='sb_publishable_7F3dYw4mts2-rpJAgjkcKw_PnlYI2bR';
 const VID=(()=>{try{return crypto.randomUUID()}catch(e){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16)})}})();
 const NOTRACK=(()=>{try{return window.top!==window||/[?&]notrack/.test(location.search)}catch(e){return true}})();

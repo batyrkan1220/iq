@@ -1,4 +1,4 @@
-// ===== IQly · "Викторина" Reels format: 4 questions × 3 options, timer bar, reveal, last one → comments =====
+// ===== iqtest.live · "Викторина" Reels format: 4 questions × 3 options, timer bar, reveal, last one → comments =====
 window.QUIZ=(function(){
 const W=1080,H=1920,SR=44100;
 // [emoji, tileColor, kz{q,v?,o,a,av}, ru{q,v?,o,a,av}]
@@ -87,7 +87,7 @@ function mix(T,c){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mus=n
   T.qs.forEach((o,i)=>{add(fx,o.s,wh);for(let k=0;k<10;k++)add(fx,o.ts+k*.5,tick,k>=7?1.3:.8);add(fx,o.ra,i<3?ding:pop,.8)});
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
-// ---------- drawing (IQly riddle style) ----------
+// ---------- drawing (iqtest.live riddle style) ----------
 const F=(w,s)=>`${w} ${s}px Manrope, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
 const EF=s=>`${s}px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif`;
 const cl=x=>Math.max(0,Math.min(1,x)),ease=x=>1-Math.pow(1-x,3);

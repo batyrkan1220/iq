@@ -1,4 +1,4 @@
-// ===== IQly · offline riddle bank + generators (no AI needed) =====
+// ===== iqtest.live · offline riddle bank + generators (no AI needed) =====
 // Every curated item: [type_kz, type_ru, kz:{s,v,a,av,w,t}, ru:{s,v,a,av,w,t}, difficulty]
 // s = on-screen text (\n = new line), v = voice text, a = answer (screen), av = answer (voice, with short reason), w = why (screen), t = trap (common wrong answer)
 window.RBANK=(function(){
