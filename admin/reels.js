@@ -234,7 +234,8 @@ const MUS_PRE={
 const MUS_BUILT={phonk:['🔥 1. IQ Phonk (по умолчанию)','audio/iq-phonk.m4a?v=1'],future:['💎 2. IQ Future Bass','audio/iq-future.m4a?v=1'],afro:['🌴 3. IQ Afro House','audio/iq-afro.m4a?v=1'],
  tension:['⏱ 4. IQ Tension (тиканье)','audio/iq-tension.m4a?v=1'],arcade:['🕹 5. IQ Synthwave Arcade','audio/iq-arcade.m4a?v=1'],reggaeton:['💃 6. IQ Reggaeton','audio/iq-reggaeton.m4a?v=1'],
  drill:['🧊 7. IQ Drill','audio/iq-drill.m4a?v=1'],lofi:['☕ 8. IQ Lo-fi Chill','audio/iq-lofi.m4a?v=1'],jersey:['🏀 9. IQ Jersey Club','audio/iq-jersey.m4a?v=1'],
- trap:['🌑 10. IQ Dark Trap','audio/iq-trap.m4a?v=1'],builtin:['🎧 Quiz Show (загруженная)','audio/quiz-bg.m4a?v=1']};
+ trap:['🌑 10. IQ Dark Trap','audio/iq-trap.m4a?v=1'],
+ calm1:['🌙 Calm 1 · Flute dreams','audio/iq-calm1.m4a?v=1'],calm2:['🌧 Calm 2 · Rain guitar','audio/iq-calm2.m4a?v=1'],calm3:['🔔 Calm 3 · Bells','audio/iq-calm3.m4a?v=1'],calm4:['☁️ Calm 4 · Dreamy pad','audio/iq-calm4.m4a?v=1'],calm5:['☀️ Calm 5 · Sunny keys','audio/iq-calm5.m4a?v=1'],calm6:['🌧 Calm 6 · Rainy flute','audio/iq-calm6.m4a?v=1'],calm7:['🧡 Calm 7 · Warm guitar','audio/iq-calm7.m4a?v=1'],calm8:['🌌 Calm 8 · Night bells','audio/iq-calm8.m4a?v=1'],calm9:['🌅 Calm 9 · Morning','audio/iq-calm9.m4a?v=1'],calm10:['🌧 Calm 10 · Rain keys','audio/iq-calm10.m4a?v=1'],builtin:['🎧 Quiz Show (загруженная)','audio/quiz-bg.m4a?v=1']};
 let MUS={tracks:[],current:'phonk'};const BGC={};
 async function musLoad(){try{const {data}=await sb.from('app_settings').select('value').eq('key','reels_music').maybeSingle();if(data&&data.value)MUS=Object.assign({tracks:[],current:'phonk'},data.value)}catch(e){}
   const cur=localStorage.getItem('reels_music_cur');if(cur)MUS.current=cur;musDraw()}

@@ -360,6 +360,64 @@ def trap():
     sc = sidechain(L, beats, .5, bpm)
     return master(dr + bs * sc + bl + pad)
 
+# ---------------- calm series: 10 lo-fi / chill variations ----------------
+def soft_lead(note, dur, vol=.07, vib=4.5):
+    n = int(dur * SR); t = np.arange(n) / SR; f = hz(note) * (1 + .004 * np.sin(2 * np.pi * vib * t))
+    x = np.sin(2 * np.pi * np.cumsum(f) / SR) + .15 * np.sin(4 * np.pi * np.cumsum(f) / SR) + hp(rng.standard_normal(n), 3000) * .02
+    return x * env(n, .06, dur * .7) * vol
+
+def guitar(note, dur=.6, vol=.11):
+    n = int(dur * SR); t = np.arange(n) / SR; f = hz(note)
+    x = sum(np.sin(2 * np.pi * f * h * t) * np.exp(-t * (3 + h * 2.5)) / h for h in range(1, 6))
+    return lp(x, 3500) * vol
+
+def rain(L):
+    x = lp(hp(rng.standard_normal(L), 400), 6000) * .018
+    drops = np.zeros(L); idx = rng.integers(0, L, 2500); drops[idx] = rng.standard_normal(2500) * .12
+    return x + bp(drops, 1500, 7000)
+
+def calm(bpm, bars, prog, melody, keys='ep', lead='mar', bassoct=-12, rainy=False, swing=.06, kickpat=(0, 1.75, 2.5), seed=1, drums=True):
+    global rng
+    rng = np.random.default_rng(seed)
+    spb = 60 / bpm; L = int(round(bars * 4 * spb * SR))
+    dr, bs, ky, ld = (np.zeros(L) for _ in range(4))
+    for b in range(bars):
+        o = b * 4
+        if drums:
+            for k in kickpat: place(dr, lp(kick(.3), 2500) * .75, (o + k) * spb)
+            for k in (1, 3): place(dr, lp(clap(), 4500) * .45, (o + k + .03) * spb)
+            for st in range(8): place(dr, lp(hat(), 9000) * (.38 if st % 2 else .25), (o + st / 2 + (swing if st % 2 else 0)) * spb)
+    for b in range(bars):
+        c = prog[b % len(prog)]
+        if keys == 'ep': place(ky, epiano(c, spb * 3.9, .13), b * 4 * spb)
+        elif keys == 'pad': place(ky, supersaw(c, spb * 4, 1300, .07), b * 4 * spb)
+        elif keys == 'gtr':
+            for i, k in enumerate((0, .5, 1, 1.5, 2, 2.5, 3, 3.5)): place(ky, guitar(c[i % len(c)] + (12 if i % 4 == 3 else 0), .7, .09), (b * 4 + k) * spb)
+        place(bs, lp(bass808(c[0] + bassoct, spb * 1.8), 380) * .85, b * 4 * spb)
+        place(bs, lp(bass808(c[0] + bassoct + (7 if b % 2 else 0), spb * 1.2), 380) * .7, (b * 4 + 2.5) * spb)
+    for b in range(2, bars):
+        ph = melody[(b // 2) % len(melody)] if b % 2 == 0 else melody[(b // 2) % len(melody)][:3]
+        for (t0, nt, d) in ph:
+            if lead == 'mar': place(ld, marimba(nt, .6, .11), (b * 4 + t0) * spb)
+            elif lead == 'flute': place(ld, soft_lead(nt, d * spb), (b * 4 + t0) * spb)
+            elif lead == 'gtr': place(ld, guitar(nt + 12, .8, .1), (b * 4 + t0) * spb)
+            elif lead == 'bell': place(ld, marimba(nt + 12, .9, .07) + 0, (b * 4 + t0) * spb)
+    crackle = np.zeros(L); idx = rng.integers(0, L, 700); crackle[idx] = rng.standard_normal(700) * .2
+    mix = dr + bs + ky + ld + hp(crackle, 2000) + (rain(L) if rainy else 0)
+    return master(lp(mix, 11000), -17)
+
+M = lambda *xs: [(a, b, c) for (a, b, c) in xs]
+def calm1(): return calm(80, 12, [[50, 53, 57, 60], [55, 59, 62, 65], [48, 52, 55, 59], [45, 48, 52, 55]], [M((0, 74, 1), (1, 72, 1), (2, 69, 2)), M((0, 72, 1), (1.5, 74, 1), (2.5, 76, 1.5))], 'ep', 'flute', seed=11)                    # Dm9 G13 Cmaj7 Am7
+def calm2(): return calm(74, 12, [[52, 55, 59, 62], [48, 52, 55, 59], [53, 57, 60, 64], [55, 59, 62, 65]], [M((0, 76, 1), (.5, 79, 1), (1.5, 74, 1), (3, 71, 1))], 'gtr', 'mar', rainy=True, seed=12)                                     # rainy guitar
+def calm3(): return calm(88, 12, [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [55, 58, 62, 65]], [M((0, 77, 1), (1, 76, 1), (2, 72, 1), (3, 74, 1))], 'ep', 'bell', seed=13)
+def calm4(): return calm(70, 10, [[45, 48, 52, 55], [41, 45, 48, 52], [43, 47, 50, 53], [40, 44, 47, 50]], [M((0, 69, 2), (2, 72, 1), (3, 71, 1)), M((0, 76, 2), (2, 74, 2))], 'pad', 'flute', seed=14, kickpat=(0, 2.5))        # dreamy pad
+def calm5(): return calm(84, 12, [[48, 52, 55, 59], [45, 48, 52, 55], [41, 45, 48, 52], [43, 47, 50, 53]], [M((0, 72, 1), (.75, 76, 1), (1.5, 79, 1), (2.5, 76, 1), (3.25, 74, 1))], 'ep', 'mar', seed=15)                         # sunny C
+def calm6(): return calm(76, 12, [[51, 55, 58, 62], [48, 51, 55, 58], [44, 48, 51, 55], [46, 50, 53, 56]], [M((0, 75, 1.5), (2, 79, 1), (3, 77, 1))], 'gtr', 'flute', rainy=True, seed=16)                                              # Eb rainy
+def calm7(): return calm(90, 12, [[57, 61, 64, 68], [54, 57, 61, 64], [50, 54, 57, 61], [52, 56, 59, 62]], [M((0, 81, 1), (1, 80, 1), (1.5, 76, 1), (2.5, 73, 1), (3.5, 76, .5))], 'ep', 'gtr', seed=17)                             # A major warm
+def calm8(): return calm(72, 10, [[50, 53, 57, 60], [46, 50, 53, 57], [43, 46, 50, 53], [45, 49, 52, 55]], [M((0, 74, 2), (2.5, 77, 1.5)), M((0, 72, 1), (1, 70, 1), (2, 69, 2))], 'pad', 'bell', seed=18, drums=True, kickpat=(0, 2.75))  # night
+def calm9(): return calm(82, 12, [[55, 59, 62, 66], [52, 55, 59, 62], [48, 52, 55, 59], [50, 54, 57, 60]], [M((0, 79, 1), (1, 78, 1), (2, 74, 1), (3, 71, 1))], 'gtr', 'mar', seed=19)                                                  # G major morning
+def calm10(): return calm(78, 12, [[49, 52, 56, 59], [45, 49, 52, 56], [47, 51, 54, 57], [44, 47, 51, 54]], [M((0, 73, 1), (1, 76, 1), (2, 80, 1.5), (3.5, 78, .5)), M((0, 75, 2), (2, 73, 2))], 'ep', 'flute', rainy=True, seed=20)   # C# minor rain
+
 if __name__ == '__main__':
     import soundfile as sf
     for name, fn in ((a, globals()[a]) for a in (sys.argv[1:] or ['phonk', 'future', 'afro', 'tension', 'arcade', 'reggaeton', 'drill', 'lofi', 'jersey', 'trap'])):
