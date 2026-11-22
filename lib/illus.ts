@@ -86,15 +86,42 @@ async function cfRun(model: string, body: unknown): Promise<{ ok: boolean; statu
 }
 
 /** Turn the (Kazakh/Russian) quiz question into a short English FLUX prompt that shows the subject, never the answer. */
-export function promptRules(q: string, opts: string[], correct: string): string {
+export function promptRules(q: string, opts: string[], correct: string, strict = false): string {
   return `You write image prompts for FLUX for a quiz video. Question: "${q}". Answer options: ${opts.map((x) => `"${x}"`).join(", ")}. Correct answer: "${correct}".
-Write ONE English prompt (max 45 words) describing a single picture of the main object NAMED IN THE QUESTION, big and centered (e.g. "In which city is the Eiffel Tower?" -> the Eiffel Tower alone against a clear sky; "Where do kangaroos live?" -> a kangaroo on a plain pastel background; "How many legs does a spider have?" -> a dewy spider web, no spider).
-Never depict the correct answer or any option: no cities, skylines, countries, maps, flags, people from the options, and no countable group whose count is an option.
-Reply with the prompt only, no quotes, no explanations.`;
+THE PICTURE MUST NEVER REVEAL OR HINT AT THE ANSWER. A viewer looking at the picture must NOT be able to guess which option is correct.
+How to choose what to draw:
+1) If the question itself names an object that is NOT one of the options, draw that object (e.g. "In which city is the Eiffel Tower?" -> the Eiffel Tower alone against a plain sky, no city; "Who painted the Mona Lisa?" -> an empty easel with brushes).
+2) If the thing being asked about IS the answer (e.g. "Which animal has three hearts?", "Which metal is liquid at room temperature?", "Which planet has the longest day?"), draw only the CLUE from the question or a neutral scene that fits ALL options equally: e.g. three glowing cartoon hearts; a laboratory flask with a thermometer; a starry sky with a telescope. Never draw any of the options or anything typical of only one of them (no octopus, no sea, no silver droplets, no specific planet).
+3) "How many…" questions: draw the subject so nothing countable equals an option.
+Forbidden everywhere: any option (${opts.map((x) => `"${x}"`).join(", ")}) or its typical habitat, shape, colour, symbol, landmark, flag, map, person; text, letters, digits.${strict ? "\nA previous picture REVEALED the answer. Be much more abstract and neutral this time: draw only a generic symbolic scene of the question's general category." : ""}
+Reply with ONE English prompt (max 40 words) only, no quotes, no explanations.`;
 }
 
-async function writeFluxPrompt(q: string, opts: string[], correct: string): Promise<string> {
-  const ask = promptRules(q, opts, correct);
+/** Ask Claude (vision) whether a generated picture shows or hints at any option. Returns true if it leaks. */
+export async function leaksAnswer(b64: string, q: string, opts: string[]): Promise<boolean> {
+  const key = (env.ANTHROPIC_API_KEY || "").trim();
+  if (!key) return false;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: (env.ANTHROPIC_PROMPT_MODEL || "claude-haiku-5-5").trim(), max_tokens: 5,
+        messages: [{ role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } },
+          { type: "text", text: `Quiz question: "${q}". Options: ${opts.map((x) => `"${x}"`).join(", ")}.\nDoes this picture show, depict or clearly hint at ANY of the options (the thing itself, its typical look, habitat, symbol, flag, landmark, or readable text/number)? Answer only YES or NO.` },
+        ] }],
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const j: any = await r.json().catch(() => ({}));
+    const t = (j.content || []).map((c: any) => c.text || "").join("").trim().toUpperCase();
+    return r.ok && t.startsWith("YES");
+  } catch { return false; }
+}
+
+async function writeFluxPrompt(q: string, opts: string[], correct: string, strict = false): Promise<string> {
+  const ask = promptRules(q, opts, correct, strict);
   const key = (env.ANTHROPIC_API_KEY || "").trim();
   if (key) {
     try {
@@ -125,15 +152,24 @@ export async function makeFlux(input: { q: string; o: string[]; a: number }): Pr
   const q = String(input.q || "").replace(/\s+/g, " ").slice(0, 300);
   const opts = (input.o || []).map((x) => String(x).slice(0, 60)).slice(0, 4);
   try {
-    const subject = await writeFluxPrompt(q, opts, opts[input.a] ?? "");
-    const prompt = fluxPrompt(subject);
-    const r = await cfRun(CF_IMG, { prompt, steps: 8 });
-    const b64 = r.json?.result?.image || r.json?.image;
-    if (!r.ok || !b64) {
-      const msg = String(r.json?.errors?.[0]?.message || "").slice(0, 160);
-      return { ok: false, status: r.status, error: "cloudflare_" + r.status + (msg ? ": " + msg : "") };
+    let lastErr = "";
+    for (let attempt = 0; attempt < 3; attempt++) {
+      // attempts 0-1: subject prompts (second one stricter); attempt 2: fully neutral fallback picture
+      const subject = attempt < 2 ? await writeFluxPrompt(q, opts, opts[input.a] ?? "", attempt === 1)
+        : "A big friendly glowing question mark surrounded by soft sparkles and floating abstract shapes";
+      const prompt = fluxPrompt(subject);
+      const r = await cfRun(CF_IMG, { prompt, steps: 8 });
+      const b64 = r.json?.result?.image || r.json?.image;
+      if (!r.ok || !b64) {
+        const msg = String(r.json?.errors?.[0]?.message || "").slice(0, 160);
+        lastErr = "cloudflare_" + r.status + (msg ? ": " + msg : "");
+        if (r.status === 429 || r.status === 401 || r.status === 403) break;
+        continue;
+      }
+      if (attempt < 2 && await leaksAnswer(b64, q, opts)) { lastErr = "leak"; continue; }
+      return { ok: true, src: "data:image/jpeg;base64," + b64, prompt: subject + (attempt ? ` (попытка ${attempt + 1})` : "") };
     }
-    return { ok: true, src: "data:image/jpeg;base64," + b64, prompt: subject };
+    return { ok: false, error: lastErr === "leak" ? "картинка подсказывала ответ" : lastErr || "no_image" };
   } catch (e) {
     return { ok: false, error: (e as Error).name === "TimeoutError" ? "timeout" : String((e as Error).message || "request_failed").slice(0, 80) };
   }
