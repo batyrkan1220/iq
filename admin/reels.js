@@ -231,7 +231,10 @@ const MUS_PRE={
  arcade:['🕹 Synthwave / аркада','Retro synthwave arcade game show instrumental, bright 80s synth arpeggios, punchy drum machine, fun and nostalgic but modern mix, 118 BPM, no vocals'],
  lofi:['☕ Lo-fi chill','Modern lo-fi hip hop instrumental with a curious playful vibe, dusty drums, warm keys, soft bass, light vinyl texture, 88 BPM, background for a calm quiz video, no vocals']};
 // built-in tracks: iq-phonk / iq-future were composed for iqtest.live (scripts/make-reels-music.py), builtin = uploaded Quiz Show
-const MUS_BUILT={phonk:['🔥 IQ Phonk (наш, по умолчанию)','audio/iq-phonk.m4a?v=1'],future:['💎 IQ Future Bass (наш)','audio/iq-future.m4a?v=1'],builtin:['🎧 Quiz Show (загруженная)','audio/quiz-bg.m4a?v=1']};
+const MUS_BUILT={phonk:['🔥 1. IQ Phonk (по умолчанию)','audio/iq-phonk.m4a?v=1'],future:['💎 2. IQ Future Bass','audio/iq-future.m4a?v=1'],afro:['🌴 3. IQ Afro House','audio/iq-afro.m4a?v=1'],
+ tension:['⏱ 4. IQ Tension (тиканье)','audio/iq-tension.m4a?v=1'],arcade:['🕹 5. IQ Synthwave Arcade','audio/iq-arcade.m4a?v=1'],reggaeton:['💃 6. IQ Reggaeton','audio/iq-reggaeton.m4a?v=1'],
+ drill:['🧊 7. IQ Drill','audio/iq-drill.m4a?v=1'],lofi:['☕ 8. IQ Lo-fi Chill','audio/iq-lofi.m4a?v=1'],jersey:['🏀 9. IQ Jersey Club','audio/iq-jersey.m4a?v=1'],
+ trap:['🌑 10. IQ Dark Trap','audio/iq-trap.m4a?v=1'],builtin:['🎧 Quiz Show (загруженная)','audio/quiz-bg.m4a?v=1']};
 let MUS={tracks:[],current:'phonk'};const BGC={};
 async function musLoad(){try{const {data}=await sb.from('app_settings').select('value').eq('key','reels_music').maybeSingle();if(data&&data.value)MUS=Object.assign({tracks:[],current:'phonk'},data.value)}catch(e){}
   const cur=localStorage.getItem('reels_music_cur');if(cur)MUS.current=cur;musDraw()}
