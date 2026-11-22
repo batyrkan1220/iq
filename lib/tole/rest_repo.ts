@@ -83,8 +83,8 @@ export function restPaymentRepo(call: Call): PaymentRepo {
 
 export interface PaySettings { priceKzt: number | null; paywallEnabled: boolean }
 
-/** Admin-managed settings (app_settings), cached briefly so the price change applies within ~30s. */
-export function restSettings(call: Call, ttlMs = 30_000) {
+/** Admin-managed settings (app_settings), cached briefly so the price change applies within ~5s. */
+export function restSettings(call: Call, ttlMs = 5_000) {
   let cache: { at: number; v: PaySettings } | null = null;
   return async function get(): Promise<PaySettings> {
     if (cache && Date.now() - cache.at < ttlMs) return cache.v;

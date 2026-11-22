@@ -600,11 +600,11 @@ $('frCsv').onclick=()=>csvDl('iqtest_finance.csv',[['date','visits','results','i
 async function loadPaySettings(){const {data,error}=await sb.from('app_settings').select('key,value').in('key',['price_kzt','paywall_enabled']);if(error){$('psErr').textContent=error.message;return}
   const m=Object.fromEntries((data||[]).map(x=>[x.key,x.value]));$('psPrice').value=Number.isInteger(m.price_kzt)?m.price_kzt:'';$('psOn').value=m.paywall_enabled===true?'true':'false';
   try{const c=await (await fetch('/api/pay/config',{cache:'no-store'})).json();
-    $('psInfo').innerHTML=c.enabled?`✅ Оплата на сайте включена: <b>${money(c.priceKzt)}</b>`:(m.paywall_enabled===true&&Number.isInteger(m.price_kzt)?'⚠️ Оплата включена, но сервер не готов: проверьте ключи Tole в Render (если цену только что сохранили — подождите 30 секунд).':'ℹ️ Оплата выключена — результат показывается бесплатно.')}catch(e){$('psInfo').textContent=''}}
+    $('psInfo').innerHTML=c.enabled?`✅ Оплата на сайте включена: <b>${money(c.priceKzt)}</b>`:(m.paywall_enabled===true&&Number.isInteger(m.price_kzt)?'⚠️ Оплата включена, но сервер не готов: проверьте ключи Tole в Render (если цену только что сохранили — подождите 5 секунд).':'ℹ️ Оплата выключена — результат показывается бесплатно.')}catch(e){$('psInfo').textContent=''}}
 $('psF').onsubmit=async e=>{e.preventDefault();$('psErr').textContent='';const p=parseInt($('psPrice').value,10);if(!(p>=1&&p<=100000000)){$('psErr').textContent='Цена — целое число от 1 до 100 000 000';return}
   const who=(await sb.auth.getUser()).data?.user?.email||null,now=new Date().toISOString();
   const {error}=await sb.from('app_settings').upsert([{key:'price_kzt',value:p,updated_at:now,updated_by:who},{key:'paywall_enabled',value:$('psOn').value==='true',updated_at:now,updated_by:who}]);
-  if(error){$('psErr').textContent=error.message;return}$('psInfo').textContent='Сохранено. На сайте обновится в течение 30 секунд.';setTimeout(loadPaySettings,1500)};
+  if(error){$('psErr').textContent=error.message;return}$('psInfo').textContent='Сохранено. На сайте обновится в течение 5 секунд.';setTimeout(loadPaySettings,1500)};
 $('psCheck').onclick=async()=>{const o=$('psCheckOut'),b=$('psCheck');b.disabled=true;o.innerHTML='<span class="muted">Проверка…</span>';
   try{const r=await (await fetch('/api/pay/check',{method:'POST',headers:{Authorization:'Bearer '+await tok()}})).json();
     if(!r.ok){o.innerHTML='❌ '+esc(r.error||'ошибка');return}

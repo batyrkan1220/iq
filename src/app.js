@@ -2,7 +2,9 @@
 let PRICE='';
 let FREE=true; // admin-managed: /api/pay/config → paywall_enabled + price_kzt (Render server)
 function fmtKzt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸'}
-const PAYCFG=fetch('/api/pay/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c&&c.enabled&&c.priceKzt){FREE=false;PRICE=fmtKzt(c.priceKzt);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE)}}).catch(()=>{});
+let PRICE_N=0;
+function payCfg(){return fetch('/api/pay/config?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c&&c.enabled&&c.priceKzt){FREE=false;PRICE_N=c.priceKzt;PRICE=fmtKzt(c.priceKzt);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE)}else if(c&&c.enabled===false){FREE=true}}).catch(()=>{})}
+let PAYCFG=payCfg();
 const TEXT=[
  {cat:'attn',q:'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?',o:['7','8','15','0','3'],a:1,ex:'«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.'},
  {cat:'num',q:'Какого числа не хватает?\n5, 10, 15, 20, __, 30',o:['22','24','25','26','28'],a:2,ex:'Каждое число больше предыдущего на 5: 20 + 5 = 25.'},
@@ -240,7 +242,7 @@ function runAnalyze(){show('analyze');const box=document.querySelector('#analyze
     $('azRing').style.strokeDashoffset=641*(1-e);$('azPct').textContent=Math.round(e*100);$('azCnt').textContent=Math.min(done,Math.round(done*Math.min(1,p*2.2)))+' / '+TOTAL;
     if(p<1)requestAnimationFrame(tk)})(t0);
   setTimeout(()=>{steps[steps.length-1].className='done';box.classList.add('fin');$('azH').textContent=L2('Готово! ✨','Дайын! ✨');try{confetti(60)}catch(e){}},TT+100);
-  setTimeout(()=>PAYCFG.then(()=>FREE?showResult():showPaywall()),TT+1300)}
+  setTimeout(()=>{PAYCFG=payCfg();PAYCFG.then(()=>FREE?showResult():showPaywall())},TT+1300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
   $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-іңіз есептеліп қойды.`);
@@ -262,7 +264,7 @@ function pmStep(n){$('pmStep1').classList.toggle('hidden',n!==1);$('pmStep2').cl
 function pmErr(ru,kz){const e=$('pmErr');if(!ru){e.classList.add('hidden');return}e.textContent=L2(ru,kz);e.classList.remove('hidden')}
 function pmView(v){const msg=$('pmMsg'),wait=$('pmWait'),retry=$('pmRetry');retry.classList.add('hidden');wait.classList.add('hidden');$('pmWtxt').classList.add('hidden');$('pmCheck').classList.add('hidden');$('pmSpin').classList.remove('done');pmErr();
   const set=(ru,kz)=>{msg.textContent=L2(ru,kz)};
-  if(v.paid){pmStep(2);set('Оплата получена ✓','Төлем қабылданды ✓');clearInterval(PM.timer);TR('paid',{value:PRICE,order:orderId()});payClear();PM.pending=false;$('pmBar').classList.add('hidden');$('pmSpin').classList.add('done');setTimeout(()=>{$('payModal').classList.remove('on');showResult()},700);return}
+  if(v.paid){pmStep(2);set('Оплата получена ✓','Төлем қабылданды ✓');clearInterval(PM.timer);TR('paid',{value:PRICE_N,order:orderId()});payClear();PM.pending=false;$('pmBar').classList.add('hidden');$('pmSpin').classList.add('done');setTimeout(()=>{$('payModal').classList.remove('on');showResult()},700);return}
   if(v.status==='pending'){pmStep(2);set('Счёт отправлен в Kaspi ✓','Kaspi-ге шот жіберілді ✓');wait.classList.remove('hidden');$('pmWtxt').classList.remove('hidden');$('pmCheck').classList.remove('hidden');PM.pending=true;paySave();return}
   if(v.status==='creating'||v.status==='processing'||v.status==='outcome_unknown'){pmStep(2);set('Отправляем счёт…','Шот жіберілуде…');if(v.status==='creating'&&v.retryable)retry.classList.remove('hidden');return}
   if(['expired','cancelled','failed','rejected'].includes(v.status)){PM.pending=false;$('pmBar').classList.add('hidden');pmStep(1);pmErr('Оплата не прошла. Проверьте номер и попробуйте ещё раз.','Төлем өтпеді. Нөмірді тексеріп, қайта жіберіңіз.');pmNewOrder();clearInterval(PM.timer);return}
