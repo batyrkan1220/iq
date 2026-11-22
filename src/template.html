@@ -406,6 +406,25 @@ h2{letter-spacing:-.02em}
 .final h2{color:#fff}.final p{color:#c7d2fe}
 .final .btn.big.cta{background:#fff;color:#4c1d95;box-shadow:0 14px 30px -10px rgba(0,0,0,.45)}
 @media (max-width:600px){h1{font-size:31px}.hero-card{padding:22px 18px 18px}}
+
+.wow{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;align-items:center;margin-top:14px;padding:22px 20px 18px;border-radius:26px;color:#fff;overflow:hidden;
+ background:radial-gradient(420px 220px at 110% -20%,rgba(255,77,109,.35),transparent 60%),radial-gradient(380px 260px at -20% 120%,rgba(99,102,241,.55),transparent 60%),linear-gradient(150deg,#16123a,#2e1065 60%,#4c1d95);
+ box-shadow:0 24px 50px -22px rgba(46,16,101,.8)}
+.wow::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.10) 50%,transparent 65%);transform:translateX(-100%);animation:wowsh 4.5s 1s infinite}
+@keyframes wowsh{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.wow-badge{display:inline-block;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#e0e7ff}
+.wow-iq{margin-top:10px;line-height:1}.wow-iq small{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#c4b5fd}
+.wow-iq b{display:block;font-size:64px;font-weight:800;letter-spacing:-.04em;background:linear-gradient(180deg,#fff,#c7d2fe);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+.wow-lvl{display:inline-block;margin-top:6px;padding:5px 12px;border-radius:999px;background:linear-gradient(90deg,#22c55e,#16a34a);font-size:12.5px;font-weight:800}
+.wow-scale{position:relative;height:8px;border-radius:8px;margin-top:16px;background:linear-gradient(90deg,#64748b,#818cf8 45%,#a78bfa 70%,#ff4d6d)}
+.wow-scale i{position:absolute;top:-5px;left:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 0 18px rgba(255,255,255,.7);transition:left 1.6s cubic-bezier(.2,.8,.2,1)}
+.wow-ax{position:relative;height:14px;margin-top:6px;font-size:10.5px;font-weight:700;color:#a5b4fc}
+.wow-ax span{position:absolute;transform:translateX(-50%)}
+.wow-r svg{width:100%;height:auto;display:block}
+.wow-r .rd{stroke-dasharray:600;stroke-dashoffset:600;fill-opacity:0;transition:stroke-dashoffset 1.6s .2s ease,fill-opacity .8s 1.4s}
+.wow.on .wow-r .rd{stroke-dashoffset:0;fill-opacity:1}
+.wow-cta{grid-column:1/-1;margin-top:8px;text-align:center;font-size:14px;font-weight:800;color:#e0e7ff}
+@media (max-width:420px){.wow-iq b{font-size:54px}.wow{padding:18px 14px 14px}}
 </style>
 </head>
 <body>
@@ -466,6 +485,18 @@ h2{letter-spacing:-.02em}
       <div><b class="totalN">30</b><span data-kz="тапсырма">заданий</span></div>
       <div><b>5</b><span data-kz="қабілет">способностей</span></div>
       <div><b>2</b><span data-kz="тіл: RU / ҚАЗ">языка: RU / ҚАЗ</span></div>
+    </div>
+
+    <div class="wow" id="wow">
+      <div class="wow-l">
+        <span class="wow-badge" data-kz="Нәтиже үлгісі">Пример результата</span>
+        <div class="wow-iq"><small data-kz="СІЗДІҢ IQ">ВАШ IQ</small><b id="wowNum">0</b></div>
+        <div class="wow-lvl" data-kz="Орташадан жоғары">Выше среднего</div>
+        <div class="wow-scale"><i id="wowMk"></i></div>
+        <div class="wow-ax"><span style="left:16.7%">70</span><span style="left:50%">100</span><span style="left:83.3%">130</span></div>
+      </div>
+      <div class="wow-r" id="wowRadar"></div>
+      <div class="wow-cta" data-kz="30 тапсырмадан кейін — сіздің нәтижеңіз ✨">Через 30 заданий — ваш результат ✨</div>
     </div>
 
     <div class="sticky-cta" id="stickyCta"><button class="btn big cta" id="startBtn2" data-kz="Тестті бастау →">Начать тест →</button></div>

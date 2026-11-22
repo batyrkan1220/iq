@@ -325,6 +325,11 @@ function renderBell(){if(!$('bell'))return;const W=340,H=150,mx=v=>20+(v-55)/(14
   [70,85,100,115,130].forEach(v=>{s+=`<line x1="${mx(v)}" y1="${H-28}" x2="${mx(v)}" y2="${H-23}" stroke="#94a3b8"/><text x="${mx(v)}" y="${H-10}" font-size="11" font-weight="700" text-anchor="middle" fill="#64748b">${v}</text>`});
   s+=`<text x="${mx(100)}" y="${my(100)-8}" font-size="11" font-weight="800" text-anchor="middle" fill="#312e81">${L2('средний','орташа')}</text>`;
   $('bell').innerHTML=s+'</svg>'}
+
+function renderWow(){const w=$('wow');if(!w)return;$('wowRadar').innerHTML=radarSVG([.86,.7,.92,.74,.88],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')]);
+  const go=()=>{if(w._done)return;w._done=1;w.classList.add('on');const T0=performance.now(),end=118,mk=$('wowMk');setTimeout(()=>{mk.style.left=((end-55)/(145-55)*100).toFixed(1)+'%'},150);
+    const step=t=>{const p=Math.min(1,(t-T0)/1600),e=1-Math.pow(1-p,3);$('wowNum').textContent=Math.round(end*e);if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step)};
+  try{const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){go();io.disconnect()}},{threshold:.35});io.observe(w)}catch(e){go()}}
 function renderSample(){if(!$('smpRadar'))return;$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
@@ -333,7 +338,7 @@ function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want=
 function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});
   document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
-  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();
+  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();renderWow();
   document.querySelectorAll('.lsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
   document.title=L2('iqtest.live — тест IQ','iqtest.live — IQ тест');
   if(!$('test').classList.contains('hidden'))render();
