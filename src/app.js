@@ -226,27 +226,29 @@ function showPaywall(re){
   show('paywall');if(!re)confetti(70);pwObs()}
 const PAY_FN='/api/pay';
 function uuid4(){try{return crypto.randomUUID()}catch(e){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}}
-function orderId(){let o=null;try{o=sessionStorage.getItem('iq_order')}catch(e){}if(!o){o=uuid4();try{sessionStorage.setItem('iq_order',o)}catch(e){}}return o}
+function orderId(){let o=null;try{o=localStorage.getItem('iq_order')}catch(e){}if(!o){o=uuid4();try{localStorage.setItem('iq_order',o)}catch(e){}}return o}
+function paySave(){try{localStorage.setItem('iq_pay',JSON.stringify({ans,left,userName,lang:LANG,t:Date.now()}))}catch(e){}}
+function payClear(){try{localStorage.removeItem('iq_pay');localStorage.removeItem('iq_order')}catch(e){}}
 const PM={timer:null,busy:false};
 function pmPhoneFmt(v){let d=String(v).replace(/\D/g,'');if(d[0]==='8')d='7'+d.slice(1);if(d&&d[0]!=='7')d='7'+d;d=d.slice(0,11);const p=[d.slice(1,4),d.slice(4,7),d.slice(7,9),d.slice(9,11)];return d?('+7 '+p.filter(Boolean).join(' ')).trim():''}
 function pmStep(n){$('pmStep1').classList.toggle('hidden',n!==1);$('pmStep2').classList.toggle('hidden',n!==2)}
 function pmErr(ru,kz){const e=$('pmErr');if(!ru){e.classList.add('hidden');return}e.textContent=L2(ru,kz);e.classList.remove('hidden')}
-function pmView(v){const msg=$('pmMsg'),wait=$('pmWait'),retry=$('pmRetry');retry.classList.add('hidden');wait.classList.add('hidden');pmErr();
+function pmView(v){const msg=$('pmMsg'),wait=$('pmWait'),retry=$('pmRetry');retry.classList.add('hidden');wait.classList.add('hidden');$('pmWtxt').classList.add('hidden');$('pmCheck').classList.add('hidden');$('pmSpin').classList.remove('done');pmErr();
   const set=(ru,kz)=>{msg.textContent=L2(ru,kz)};
-  if(v.paid){pmStep(2);set('Оплата получена ✓','Төлем қабылданды ✓');clearInterval(PM.timer);TR('paid');try{sessionStorage.removeItem('iq_order')}catch(e){}setTimeout(()=>{$('payModal').classList.remove('on');showResult()},700);return}
-  if(v.status==='pending'){pmStep(2);set('Счёт отправлен в Kaspi ✓','Kaspi-ге шот жіберілді ✓');wait.classList.remove('hidden');return}
+  if(v.paid){pmStep(2);set('Оплата получена ✓','Төлем қабылданды ✓');clearInterval(PM.timer);TR('paid');payClear();PM.pending=false;$('pmBar').classList.add('hidden');$('pmSpin').classList.add('done');setTimeout(()=>{$('payModal').classList.remove('on');showResult()},700);return}
+  if(v.status==='pending'){pmStep(2);set('Счёт отправлен в Kaspi ✓','Kaspi-ге шот жіберілді ✓');wait.classList.remove('hidden');$('pmWtxt').classList.remove('hidden');$('pmCheck').classList.remove('hidden');PM.pending=true;paySave();return}
   if(v.status==='creating'||v.status==='processing'||v.status==='outcome_unknown'){pmStep(2);set('Отправляем счёт…','Шот жіберілуде…');if(v.status==='creating'&&v.retryable)retry.classList.remove('hidden');return}
-  if(['expired','cancelled','failed','rejected'].includes(v.status)){pmStep(1);pmErr('Оплата не прошла. Проверьте номер и попробуйте ещё раз.','Төлем өтпеді. Нөмірді тексеріп, қайта жіберіңіз.');pmNewOrder();clearInterval(PM.timer);return}
+  if(['expired','cancelled','failed','rejected'].includes(v.status)){PM.pending=false;$('pmBar').classList.add('hidden');pmStep(1);pmErr('Оплата не прошла. Проверьте номер и попробуйте ещё раз.','Төлем өтпеді. Нөмірді тексеріп, қайта жіберіңіз.');pmNewOrder();clearInterval(PM.timer);return}
   if(v.http===400&&v.error==='bad_phone'){pmStep(1);pmErr('Введите номер в формате +7 7XX XXX XX XX.','Нөмірді +7 7XX XXX XX XX түрінде жазыңыз.');return}
   if(v.http===404){pmNewOrder();pmStep(1);return}
   if(v.http===403){$('payModal').classList.remove('on');clearInterval(PM.timer);showResult();return}
   if(v.http===429){pmErr('Слишком много попыток. Попробуйте через несколько минут.','Тым көп әрекет. Бірнеше минуттан кейін қайталаңыз.');retry.classList.remove('hidden');return}
   pmErr('Оплата временно недоступна. Попробуйте позже.','Төлем уақытша қолжетімсіз. Кейінірек қайталаңыз.');retry.classList.remove('hidden')}
-function pmNewOrder(){try{sessionStorage.removeItem('iq_order')}catch(e){}}
+function pmNewOrder(){try{localStorage.removeItem('iq_order')}catch(e){}}
 async function pmApi(action,extra){if(PM.busy)return;PM.busy=true;try{const r=await fetch(PAY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,orderId:orderId(),visitId:VID,...(extra||{})})});let j={};try{j=await r.json()}catch(e){}pmView({http:r.status,...j})}catch(e){pmView({http:0})}finally{PM.busy=false}}
-function pmPoll(){clearInterval(PM.timer);PM.timer=setInterval(()=>{if(!$('payModal').classList.contains('on')||document.hidden)return;pmApi('status')},3000)}
+function pmPoll(){clearInterval(PM.timer);PM.timer=setInterval(()=>{if(document.hidden)return;if(!$('payModal').classList.contains('on')&&!PM.pending)return;pmApi('status')},3000)}
 async function pmOpen(){TR('pay_click');$('payModal').classList.add('on');pmErr();$('pmRetry').classList.add('hidden');
-  let has=false;try{has=!!sessionStorage.getItem('iq_order')}catch(e){}
+  let has=false;try{has=!!localStorage.getItem('iq_order')}catch(e){}
   if(has){pmStep(2);$('pmMsg').textContent=L2('Проверяем оплату…','Төлем тексерілуде…');await pmApi('status');if($('pmStep1').classList.contains('hidden'))pmPoll();else pmStep(1)}
   else{pmStep(1);setTimeout(()=>$('pmPhone').focus(),50)}}
 $('pmPhone').addEventListener('input',e=>{e.target.value=pmPhoneFmt(e.target.value)});
@@ -256,8 +258,17 @@ $('pmSend').onclick=async()=>{const d=$('pmPhone').value.replace(/\D/g,'');if(!/
 $('pmChange').onclick=()=>{clearInterval(PM.timer);pmNewOrder();pmStep(1);pmErr();$('pmPhone').focus()};
 $('payBtn').onclick=$('payBtn2').onclick=pmOpen;
 $('pmRetry').onclick=async()=>{$('pmRetry').classList.add('hidden');if(PM.phone){await pmApi('create',{method:'invoice',phone:PM.phone});pmPoll()}else pmOpen()};
-$('payClose').onclick=()=>{$('payModal').classList.remove('on');clearInterval(PM.timer)};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('payModal').classList.contains('on')&&!$('pmStep2').classList.contains('hidden'))pmApi('status')});
+$('payClose').onclick=()=>{$('payModal').classList.remove('on');if(PM.pending)$('pmBar').classList.remove('hidden');else clearInterval(PM.timer)};
+$('pmBar').onclick=()=>{$('pmBar').classList.add('hidden');$('payModal').classList.add('on');pmApi('status')};
+$('pmCheck').onclick=async()=>{$('pmCheck').disabled=true;await pmApi('status');setTimeout(()=>$('pmCheck').disabled=false,1500)};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(PM.pending||($('payModal').classList.contains('on')&&!$('pmStep2').classList.contains('hidden'))))pmApi('status')});
+window.addEventListener('pageshow',e=>{if(e.persisted&&PM.pending)pmApi('status')});
+// Restore an unfinished payment after the tab was reloaded/discarded while the user was in the Kaspi app
+(function payRestore(){let s=null;try{s=JSON.parse(localStorage.getItem('iq_pay')||'null')}catch(e){}
+  if(!s||!Array.isArray(s.ans)||Date.now()-s.t>48*3600e3){if(s)payClear();return}
+  let o=null;try{o=localStorage.getItem('iq_order')}catch(e){}if(!o)return;
+  ans=s.ans;left=s.left;userName=s.userName||'';
+  PAYCFG.then(()=>{if(FREE){payClear();showResult();return}showPaywall(1);PM.pending=true;$('payModal').classList.add('on');pmStep(2);$('pmMsg').textContent=L2('Проверяем оплату…','Төлем тексерілуде…');pmApi('status');pmPoll()})})();
 function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
   let s=`<svg viewBox="0 0 260 200" width="260" height="200">`;
   [1,.66,.33].forEach(f=>{s+=`<polygon points="${vals.map((_,i)=>pt(i,Rr*f).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.18)"/>`});

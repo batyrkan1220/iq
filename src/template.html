@@ -581,6 +581,18 @@ h2{letter-spacing:-.02em}
   .word{font-size:28px!important}
 }
 /* pay modal */
+.pm-spin{position:relative;width:84px;height:84px;margin:6px auto 12px;display:grid;place-items:center}
+.pm-spin i{position:absolute;inset:0;border-radius:50%;border:5px solid #f1f0fb;border-top-color:#f14635;border-right-color:#7c3aed;animation:pmRot 1s linear infinite}
+.pm-spin img{border-radius:10px;animation:pmBeat 1.6s ease-in-out infinite}
+@keyframes pmRot{to{transform:rotate(360deg)}}@keyframes pmBeat{0%,100%{transform:scale(1)}50%{transform:scale(.9)}}
+.pm-spin.done i{border-color:#22c55e;animation:none}.pm-spin.done img{animation:none}
+.pm-wait{text-align:center!important;display:block!important}
+.pm-wtxt{font-weight:800;color:#2e2a5a;margin:0 0 10px}.pm-dots i{font-style:normal;animation:pmDot 1.2s infinite}.pm-dots i:nth-child(2){animation-delay:.2s}.pm-dots i:nth-child(3){animation-delay:.4s}@keyframes pmDot{0%,60%,100%{opacity:.15}30%{opacity:1}}
+.pm-chk{width:100%;margin:0 0 10px}
+.pm-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:11px 18px 11px 12px;border:0;border-radius:999px;background:#0f0d2e;color:#fff;font:inherit;font-weight:800;font-size:14.5px;box-shadow:0 12px 30px rgba(15,13,46,.35);cursor:pointer;white-space:nowrap}
+.pm-bar img{border-radius:6px}.pm-bar-spin{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:pmRot .9s linear infinite}
+.pm-bar.hidden{display:none}
+
 .kl{display:inline-block;vertical-align:-5px;border-radius:6px;margin-right:6px;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
 .pm-logo{display:block;margin:0 auto 8px;border-radius:14px;box-shadow:0 8px 20px rgba(241,70,55,.3)}
 
@@ -831,6 +843,7 @@ h2{letter-spacing:-.02em}
 </div>
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
+<button class="pm-bar hidden" id="pmBar" type="button"><i class="pm-bar-spin"></i><img src="/assets/img/kaspi.webp" alt="" width="22" height="22"><span data-kz="Төлем күтілуде — ашу">Ожидаем оплату — открыть</span></button>
 <div class="modal" id="payModal"><div class="card pm">
   <img class="pm-logo" src="/assets/img/kaspi.webp" alt="Kaspi" width="56" height="56">
   <h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
@@ -843,7 +856,10 @@ h2{letter-spacing:-.02em}
   </div>
   <div id="pmStep2" class="hidden">
     <p class="pm-msg" id="pmMsg"></p>
-    <p class="pm-wait hidden" id="pmWait"><i class="pm-dot"></i><span data-kz="Kaspi қосымшасын ашып, келген шотты төлеңіз. Төлегеннен кейін нәтиже осы жерде өзі ашылады.">Откройте приложение Kaspi и оплатите пришедший счёт. После оплаты результат откроется здесь автоматически.</span></p>
+    <div class="pm-spin" id="pmSpin" aria-hidden="true"><i></i><img src="/assets/img/kaspi.webp" alt="" width="40" height="40"></div>
+    <p class="pm-wait hidden" id="pmWait"><span data-kz="Kaspi қосымшасын ашып, келген шотты төлеңіз. Төлегеннен кейін осы бетке оралыңыз — нәтиже өзі ашылады.">Откройте приложение Kaspi и оплатите пришедший счёт. Затем вернитесь на эту страницу — результат откроется сам.</span></p>
+    <p class="pm-wtxt hidden" id="pmWtxt"><span data-kz="Төлемді күтудеміз">Ждём оплату</span><b class="pm-dots"><i>.</i><i>.</i><i>.</i></b></p>
+    <button class="btn line pm-chk hidden" id="pmCheck" type="button" data-kz="✓ Төледім — тексеру">✓ Я оплатил — проверить</button>
     <button class="pm-link" id="pmChange" type="button" data-kz="Нөмірді өзгерту">Изменить номер</button>
   </div>
   <p class="pm-err hidden" id="pmErr"></p>
