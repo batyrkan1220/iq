@@ -525,10 +525,9 @@ h2{letter-spacing:-.02em}
       <div class="blob b1"></div><div class="blob b2"></div>
       <div class="hero">
         <div class="hero-txt">
-          <span class="livepill"><i></i><span data-kz="Видеодағы сұрақты шештіңіз бе? 🔥">Решили вопрос из видео? 🔥</span></span>
-          <h1 data-kz="Енді толық тестпен&lt;br&gt;&lt;em&gt;IQ&lt;/em&gt;-іңізді біліңіз">Теперь узнайте свой<br><em>IQ</em> полным тестом</h1>
-          <p data-kz="Логика, зейін, жады, сандар және кеңістік — &lt;b class=&quot;totalN&quot;&gt;30&lt;/b&gt; тапсырма. Арнайы білім қажет емес.">Логика, внимание, память, числа и пространство — <b class="totalN">30</b> заданий. Специальные знания не нужны.</p>
-          <div class="offer"><span id="offFree" data-kz="✓ Тегін">✓ Бесплатно</span><span id="offTime" data-kz="⏱ ~15 минут">⏱ ~15 минут</span><span data-kz="⚡ Нәтиже бірден">⚡ Результат сразу</span></div>
+          <span class="livepill"><i></i><span data-kz="Онлайн IQ тест · қазақша және орысша">Онлайн IQ-тест · на казахском и русском</span></span>
+          <h1 data-kz="Сіздің &lt;em&gt;IQ&lt;/em&gt;-іңіз&lt;br&gt;қанша?">Какой у вас <em>IQ</em>?</h1>
+          <p data-kz="30 тапсырма арқылы IQ балыңызды, басқалар арасындағы орныңызды және мықты жақтарыңызды біліңіз. Шамамен 15 минут.">Пройдите 30 заданий и узнайте свой балл IQ, место среди других людей и сильные стороны. Около 15 минут.</p>
         </div>
         <div class="demo hv" id="demo">
           <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
@@ -1394,10 +1393,9 @@ $('histClear').onclick=()=>{try{localStorage.removeItem(HK)}catch(e){}window._hi
 $('startBtn').onclick=start;$('startBtn2').onclick=start;if($('startBtn4'))$('startBtn4').onclick=start;
 document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);
 document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
-(function(){if(!FREE){const f=$('offFree');if(f)f.remove()}
+(function(){
   try{fetch(SB_URL+'rpc/public_stats',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:'{}'}).then(r=>r.json()).then(d=>{
-    if(d&&d.n>=100){const n=d.n.toLocaleString('ru-RU').replace(/,/g,' ');const el=$('hcount2');if(el)el.innerHTML=L2(`👥 Тест прошли уже <b>${n}</b> человек`,`👥 Тестті <b>${n}</b> адам тапсырды`)}
-    if(d&&d.n>=50&&d.med_sec){const m=Math.max(5,Math.round(d.med_sec/60));const t=$('offTime');if(t){t.textContent=`⏱ ~${m} минут`;t.dataset.kz=`⏱ ~${m} минут`}}}).catch(()=>{})}catch(e){}})();
+    if(d&&d.n>=100){const n=d.n.toLocaleString('ru-RU').replace(/,/g,' ');const el=$('hcount2');if(el)el.innerHTML=L2(`👥 Тест прошли уже <b>${n}</b> человек`,`👥 Тестті <b>${n}</b> адам тапсырды`)}}).catch(()=>{})}catch(e){}})();
 // sticky start CTA on mobile when main button scrolled away
 try{const io=new IntersectionObserver(es=>{const vis=es[0].isIntersecting;const st=!$('start').classList.contains('hidden');$('stickyCta').classList.toggle('on',!vis&&st)});io.observe($('startBtn'))}catch(e){}
 /* ===== landing widgets ===== */
