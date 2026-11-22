@@ -418,6 +418,53 @@ def calm8(): return calm(72, 10, [[50, 53, 57, 60], [46, 50, 53, 57], [43, 46, 5
 def calm9(): return calm(82, 12, [[55, 59, 62, 66], [52, 55, 59, 62], [48, 52, 55, 59], [50, 54, 57, 60]], [M((0, 79, 1), (1, 78, 1), (2, 74, 1), (3, 71, 1))], 'gtr', 'mar', seed=19)                                                  # G major morning
 def calm10(): return calm(78, 12, [[49, 52, 56, 59], [45, 49, 52, 56], [47, 51, 54, 57], [44, 47, 51, 54]], [M((0, 73, 1), (1, 76, 1), (2, 80, 1.5), (3.5, 78, .5)), M((0, 75, 2), (2, 73, 2))], 'ep', 'flute', rainy=True, seed=20)   # C# minor rain
 
+# ---------------- light series: in the spirit of the original quiz-reel sound (plucky arpeggio + soft kick) ----------------
+def kalimba(note, dur=.5, vol=.2):
+    n = int(dur * SR); t = np.arange(n) / SR; f = hz(note)
+    x = np.sin(2 * np.pi * f * t) + .3 * np.sin(2 * np.pi * f * 5.4 * t) * np.exp(-t * 30)
+    return x * np.exp(-t * 7) * vol
+
+def bellp(note, dur=.6, vol=.16):
+    n = int(dur * SR); t = np.arange(n) / SR; f = hz(note)
+    x = np.sin(2 * np.pi * f * t + 1.2 * np.sin(2 * np.pi * f * 3.5 * t) * np.exp(-t * 6))
+    return x * np.exp(-t * 6) * vol
+
+def plk(note, dur=.25, vol=.2):
+    n = int(dur * SR); t = np.arange(n) / SR; f = hz(note)
+    return (np.sin(2 * np.pi * f * t) + .33 * np.sin(4 * np.pi * f * t)) * np.exp(-t * 12) * vol
+
+def softkick():
+    n = int(.3 * SR); t = np.arange(n) / SR; ph = 2 * np.pi * np.cumsum(50 + 80 * np.exp(-t * 30)) / SR
+    return np.sin(ph) * np.exp(-t * 10) * .7
+
+def light(bpm, prog, pattern, voice='plk', kick_every=4, hats=False, bass=False, clapb=False, seed=1, oct_=0):
+    global rng
+    rng = np.random.default_rng(seed)
+    e8 = 60 / bpm / 2; steps = 8 * 2 * len(prog)   # 2 bars per chord, 8 eighths per bar
+    L = int(round(steps * e8 * SR)); mu, dr, bs = np.zeros(L), np.zeros(L), np.zeros(L)
+    V = {'plk': plk, 'kal': kalimba, 'bell': bellp, 'mar': lambda n: marimba(n, .4, .2)}[voice]
+    for i in range(steps):
+        c = prog[(i // 16) % len(prog)]; nt = c[pattern[i % len(pattern)] % len(c)] + 12 * (pattern[i % len(pattern)] // len(c)) + oct_
+        place(mu, V(nt), i * e8)
+        if i % kick_every == 0: place(dr, softkick(), i * e8)
+        if hats and i % 2 == 1: place(dr, hat() * .35, i * e8)
+        if clapb and i % 8 == 4: place(dr, lp(clap(), 6000) * .4, i * e8)
+        if bass and i % 8 == 0: place(bs, lp(bass808(c[0] - 24, e8 * 7), 300) * .55, i * e8)
+    return master(mu + dr + bs, -19)
+
+C = [[72, 76, 79], [69, 72, 76], [65, 69, 72], [67, 71, 74]]          # C Am F G
+P1 = [0, 1, 2, 1, 0, 1, 2, 3]; P2 = [0, 2, 1, 3, 2, 4, 3, 1]; P3 = [0, 1, 2, 3, 4, 3, 2, 1]; P4 = [2, 1, 0, 1, 2, 3, 2, 1]
+def light1(): return light(110, [[72, 76, 79], [74, 77, 81]], [0, 1, 2, 1], 'plk', 4, seed=31)                                # closest to the original
+def light2(): return light(112, C, P1, 'plk', 4, hats=True, seed=32)
+def light3(): return light(106, C, P3, 'kal', 4, seed=33)
+def light4(): return light(116, [[74, 77, 81], [70, 74, 77], [72, 76, 79], [69, 73, 76]], P2, 'mar', 4, hats=True, bass=True, seed=34)   # Dm Bb C A
+def light5(): return light(104, [[67, 71, 74], [64, 67, 71], [60, 64, 67], [62, 66, 69]], P1, 'bell', 4, seed=35, oct_=12)             # G Em C D bells
+def light6(): return light(120, C, P4, 'plk', 2, hats=True, clapb=True, seed=36)
+def light7(): return light(100, [[69, 72, 76], [65, 69, 72], [72, 76, 79], [67, 71, 74]], P3, 'kal', 4, bass=True, seed=37)           # Am F C G kalimba
+def light8(): return light(114, [[71, 74, 78], [67, 71, 74], [74, 78, 81], [69, 73, 76]], P2, 'plk', 4, hats=True, seed=38)            # Bm G D A
+def light9(): return light(108, [[65, 69, 72], [67, 71, 74], [64, 67, 71], [69, 72, 76]], P1, 'mar', 4, clapb=True, seed=39)          # F G Em Am marimba
+def light10(): return light(118, [[76, 79, 83], [72, 76, 79], [74, 77, 81], [71, 74, 78]], P4, 'bell', 2, hats=True, bass=True, seed=40)
+
 if __name__ == '__main__':
     import soundfile as sf
     for name, fn in ((a, globals()[a]) for a in (sys.argv[1:] or ['phonk', 'future', 'afro', 'tension', 'arcade', 'reggaeton', 'drill', 'lofi', 'jersey', 'trap'])):
