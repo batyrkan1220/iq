@@ -7,10 +7,10 @@ const KZ_RULES = `Write in correct literary Kazakh (Cyrillic). Use "қандай
 const RU_RULES = `Write in correct Russian.`;
 
 export function buildPrompt(lang: "kz" | "ru", n: number, avoid: string[]): string {
-  return `You write questions for a fast general-knowledge quiz video (TikTok/Reels) for an audience in Kazakhstan.
+  return `You write questions for a fast general-knowledge quiz video (TikTok/Reels).
 Write ${n + 2} NEW questions. ${lang === "kz" ? KZ_RULES : RU_RULES}
 Requirements for every question:
-- Interesting, widely known, mixed topics (nature, space, geography, history of Kazakhstan and the world, human body, science, sport, culture, animals, food, records). Easy-to-medium difficulty; answerable in 5 seconds.
+- ANY topic from the whole world, as varied as possible: space, planets, animals, nature, geography of all continents, world history, inventions, science, the human body, food, sport, music, art, films, languages, records, technology, everyday logic. Each question in the set from a DIFFERENT topic. Kazakhstan-related questions are allowed but rare: at most one in the whole reply, often none. Easy-to-medium difficulty; answerable in 5 seconds.
 - Only undisputed, stable facts you are 100% sure about. No facts that change over time (populations, current office holders, records that may have been broken, prices), no trick questions, no ambiguous wording.
 - Exactly 3 short options (max 18 characters each), exactly ONE correct, the two wrong ones plausible.
 - Question text max ~60 characters; insert "\\n" line breaks so each line is at most ~24 characters.
