@@ -214,13 +214,13 @@ function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearIn
   setTimeout(()=>FREE?showResult():showPaywall(),steps.length*900+300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
-  $('pwStats').textContent=L2(`Вы прошли ${done} из ${TOTAL} заданий за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} тапсырманың ${done}-ін ${Math.floor(used/60)} мин ${used%60} с ішінде орындадыңыз — IQ-ыңыз есептеліп қойды.`);
+  $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-ыңыз есептеліп қойды.`);
   const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
   const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
   $('pwRadar').innerHTML=radarSVG(gv,RGRP.map(g=>T(g[2])));
   const st=styleList()[0];
   $('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2(`Ещё ${styleList().length-1} черты — в полном отчёте.`,`Тағы ${styleList().length-1} ерекшелік — толық есепте.`)}</span></div>`;
-  $('pwReview').textContent=L2(`объяснение всех ${NS} заданий`,`барлық ${NS} тапсырманың түсіндірмесі`);
+  $('pwReview').textContent=L2(`объяснение всех ${NS} вопросов`,`барлық ${NS} сұрақтың түсіндірмесі`);
   show('paywall');if(!re)confetti(70);pwObs()}
 $('payBtn').onclick=$('payBtn2').onclick=()=>TR('pay_click')||$('payModal').classList.add('on');
 $('payClose').onclick=()=>$('payModal').classList.remove('on');
@@ -277,7 +277,7 @@ function showResult(re){
       <div class="rx">💡 ${T(q.ex)}</div></div></details>`}).join('');
     $('review').innerHTML=h||`<div class="empty">${L2('🎉 Ошибок нет — отличный результат!','🎉 Қате жоқ — керемет нәтиже!')}</div>`;
     $('tBad').classList.toggle('on',f==='bad');$('tAll').classList.toggle('on',f==='all')};
-  $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все задания');window._rv(bad+skip?'bad':'all');
+  $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все вопросы');window._rv(bad+skip?'bad':'all');
   window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — iqtest.live`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — iqtest.live`);
   if(!re){const di=Q.findIndex(q=>q.key==='age'),de=Q.findIndex(q=>q.demo&&q.key!=='age');sbIns('results',{visit_id:VID,lang:LANG,iq,correct,total:NS,age:di>=0&&ans[di]!==null?Q[di].o[ans[di]]:null,edu:de>=0&&ans[de]!==null?Q[de].o[ans[de]]:null,duration_sec:used,traits:st.map(x=>x[1]),answers:ans});TR('result',{iq})}
   saveHist({d:new Date().toLocaleString('ru-RU'),n:userName||'—',c:correct,iq,age:ans[SEQ.indexOf('D0')],edu:ans[SEQ.indexOf('D1')]});show('result');if(!re)window.scrollTo(0,0)}
@@ -338,9 +338,9 @@ function renderChal(){const c=$('chal');if(!c)return;clearInterval(c._iv);
   <div class="ch-o">${[36,40,42,44].map(n=>`<button data-n="${n}">${n}</button>`).join('')}</div><div id="chRes"></div>`;
   let left=10,done=0,started=0;const sec=$('chSec'),bar=$('chBar');
   const finish=(n)=>{if(done)return;done=1;clearInterval(c._iv);c.querySelectorAll('.ch-o button').forEach(b=>{b.disabled=true;if(+b.dataset.n===42)b.classList.add('ok');else if(+b.dataset.n===n)b.classList.add('no')});
-    const ok=n===42,msg=ok?L2('🔥 Верно! Разница растёт: +4, +6, +8, +10, +12. Таких заданий ещё 29 — проверьте свой IQ.','🔥 Дұрыс! Айырма өсіп отырады: +4, +6, +8, +10, +12. Мұндай тағы 29 тапсырма бар — IQ-іңізді тексеріңіз.')
+    const ok=n===42,msg=ok?L2('🔥 Верно! Разница растёт: +4, +6, +8, +10, +12. Таких вопросов ещё 29 — проверьте свой IQ.','🔥 Дұрыс! Айырма өсіп отырады: +4, +6, +8, +10, +12. Мұндай тағы 29 сұрақ бар — IQ-іңізді тексеріңіз.')
       :n==null?L2('⏰ Время вышло! Ответ — 42 (разница +4, +6, +8, +10, +12). Попробуйте полный тест.','⏰ Уақыт бітті! Жауабы — 42 (айырма +4, +6, +8, +10, +12). Толық тестті байқап көріңіз.')
-      :L2('😅 Почти! Ответ — 42: разница растёт +4, +6, +8, +10, +12. Посмотрим, как с остальными 29?','😅 Аз қалды! Жауабы — 42: айырма өседі +4, +6, +8, +10, +12. Қалған 29 тапсырмада қалай болар екен?');
+      :L2('😅 Почти! Ответ — 42: разница растёт +4, +6, +8, +10, +12. Посмотрим, как с остальными 29?','😅 Аз қалды! Жауабы — 42: айырма өседі +4, +6, +8, +10, +12. Қалған 29 сұрақта қалай болар екен?');
     $('chRes').innerHTML=`<div class="ch-r">${msg}<button class="btn big cta" id="chGo">${L2('Пройти тест →','Тестті бастау →')}</button></div>`;
     $('chGo').onclick=()=>$('startBtn').click()};
   const start=()=>{if(started)return;started=1;c._iv=setInterval(()=>{left--;sec.textContent=Math.max(0,left);bar.style.transform=`scaleX(${Math.max(0,left)/10})`;if(left<=0)finish(null)},1000)};
