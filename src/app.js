@@ -330,6 +330,20 @@ function renderWow(){const w=$('wow');if(!w)return;$('wowRadar').innerHTML=radar
   const num=$('wowNum');const spin=()=>{num.classList.remove('q');let k=0;const iv=setInterval(()=>{num.textContent=75+Math.floor(Math.random()*70);if(++k>=18){clearInterval(iv);num.textContent='?';num.classList.add('q')}},80)};
   const go=()=>{if(w._done)return;w._done=1;w.classList.add('on');spin();setInterval(spin,5200)};
   try{const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){go();io.disconnect()}},{threshold:.35});io.observe(w)}catch(e){go()}}
+function renderChal(){const c=$('chal');if(!c)return;clearInterval(c._iv);
+  c.innerHTML=`<div class="ch-top"><span>⚡ ${L2('Проверь себя за 10 секунд','10 секундтық сынақ')}</span><span class="ch-sec" id="chSec">10</span></div><div class="ch-bar"><i id="chBar"></i></div>
+  <div class="ch-q">${L2('Какое число следующее?','Келесі сан қандай?')}</div><div class="ch-seq">2, 6, 12, 20, 30, <em>?</em></div>
+  <div class="ch-o">${[36,40,42,44].map(n=>`<button data-n="${n}">${n}</button>`).join('')}</div><div id="chRes"></div>`;
+  let left=10,done=0,started=0;const sec=$('chSec'),bar=$('chBar');
+  const finish=(n)=>{if(done)return;done=1;clearInterval(c._iv);c.querySelectorAll('.ch-o button').forEach(b=>{b.disabled=true;if(+b.dataset.n===42)b.classList.add('ok');else if(+b.dataset.n===n)b.classList.add('no')});
+    const ok=n===42,msg=ok?L2('🔥 Верно! Разница растёт: +4, +6, +8, +10, +12. Таких заданий ещё 29 — проверьте свой IQ.','🔥 Дұрыс! Айырма өсіп отырады: +4, +6, +8, +10, +12. Мұндай тағы 29 тапсырма бар — IQ-іңізді тексеріңіз.')
+      :n==null?L2('⏰ Время вышло! Ответ — 42 (разница +4, +6, +8, +10, +12). Попробуйте полный тест.','⏰ Уақыт бітті! Жауабы — 42 (айырма +4, +6, +8, +10, +12). Толық тестті байқап көріңіз.')
+      :L2('😅 Почти! Ответ — 42: разница растёт +4, +6, +8, +10, +12. Посмотрим, как с остальными 29?','😅 Аз қалды! Жауабы — 42: айырма өседі +4, +6, +8, +10, +12. Қалған 29 тапсырмада қалай болар екен?');
+    $('chRes').innerHTML=`<div class="ch-r">${msg}<button class="btn big cta" id="chGo">${L2('Пройти тест →','Тестті бастау →')}</button></div>`;
+    $('chGo').onclick=()=>$('startBtn').click()};
+  const start=()=>{if(started)return;started=1;c._iv=setInterval(()=>{left--;sec.textContent=Math.max(0,left);bar.style.transform=`scaleX(${Math.max(0,left)/10})`;if(left<=0)finish(null)},1000)};
+  c.querySelectorAll('.ch-o button').forEach(b=>b.onclick=()=>finish(+b.dataset.n));
+  try{const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){start();io.disconnect()}},{threshold:.6});io.observe(c)}catch(e){start()}}
 function renderSample(){if(!$('smpRadar'))return;$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
@@ -338,7 +352,7 @@ function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want=
 function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});
   document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
-  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();renderWow();
+  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();renderWow();renderChal();
   document.querySelectorAll('.lsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
   document.title=L2('iqtest.live — тест IQ','iqtest.live — IQ тест');
   if(!$('test').classList.contains('hidden'))render();
