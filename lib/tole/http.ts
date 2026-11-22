@@ -159,7 +159,7 @@ async function adminCheck(req: IncomingMessage, c: Ctx): Promise<Record<string, 
   const out: Record<string, unknown> = {
     ok: true, environment: env || null,
     apiKeySet: !!(process.env.TOLE_API_KEY || "").trim(), connectionIdSet: !!(process.env.TOLE_CONNECTION_ID || "").trim(),
-    webhookSecretSet: !!c.webhookSecret, webhookSecretFormatOk: !!c.webhookSecret && /^whsec_[A-Za-z0-9_-]{43}$/.test(c.webhookSecret),
+    webhookSecretSet: !!c.webhookSecret, webhookSecretFormat: !c.webhookSecret ? "missing" : /^whsec_[A-Za-z0-9_-]{43}$/.test(c.webhookSecret) ? "documented" : /\s|^["']|["']$/.test(c.webhookSecret) ? "has_spaces_or_quotes" : "nonstandard",
     configProblem: c.problem,
   };
   // 2) Supabase service key works (it already passed the admin lookup above)

@@ -311,7 +311,7 @@ $('psCheck').onclick=async()=>{const o=$('psCheckOut'),b=$('psCheck');b.disabled
     if(!r.ok){o.innerHTML='❌ '+esc(r.error||'қате');return}
     const ok=v=>v===true||v==='ok'||v==='paid',row=(t,v,good=ok(v))=>`<div>${good?'✅':'❌'} ${t}: <b>${esc(String(v))}</b></div>`;
     o.innerHTML=[row('Орта (TOLE_ENV)',r.environment||'жоқ',r.environment==='sandbox'||r.environment==='live'),row('TOLE_API_KEY',r.apiKeySet?'бар':'жоқ',r.apiKeySet),row('TOLE_CONNECTION_ID',r.connectionIdSet?'бар':'жоқ',r.connectionIdSet||r.environment==='live'),
-      row('TOLE_WEBHOOK_SECRET',r.webhookSecretSet?(r.webhookSecretFormatOk?'бар':'формат қате (whsec_… болуы керек)'):'жоқ',r.webhookSecretFormatOk),row('Supabase кілті',r.supabase||'—'),
+      (r.webhookSecretFormat==='nonstandard'?`<div>⚠️ TOLE_WEBHOOK_SECRET: <b>бар</b> <span class="muted">(құжаттағы whsec_… үлгісінен өзгеше — нақты тексеру төмендегі webhook жолында)</span></div>`:row('TOLE_WEBHOOK_SECRET',{documented:'бар',missing:'жоқ',has_spaces_or_quotes:'бос орын немесе тырнақша бар — алып тастаңыз'}[r.webhookSecretFormat]||'бар',r.webhookSecretFormat==='documented')),row('Supabase кілті',r.supabase||'—'),
       r.configProblem?`<div>❌ Баптау қатесі: <b>${esc(r.configProblem)}</b></div>`:'',r.toleKey!==undefined?row('Tole кілтті қабылдады ма',r.toleKey):'',
       r.qrCreated!==undefined?row('Тест QR жасалды',r.qrCreated,r.qrCreated==='pending'||r.qrCreated==='paid'):'',r.simulate!==undefined?row('«Төленді» симуляциясы',r.simulate):'',
       r.sandboxPayment!==undefined?row('Тест төлемінің статусы',r.sandboxPayment,r.sandboxPayment==='paid'||r.sandboxPayment==='skipped_live'):'',
