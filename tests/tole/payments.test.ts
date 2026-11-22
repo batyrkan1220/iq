@@ -109,7 +109,7 @@ test("price comes from the admin-managed setting at order time; unset price bloc
   assert.deepEqual(m.calls[0].body, { amount: 2490 });
 });
 
-test("invoice flow: phone normalised, invoice idempotency key, only last 4 digits stored, phone never logged", async () => {
+test("invoice flow: phone normalised, invoice idempotency key, phone stored in payments.phone for the client list, never logged", async () => {
   const lines: unknown[] = [];
   const m = makeClient([() => jsonRes(201, { ok: true, data: { id: PI, kind: "invoice", status: "created", amount: 1990, clientPhoneLast4: "4567" }, commandId: CMD })]);
   const repo = memoryRepo();
@@ -122,7 +122,7 @@ test("invoice flow: phone normalised, invoice idempotency key, only last 4 digit
   const row = repo.rows[0] as unknown as Record<string, unknown>;
   assert.equal(row.kind, "invoice");
   assert.equal(row.note, "***4567");
-  assert.ok(!JSON.stringify(repo.rows).includes("77011234567"), "full phone is not persisted");
+  assert.equal(row.phone, "77011234567");
   assert.ok(!JSON.stringify(lines).includes("7011234567"), "phone is not logged");
 });
 

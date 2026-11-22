@@ -109,6 +109,7 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
   <div class="brand">iqtest<em>.live</em></div>
   <div class="grp">Обзор</div>
   <a data-t="dash"><i>🏠</i>Дашборд</a>
+  <a data-t="cl"><i>🧑‍💼</i>Клиенты</a>
   <div class="grp">Аналитика</div>
   <a data-t="an"><i>📈</i>Воронка и трафик</a>
   <a data-t="ev"><i>⚡</i>События</a>
@@ -163,6 +164,16 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
   </div>
 </div>
 
+<!-- ============ CLIENTS ============ -->
+<div id="t-cl" class="hide">
+  <div class="grid kpis" id="clK"></div>
+  <div class="bar" style="margin-bottom:10px"><input id="clQ" placeholder="Поиск: телефон, email, источник…" style="max-width:300px">
+    <div class="seg" id="clF"><button data-f="" class="on">Все</button><button data-f="paid">Оплатили</button><button data-f="unpaid">Не оплатили</button><button data-f="phone">С телефоном</button></div>
+    <span class="sp" style="flex:1"></span><span class="muted" id="clN" style="font-size:12px"></span><button class="btn sec sm" id="clCsv">⬇ CSV</button></div>
+  <div class="tw"><table><thead><tr><th>Последняя активность</th><th>Телефон (Kaspi)</th><th>Email</th><th class="num">IQ</th><th class="num">Оплат</th><th class="num">Сумма</th><th>Статус</th><th>Источник</th><th>Язык</th><th></th></tr></thead><tbody id="clB"></tbody></table></div>
+  <p class="muted" style="font-size:12px">Клиент — это человек, который оставил email после теста или ввёл номер для счёта Kaspi. Телефон и email связываются по заказу / сессии. Номера, введённые до 22.11.2026 20:30, не сохранялись (видны только последние 4 цифры).</p>
+</div>
+
 <!-- ============ ANALYTICS ============ -->
 <div id="t-an" class="hide">
   <div class="grid kpis" id="kpis"></div>
@@ -208,7 +219,7 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
   <div class="grid kpis" id="pyK"></div>
   <div class="bar" style="margin-bottom:10px"><div class="seg" id="pyF2"><button data-f="" class="on">Все</button><button data-f="paid">Оплачено</button><button data-f="open">В ожидании</button><button data-f="bad">Не прошли</button></div>
     <label class="muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="pySbx"> показать sandbox</label><span class="sp" style="flex:1"></span><button class="btn sec sm" id="pyCsv">⬇ CSV</button></div>
-  <div class="tw"><table><thead><tr><th>Создан</th><th class="num">Сумма</th><th>Статус</th><th>Способ</th><th>Среда</th><th>Оплачен</th><th>Источник</th><th>Tole ID</th><th>Заказ</th><th>Примечание</th></tr></thead><tbody id="pyB"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th>Создан</th><th class="num">Сумма</th><th>Статус</th><th>Телефон</th><th>Способ</th><th>Среда</th><th>Оплачен</th><th>Источник</th><th>Tole ID</th><th>Заказ</th><th>Примечание</th></tr></thead><tbody id="pyB"></tbody></table></div>
   <details class="card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">Добавить платёж вручную</summary>
     <form class="form" id="pyF" style="margin-top:10px"><label class="fld"><span>Сумма, ₸</span><input type="number" id="pyA" min="0" required></label>
     <label class="fld"><span>Статус</span><select id="pyS"><option value="paid">paid — оплачен</option><option value="pending">pending — ожидает</option><option value="refunded">refunded — возврат</option></select></label>
@@ -431,7 +442,7 @@ async function boot(){const {data}=await sb.auth.getSession();if(!data.session){
   const h=location.hash.slice(1);if(PAGES[h])TAB=h;setRange('7');ibBadge()}
 
 // ---------- navigation ----------
-const PAGES={dash:['Обзор','Дашборд',1],an:['Аналитика','Воронка и трафик',1],ev:['Аналитика','События',1],us:['Аналитика','Пользователи',1],
+const PAGES={dash:['Обзор','Дашборд',1],cl:['Обзор','Клиенты',1],an:['Аналитика','Воронка и трафик',1],ev:['Аналитика','События',1],us:['Аналитика','Пользователи',1],
  py:['Финансы','Платежи',1],fr:['Финансы','Финансовый отчёт',1],ps:['Финансы','Настройки оплаты',0],
  ib:['Email','Входящие',0],ml:['Email','Отправленные',1],bc:['Email','Рассылка',0],ld:['Email','Контакты',1],
  px:['Маркетинг','Пиксели',0],lk:['Маркетинг','UTM-ссылки',0],re:['Маркетинг','Reels',0],vo:['Маркетинг','Озвучка',0],
@@ -460,7 +471,7 @@ function rng(){return{from:new Date($('dFrom').value+'T00:00:00+05:00').toISOStr
 function days(){const out=[];let d=new Date($('dFrom').value+'T00:00:00Z');const e=new Date($('dTo').value+'T00:00:00Z');while(d<=e&&out.length<400){out.push(d.toISOString().slice(0,10));d=new Date(d.getTime()+864e5)}return out}
 
 function load(){R=rng();$('upd').textContent='загрузка…';
-  const f={dash:loadDash,an:loadOv,ev:loadEv,us:loadUs,py:loadPy,fr:loadFr,ps:loadPaySettings,ib:loadEm,ml:loadEm,bc:loadEm,ld:loadEm,px:loadPx,lk:mkLink,
+  const f={dash:loadDash,cl:loadCl,an:loadOv,ev:loadEv,us:loadUs,py:loadPy,fr:loadFr,ps:loadPaySettings,ib:loadEm,ml:loadEm,bc:loadEm,ld:loadEm,px:loadPx,lk:mkLink,
     re:()=>window.loadRe(),qs:()=>window.loadQs(),vo:loadVo,st:loadSt}[TAB];
   Promise.resolve(f()).then(()=>$('upd').textContent='обновлено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').textContent='ошибка: '+(e.message||e)})}
 
@@ -482,6 +493,44 @@ const PYS={paid:['оплачен','ok'],partially_refunded:['частичный 
 const isPaid=p=>p.status==='paid'||p.status==='partially_refunded',isLive=p=>p.environment!=='sandbox';
 async function fetchPays(){const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(2000);if(error)throw error;return data||[]}
 async function visitMap(ids){ids=[...new Set(ids.filter(Boolean))];const vm={};for(let i=0;i<ids.length;i+=150){const {data:v}=await sb.from('visits').select('id,utm_source,utm_campaign,utm_content,device,referrer').in('id',ids.slice(i,i+150));(v||[]).forEach(x=>vm[x.id]=x)}return vm}
+
+const fmtPh=p=>{const d=String(p||'').replace(/\D/g,'');return d.length===11?`+7 ${d.slice(1,4)} ${d.slice(4,7)} ${d.slice(7,9)} ${d.slice(9)}`:p};
+
+// ---------- clients ----------
+let CL=[],CLF='';
+async function loadCl(){
+  const [pays,ts,ld]=await Promise.all([fetchPays(),
+    sb.from('test_sessions').select('created_at,visit_id,order_id,email,lang').gte('created_at',R.from).lt('created_at',R.to).not('email','is',null).limit(3000),
+    sb.from('leads').select('created_at,email,lang,visit_id,marketing_consent,unsubscribed_at').gte('created_at',R.from).lt('created_at',R.to).limit(3000)]);
+  if(ts.error)throw ts.error;if(ld.error)throw ld.error;
+  const live=pays.filter(p=>isLive(p)&&!(p.provider==='tole'&&p.note&&/тест|admin/i.test(p.note)));
+  const S=ts.data||[],L=ld.data||[];const byOrder={},byVisit={};S.forEach(x=>{if(x.order_id)byOrder[x.order_id]=x;if(x.visit_id)byVisit[x.visit_id]=x});
+  L.forEach(x=>{if(x.visit_id&&!byVisit[x.visit_id])byVisit[x.visit_id]=x});
+  const C={},key=k=>C[k]||(C[k]={phone:null,email:null,visits:new Set(),pays:[],last:null,lang:null}),touch=(c,t)=>{if(!c.last||t>c.last)c.last=t};
+  const emailKey={};
+  live.forEach(p=>{const s=byOrder[p.order_id]||byVisit[p.visit_id]||{};const em=s.email||null;
+    const k=p.phone?'p:'+p.phone:em?'e:'+em.toLowerCase():'o:'+(p.order_id||p.id);const c=key(k);
+    if(p.phone)c.phone=p.phone;if(em){c.email=em;emailKey[em.toLowerCase()]=k}c.pays.push(p);if(p.visit_id)c.visits.add(p.visit_id);c.lang=c.lang||s.lang;touch(c,p.created_at)});
+  [...S,...L].forEach(x=>{if(!x.email)return;const e=x.email.toLowerCase();const k=emailKey[e]||'e:'+e;emailKey[e]=k;const c=key(k);c.email=c.email||x.email;if(x.visit_id)c.visits.add(x.visit_id);c.lang=c.lang||x.lang;if(x.unsubscribed_at)c.unsub=true;touch(c,x.created_at)});
+  const vids=[...new Set(Object.values(C).flatMap(c=>[...c.visits]))];const iq={};
+  for(let i=0;i<vids.length;i+=150){const {data}=await sb.from('results').select('visit_id,iq,created_at').in('visit_id',vids.slice(i,i+150));(data||[]).forEach(r=>iq[r.visit_id]=r.iq)}
+  const vm=await visitMap(vids);
+  CL=Object.values(C).filter(c=>c.phone||c.email).map(c=>{const paid=c.pays.filter(isPaid),lp=c.pays.slice().sort((a,b)=>a.created_at<b.created_at?1:-1)[0],v=[...c.visits];
+    return{...c,visits:v,iq:v.map(x=>iq[x]).filter(x=>x!=null).pop()??null,paidN:paid.length,sum:paid.reduce((s,p)=>s+(p.amount||0),0),lastPay:lp||null,src:v.map(x=>(vm[x]||{}).utm_source).find(Boolean)||'прямой'}}).sort((a,b)=>a.last<b.last?1:-1);
+  const pd=CL.filter(c=>c.paidN);
+  $('clK').innerHTML=card('Клиентов',CL.length)+card('С телефоном',CL.filter(c=>c.phone).length)+card('С email',CL.filter(c=>c.email).length)+card('Оплатили',pd.length,pct(pd.length,CL.length),'hi')+card('Не оплатили (тёплые)',CL.length-pd.length,'можно дожать письмом')+card('LTV',pd.length?money(pd.reduce((s,c)=>s+c.sum,0)/pd.length):'—','средняя сумма на клиента');
+  drawCl()}
+function drawCl(){const q=$('clQ').value.toLowerCase().replace(/\s/g,''),f={paid:c=>c.paidN>0,unpaid:c=>!c.paidN,phone:c=>!!c.phone}[CLF];
+  const rows=CL.filter(c=>(!f||f(c))&&(!q||[c.phone,c.email,c.src].join(' ').toLowerCase().replace(/\s/g,'').includes(q)));$('clN').textContent=rows.length+' клиентов';
+  $('clB').innerHTML=rows.length?rows.map((c,i)=>{const s=c.lastPay?(PYS[c.lastPay.status]||[c.lastPay.status,'w']):null;return `<tr><td>${fmtT(c.last)}</td>
+    <td>${c.phone?`<b>${esc(fmtPh(c.phone))}</b>`:'<span class="muted">—</span>'}</td><td>${c.email?esc(c.email)+(c.unsub?' <span class="pill bad">отписан</span>':''):'<span class="muted">—</span>'}</td>
+    <td class="num">${c.iq??'—'}</td><td class="num">${c.paidN}</td><td class="num"><b>${c.sum?money(c.sum):'—'}</b></td><td>${s?`<span class="pill ${s[1]}">${esc(s[0])}</span>`:'<span class="pill">без оплаты</span>'}</td>
+    <td>${esc(c.src)}</td><td>${esc(c.lang||'')}</td><td style="white-space:nowrap">${c.phone?`<a class="btn sec sm" href="https://wa.me/${esc(c.phone)}" target="_blank" rel="noopener">WhatsApp</a> <button class="btn sec sm" data-cp="${esc(c.phone)}">📋</button> `:''}${c.email?`<button class="btn sec sm" data-w="${esc(c.email)}">✉️</button> `:''}${c.visits[0]?`<button class="btn sec sm" data-v="${esc(c.visits[0])}">👁</button>`:''}</td></tr>`}).join(''):empty(10,'Клиентов нет');
+  $('clB').querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>compose(b.dataset.w));$('clB').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>showVisit(b.dataset.v));
+  $('clB').querySelectorAll('[data-cp]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText('+'+b.dataset.cp);b.textContent='✓'}catch(e){}})}
+$('clQ').oninput=drawCl;
+document.querySelectorAll('#clF button').forEach(b=>b.onclick=()=>{CLF=b.dataset.f;document.querySelectorAll('#clF button').forEach(x=>x.classList.toggle('on',x===b));drawCl()});
+$('clCsv').onclick=()=>csvDl('iqtest_clients.csv',[['last_activity','phone','email','iq','payments','sum_kzt','last_status','source','lang']].concat(CL.map(c=>[c.last,c.phone?'+'+c.phone:'',c.email||'',c.iq??'',c.paidN,c.sum,c.lastPay?c.lastPay.status:'',c.src,c.lang||''])));
 
 // ---------- dashboard ----------
 async function loadDash(){
@@ -571,11 +620,11 @@ function drawPy(){const sbx=$('pySbx').checked,data=PAYS.filter(p=>sbx||isLive(p
   $('pyK').innerHTML=card('Выручка',money(rev),'','hi')+card('Оплачено',paid.length)+card('Средний чек',paid.length?money(rev/paid.length):'—')+card('В ожидании',open)+card('Не прошли',bad)+card('Счёт → оплата',conv)+(unk?card('Результат неизвестен',unk,'проверьте вручную','alert'):'');
   const f={paid:isPaid,open:p=>['pending','creating','processing','outcome_unknown'].includes(p.status),bad:p=>['expired','cancelled','failed','rejected'].includes(p.status)}[PYF];
   const rows=f?data.filter(f):data,vm=PAYS._vm||{};
-  $('pyB').innerHTML=rows.length?rows.map(p=>{const s=PYS[p.status]||[p.status,'w'],v=vm[p.visit_id]||{};return `<tr${p.visit_id?` class="click" data-v="${p.visit_id}"`:''}><td>${fmtT(p.created_at)}</td><td class="num"><b>${money(p.amount)}</b></td><td><span class="pill ${s[1]}">${esc(s[0])}</span></td><td class="muted">${esc(p.kind==='invoice'?'Kaspi счёт':p.kind==='qr'?'Kaspi QR':p.provider==='manual'?'вручную':(p.kind||p.provider||''))}</td><td class="muted">${esc(p.environment||p.provider||'')}</td><td class="muted">${fmtT(p.paid_at)}</td><td>${esc(v.utm_source||(p.visit_id?'прямой':'—'))}</td><td class="muted" title="${esc(p.tole_id||p.ext_id||'')}">${esc((p.tole_id||p.ext_id||'').slice(0,8))}</td><td class="muted" title="${esc(p.order_id||'')}">${esc((p.order_id||'').slice(0,8))}</td><td class="muted">${esc(p.last_error_code||p.note||'')}</td></tr>`}).join(''):empty(10,'Платежей нет');
+  $('pyB').innerHTML=rows.length?rows.map(p=>{const s=PYS[p.status]||[p.status,'w'],v=vm[p.visit_id]||{};return `<tr${p.visit_id?` class="click" data-v="${p.visit_id}"`:''}><td>${fmtT(p.created_at)}</td><td class="num"><b>${money(p.amount)}</b></td><td><span class="pill ${s[1]}">${esc(s[0])}</span></td><td>${p.phone?esc(fmtPh(p.phone)):'<span class="muted">'+esc(p.note&&p.note.startsWith('***')?p.note:'—')+'</span>'}</td><td class="muted">${esc(p.kind==='invoice'?'Kaspi счёт':p.kind==='qr'?'Kaspi QR':p.provider==='manual'?'вручную':(p.kind||p.provider||''))}</td><td class="muted">${esc(p.environment||p.provider||'')}</td><td class="muted">${fmtT(p.paid_at)}</td><td>${esc(v.utm_source||(p.visit_id?'прямой':'—'))}</td><td class="muted" title="${esc(p.tole_id||p.ext_id||'')}">${esc((p.tole_id||p.ext_id||'').slice(0,8))}</td><td class="muted" title="${esc(p.order_id||'')}">${esc((p.order_id||'').slice(0,8))}</td><td class="muted">${esc(p.last_error_code||p.note||'')}</td></tr>`}).join(''):empty(11,'Платежей нет');
   document.querySelectorAll('#pyB tr.click').forEach(tr=>tr.onclick=()=>showVisit(tr.dataset.v))}
 document.querySelectorAll('#pyF2 button').forEach(b=>b.onclick=()=>{PYF=b.dataset.f;document.querySelectorAll('#pyF2 button').forEach(x=>x.classList.toggle('on',x===b));drawPy()});
 $('pySbx').onchange=drawPy;
-$('pyCsv').onclick=()=>{const vm=PAYS._vm||{};csvDl('iqtest_payments.csv',[['created_at','amount','status','kind','environment','paid_at','utm_source','utm_campaign','tole_id','order_id','note']].concat(PAYS.map(p=>{const v=vm[p.visit_id]||{};return[p.created_at,p.amount,p.status,p.kind||p.provider,p.environment,p.paid_at,v.utm_source,v.utm_campaign,p.tole_id||p.ext_id,p.order_id,p.last_error_code||p.note]})))};
+$('pyCsv').onclick=()=>{const vm=PAYS._vm||{};csvDl('iqtest_payments.csv',[['created_at','amount','status','phone','kind','environment','paid_at','utm_source','utm_campaign','tole_id','order_id','note']].concat(PAYS.map(p=>{const v=vm[p.visit_id]||{};return[p.created_at,p.amount,p.status,p.phone||'',p.kind||p.provider,p.environment,p.paid_at,v.utm_source,v.utm_campaign,p.tole_id||p.ext_id,p.order_id,p.last_error_code||p.note]})))};
 $('pyF').onsubmit=async e=>{e.preventDefault();$('pyErr').textContent='';const {error}=await sb.from('payments').insert({amount:+$('pyA').value,status:$('pyS').value,ext_id:$('pyE').value||null,note:$('pyN').value||null,provider:'manual'});
   if(error){$('pyErr').textContent=error.message;return}$('pyE').value=$('pyN').value='';loadPy()};
 

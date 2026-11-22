@@ -33,6 +33,7 @@ export interface PaymentRow {
   paid_at: string | null;
   last_reconciled_at: string | null;
   last_error_code: string | null;
+  phone?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -117,7 +118,7 @@ export class PaymentService {
     return this.start(orderId, visitId, "qr", null);
   }
 
-  /** Kaspi invoice to the payer's phone. The phone is sent to Tole only; we keep just the last 4 digits. */
+  /** Kaspi invoice to the payer's phone. The phone is stored in payments.phone (admin-only, RLS) for the client list; never logged. */
   async startInvoice(orderId: string, visitId: string | null, phone: string): Promise<PublicPaymentView> {
     const p = normalizeKzPhone(phone);
     if (!p) throw new ToleError("validation", "bad_phone", { code: "bad_phone" });
@@ -144,7 +145,7 @@ export class PaymentService {
     if (row.kind !== kind) throw new ToleError("conflict", "order_kind_mismatch", { code: "order_kind_mismatch" });
     if (row.status === "creating") {
       if (kind === "invoice" && !phone) throw new ToleError("validation", "bad_phone", { code: "bad_phone" });
-      if (phone) await this.d.repo.update(row.id, { note: `***${phone.slice(-4)}` } as Partial<PaymentRow>);
+      if (phone) await this.d.repo.update(row.id, { note: `***${phone.slice(-4)}`, phone } as Partial<PaymentRow>);
       return toPublic(await this.sendCreate(row, phone));
     }
     return this.refresh(row);
