@@ -1,0 +1,9 @@
+-- Applied 2026-11-22: leads (email capture), test_sessions (emailed result links), email_log, pg_cron reminders.
+-- See the Supabase project for the live definitions; summary:
+--   leads(email, lang, visit_id, marketing_consent, unsubscribed_at, unsub_token)  RLS: anon insert, admin read
+--   test_sessions(token pk, visit_id, order_id, email, lang, answers, left_sec, reminder_sent_at, result_emailed_at)  RLS: anon insert, admin read
+--   get_test_session(token) security definer → {answers, lang, left, orderId, paid}
+--   private.session_paid(session) → paywall off, or a paid payment for the order/visit
+--   email_log(kind, to_email, subject, status, provider_id, error)  RLS: admin read
+--   vault secret 'mail_cron_secret' + public.mail_cron_secret() (service_role only)
+--   cron job 'mail-reminders' every 10 min → POST /functions/v1/mail {action:"reminders"} with x-cron-secret

@@ -211,13 +211,19 @@ function levelOf(iq){
   if(iq>=100)return'Средний (верхняя граница)';if(iq>=85)return'Средний';return'Ниже среднего'}
 function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearInterval(tick);clearTimeout(memT);document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));
   let em=null;try{em=localStorage.getItem('iq_email')}catch(e){}
-  if(em){runAnalyze();return}
+  if(em){saveSession(em);runAnalyze();return}
   show('email');TR('email_view');setTimeout(()=>{try{$('emIn').focus()}catch(e){}},350)}
 const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 function emSubmit(){const v=$('emIn').value.trim().toLowerCase(),er=$('emErr');
   if(!EMAIL_RE.test(v)||v.length>254){er.textContent=L2('Введите корректный email, например name@mail.com','Дұрыс email жазыңыз, мысалы name@mail.com');er.classList.remove('hidden');return}
   er.classList.add('hidden');try{localStorage.setItem('iq_email',v)}catch(e){}
-  sbIns('leads',{visit_id:VID,email:v,lang:LANG});TR('email');runAnalyze()}
+  sbIns('leads',{visit_id:VID,email:v,lang:LANG,marketing_consent:!!$('emConsent').checked});saveSession(v);TR('email',{consent:!!$('emConsent').checked});runAnalyze()}
+// A finished test, saved server-side so the emailed link can reopen it (Supabase test_sessions).
+function saveSession(email){const token=uuid4();try{localStorage.setItem('iq_session',token)}catch(e){}
+  sbIns('test_sessions',{token,visit_id:VID,order_id:orderId(),email:email||null,lang:LANG,answers:ans,left_sec:Math.max(0,left|0)})}
+const MAIL_FN='https://dlhejkmuyyqvjzjxbwbg.supabase.co/functions/v1/mail';
+function mailResult(){let t=null;try{t=localStorage.getItem('iq_session')}catch(e){}if(!t)return;
+  setTimeout(()=>{fetch(MAIL_FN,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY},body:JSON.stringify({action:'result',token:t})}).catch(()=>{})},2500)}
 $('emBtn').onclick=emSubmit;$('emIn').addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()});
 function runAnalyze(){show('analyze');const box=document.querySelector('#analyze .az');box.classList.remove('fin');
   const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
@@ -285,7 +291,14 @@ $('pmCheck').onclick=async()=>{$('pmCheck').disabled=true;await pmApi('status');
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(PM.pending||($('payModal').classList.contains('on')&&!$('pmStep2').classList.contains('hidden'))))pmApi('status')});
 window.addEventListener('pageshow',e=>{if(e.persisted&&PM.pending)pmApi('status')});
 // Restore an unfinished payment after the tab was reloaded/discarded while the user was in the Kaspi app
-(function payRestore(){let s=null;try{s=JSON.parse(localStorage.getItem('iq_pay')||'null')}catch(e){}
+(function openByLink(){const tk=new URLSearchParams(location.search).get('s');if(!tk||!/^[0-9a-f-]{36}$/i.test(tk))return;window._byLink=1;
+  history.replaceState(null,'',location.pathname);
+  fetch(SB_URL+'rpc/get_test_session',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:tk})}).then(r=>r.json()).then(d=>{
+    if(!d||!Array.isArray(d.answers))return;ans=d.answers;left=d.left|0;
+    try{localStorage.setItem('iq_session',tk);if(d.orderId)localStorage.setItem('iq_order',d.orderId)}catch(e){}
+    TR('open_link',{paid:!!d.paid});
+    PAYCFG.then(()=>{if(d.paid||FREE){showResult(true)}else{showPaywall(1)}})}).catch(()=>{})})();
+(function payRestore(){if(window._byLink)return;let s=null;try{s=JSON.parse(localStorage.getItem('iq_pay')||'null')}catch(e){}
   if(!s||!Array.isArray(s.ans)||Date.now()-s.t>48*3600e3){if(s)payClear();return}
   let o=null;try{o=localStorage.getItem('iq_order')}catch(e){}if(!o)return;
   ans=s.ans;left=s.left;userName=s.userName||'';
@@ -308,7 +321,7 @@ function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i
   if(has('puz'))st.push(yes(lk('puz'))?['🧩','Любитель сложных задач','Интеллектуальные вызовы вас заряжают.']:['⚡','Прагматик','Лучше всего думаете, когда видна практическая цель.']);
   if(has('vis'))st.push(yes(lk('vis'))?['🧊','Пространственное воображение','Легко вращаете объекты в уме.']:['🗺','Словесно-логический тип','Опираетесь на слова, схемы и правила.']);
   if(has('plan'))st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);return st}
-function showResult(re){
+function showResult(re){if(!re)mailResult();
   const ok=Q.map((q,i)=>!q.likert&&ans[i]===q.a);const correct=ok.filter(Boolean).length;
   const iq=iqFrom(correct),lv=levelOf(iq),used=TIME-Math.max(left,0),pc=Math.min(99,Math.max(1,pctOf(iq)));
   $('level').textContent=T(lv);$('shDate').textContent=new Date().toLocaleDateString('ru-RU');

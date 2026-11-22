@@ -610,7 +610,7 @@ h2{letter-spacing:-.02em}
 @keyframes emBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes emWave{from{transform:scale(1);opacity:.9}to{transform:scale(1.5);opacity:0}}
 .em-card h2{margin:0 0 6px;font-size:24px}.em-sub{margin:0 0 16px;color:#5b5b76;font-size:15.5px}
 .em-in{width:100%;box-sizing:border-box;font:inherit;font-size:17px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;margin-bottom:10px;text-align:center}.em-in:focus{outline:none;border-color:#7c3aed}
-.em-card .btn{width:100%}.em-note{font-size:12.5px;color:#7a7a95;margin:12px 0 0}
+.em-card .btn{width:100%}.em-ok{display:flex;gap:9px;align-items:flex-start;text-align:left;font-size:13px;color:#4b4b66;margin:2px 0 14px;cursor:pointer}.em-ok input{margin-top:2px;width:18px;height:18px;accent-color:#7c3aed;flex:none}.em-note{font-size:12.5px;color:#7a7a95;margin:12px 0 0}
 .az{position:relative;overflow:hidden;text-align:center;color:#fff;border:0;padding:20px 18px 18px;background:radial-gradient(120% 70% at 50% 0%,#4c1d95 0%,#1e1b4b 55%,#0b0d2b 100%);box-shadow:0 24px 60px -20px rgba(30,20,90,.6)}
 .az::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 80%,rgba(244,114,182,.18),transparent 40%),radial-gradient(circle at 85% 20%,rgba(167,139,250,.22),transparent 40%);pointer-events:none}
 .az-top{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -784,6 +784,7 @@ h2{letter-spacing:-.02em}
       <p class="em-sub" data-kz="Нәтижеңізді алу үшін email жазыңыз">Введите email, чтобы получить результат</p>
       <input class="em-in" id="emIn" type="email" inputmode="email" autocomplete="email" placeholder="name@mail.com" maxlength="254">
       <p class="pm-err hidden" id="emErr"></p>
+      <label class="em-ok"><input type="checkbox" id="emConsent"> <span data-kz="Жаңалықтар мен пайдалы ұсыныстарды email арқылы алуға келісемін">Согласен получать новости и полезные предложения по email</span></label>
       <button class="btn big cta" id="emBtn" data-kz="Нәтижені алу →">Получить результат →</button>
       <p class="em-note" data-kz="🔒 Спам жібермейміз. Email тек нәтижеңізге байланысты қолданылады.">🔒 Без спама. Email используется только для вашего результата.</p>
     </div>
