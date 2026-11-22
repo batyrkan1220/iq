@@ -445,6 +445,22 @@ h2{letter-spacing:-.02em}
 .ch-r{margin-top:16px;font-size:16px;font-weight:700;line-height:1.35;animation:chIn .35s ease}
 .ch-r .btn{margin-top:12px;width:100%}
 @keyframes chIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.steps{width:min(1100px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);margin:40px 0 10px;text-align:left}
+.steps h2{text-align:center;font-size:30px;font-weight:900;letter-spacing:-.02em;margin:0 0 8px;color:#0f0d2e}
+.st-sub{text-align:center;color:#5b5b76;font-size:16px;margin:0 auto 26px;max-width:560px}
+.st-grid{display:grid;gap:26px}@media(min-width:820px){.st-grid{grid-template-columns:repeat(3,1fr)}.steps h2{font-size:40px}}
+.st-art{height:190px;border-radius:22px;background:linear-gradient(135deg,#f3f1ff,#eaf0ff);display:flex;align-items:center;justify-content:center}
+.st-card{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 10px 30px rgba(60,50,140,.12);min-width:190px}
+.st-mx{display:grid;grid-template-columns:repeat(2,52px);gap:16px 22px;justify-content:center}
+.mx{display:grid;grid-template-columns:repeat(2,20px);gap:4px}.mx i{height:20px;border-radius:5px;background:#e0e7ff}.mx i.on{background:#4f46e5}
+.mx.v i{background:#ede9fe}.mx.v i.on{background:#7c3aed}.mx.g i{background:#dcfce7}.mx.g i.on{background:#22c55e}
+.mx-q{width:44px;height:44px;border:2px solid #4f46e5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#4f46e5;align-self:center}
+.st-iq b{font-size:32px;font-weight:900;color:#0f0d2e}.st-iq span{margin-left:6px;color:#6b6b85;font-size:14px}
+.st-bell{display:block;width:200px;height:58px;margin-top:6px}
+.st-pr{min-width:210px}.pr-t{font-weight:700;font-size:14.5px;color:#0f0d2e;margin-bottom:12px}
+.pr{height:7px;border-radius:9px;background:#eef0f7;margin-top:10px;overflow:hidden}.pr i{display:block;height:100%;width:var(--w);border-radius:9px;background:linear-gradient(90deg,#4f46e5,#7c3aed)}
+.st-n{display:inline-block;margin:18px 0 8px;padding:4px 11px;border-radius:999px;background:#eef0f7;font-weight:700;font-size:13px;color:#33334d}
+.st h3{margin:0 0 6px;font-size:20px;font-weight:800;color:#0f0d2e}.st p{margin:0;color:#4b4b66;font-size:15.5px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -501,6 +517,39 @@ h2{letter-spacing:-.02em}
       </div>
       <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
     </div>
+    <section class="steps">
+      <h2 data-kz="IQ-іңізді 3 қадамда біліңіз">Ваш IQ за 3 шага</h2>
+      <p class="st-sub" data-kz="Тестті тапсырыңыз, нәтижені алыңыз, мықты жақтарыңызды біліңіз.">Пройдите тест, получите результат и узнайте свои сильные стороны.</p>
+      <div class="st-grid">
+        <div class="st">
+          <div class="st-art"><div class="st-card st-mx">
+            <div class="mx"><i></i><i class="on b"></i><i></i><i></i></div><div class="mx v"><i></i><i class="on"></i><i></i><i></i></div>
+            <div class="mx g"><i class="on"></i><i></i><i></i><i></i></div><div class="mx-q">?</div>
+          </div></div>
+          <span class="st-n">01</span>
+          <h3 data-kz="Тестті тапсырыңыз">Пройдите тест</h3>
+          <p data-kz="Логика, зейін, жады, сандар және кеңістік бойынша 30 тапсырма. Арнайы білім қажет емес — телефоннан да ыңғайлы.">30 заданий на логику, внимание, память, числа и пространство. Специальные знания не нужны — удобно и с телефона.</p>
+        </div>
+        <div class="st">
+          <div class="st-art"><div class="st-card">
+            <div class="st-iq"><b>120</b><span data-kz="IQ балы">балл IQ</span></div>
+            <svg viewBox="0 0 220 64" class="st-bell"><defs><linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><path d="M4 58 C50 58 70 6 110 6 S170 58 216 58" fill="none" stroke="url(#bg1)" stroke-width="3" stroke-linecap="round"/><line x1="148" y1="30" x2="148" y2="60" stroke="#ff4d6d" stroke-width="2.5"/><circle cx="148" cy="28" r="5" fill="#fff" stroke="#ff4d6d" stroke-width="2.5"/></svg>
+          </div></div>
+          <span class="st-n">02</span>
+          <h3 data-kz="IQ балыңызды біліңіз">Узнайте свой балл IQ</h3>
+          <p data-kz="Тест біткен соң бірден — IQ балыңыз және басқа қатысушылар арасындағы орныңыз.">Сразу после теста — ваш балл IQ и место среди других участников.</p>
+        </div>
+        <div class="st">
+          <div class="st-art"><div class="st-card st-pr">
+            <div class="pr-t" data-kz="Қабілеттер профилі">Профиль способностей</div>
+            <div class="pr"><i style="--w:72%"></i></div><div class="pr"><i style="--w:88%"></i></div><div class="pr"><i style="--w:60%"></i></div>
+          </div></div>
+          <span class="st-n">03</span>
+          <h3 data-kz="Мықты жақтарыңызды табыңыз">Найдите сильные стороны</h3>
+          <p data-kz="5 қабілет бойынша жеке профиль: қай жағыңыз мықты, қайсысын дамыту керек.">Личный профиль по 5 способностям: что у вас сильнее всего и что стоит развивать.</p>
+        </div>
+      </div>
+    </section>
 
     
 
