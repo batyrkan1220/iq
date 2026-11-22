@@ -6,6 +6,8 @@
 //   {action:"reminders"}          — cron (header x-cron-secret): unpaid sessions 30 min–24 h old get one "your result is ready" email
 //   {action:"status"}             — admin: is Resend configured, domain status, counts
 //   {action:"broadcast", subject, body, test?} — admin: newsletter to consenting, subscribed leads (test → only to the admin)
+//   {action:"reply", inboundId, body}  — admin: answer an inbound email in the same thread
+//   {action:"direct", to, subject, body} — admin: write to one address
 // GET ?unsub=<token>               — one-click unsubscribe page
 // Never logs email bodies or full addresses.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -13,6 +15,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SITE = "https://iqtest.live";
 const FROM = Deno.env.get("MAIL_FROM") || "iqtest.live <noreply@iqtest.live>";
 const RESEND = "https://api.resend.com";
+const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") || "iqtest.live <support@iqtest.live>";
 const ORIGINS = new Set(["https://iqtest.live", "https://www.iqtest.live", "https://iqtest-live.onrender.com"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -66,11 +69,13 @@ function broadcastMail(lang: Lang, subject: string, body: string, unsub: string)
 }
 
 // ---------------------------------------------------------------- Resend
-async function send(key: string, to: string, m: { subject: string; html: string; text: string }, unsub: string | null, idem?: string) {
+async function send(key: string, to: string, m: { subject: string; html: string; text: string }, unsub: string | null, idem?: string, extraHeaders: Record<string, string> = {}) {
   const headers: Record<string, string> = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
   if (idem) headers["Idempotency-Key"] = idem;
-  const body: Record<string, unknown> = { from: FROM, to: [to], subject: m.subject, html: m.html, text: m.text };
-  if (unsub) body.headers = { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
+  const body: Record<string, unknown> = { from: FROM, to: [to], reply_to: REPLY_TO, subject: m.subject, html: m.html, text: m.text };
+  const hdr: Record<string, string> = { ...extraHeaders };
+  if (unsub) Object.assign(hdr, { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
+  if (Object.keys(hdr).length) body.headers = hdr;
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), 10_000);
   try {
@@ -107,11 +112,11 @@ Deno.serve(async (req) => {
   try { b = await req.json(); } catch { return json({ error: "bad_json" }, 400); }
 
   const unsubUrlFor = async (email: string) => {
-    const { data } = await sb.from("leads").select("unsub_token,unsubscribed_at").eq("email", email).order("created_at", { ascending: false }).limit(1).maybeSingle();
-    return { url: data?.unsub_token ? `${Deno.env.get("SUPABASE_URL")}/functions/v1/mail?unsub=${data.unsub_token}` : null, unsubscribed: !!data?.unsubscribed_at };
+    const { data } = await sb.from("leads").select("unsub_token,unsubscribed_at,bounced_at").eq("email", email).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    return { url: data?.unsub_token ? `${Deno.env.get("SUPABASE_URL")}/functions/v1/mail?unsub=${data.unsub_token}` : null, unsubscribed: !!data?.unsubscribed_at || !!data?.bounced_at };
   };
-  const record = (kind: string, to: string, subject: string, r: { ok: boolean; id?: string; error?: string }, token?: string) =>
-    sb.from("email_log").insert({ kind, to_email: to, subject, status: r.ok ? "sent" : "failed", provider_id: r.ok ? r.id : null, error: r.ok ? null : r.error, session_token: token ?? null });
+  const record = (kind: string, to: string, subject: string, r: { ok: boolean; id?: string; error?: string }, token?: string, inboundId?: number) =>
+    sb.from("email_log").insert({ kind, to_email: to, subject, status: r.ok ? "sent" : "failed", last_event: r.ok ? "sent" : "failed", provider_id: r.ok ? r.id : null, error: r.ok ? null : r.error, session_token: token ?? null, inbound_id: inboundId ?? null });
 
   async function isAdmin(): Promise<string | null> {
     const tok = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -174,7 +179,7 @@ Deno.serve(async (req) => {
   }
 
   // ---- admin actions
-  if (b.action === "status" || b.action === "broadcast") {
+  if (b.action === "status" || b.action === "broadcast" || b.action === "reply" || b.action === "direct") {
     const admin = await isAdmin();
     if (!admin) return json({ error: "forbidden" }, 403);
     if (b.action === "status") {
@@ -186,10 +191,33 @@ Deno.serve(async (req) => {
         if (r.ok) out.domains = (j.data || []).map((d: { name: string; status: string }) => ({ name: d.name, status: d.status }));
       }
       const { count: leads } = await sb.from("leads").select("id", { count: "exact", head: true });
-      const { count: subs } = await sb.from("leads").select("id", { count: "exact", head: true }).eq("marketing_consent", true).is("unsubscribed_at", null);
+      const { count: subs } = await sb.from("leads").select("id", { count: "exact", head: true }).eq("marketing_consent", true).is("unsubscribed_at", null).is("bounced_at", null);
       return json({ ...out, leads, subscribers: subs });
     }
     if (!key) return json({ ok: false, error: "mail_not_configured" }, 503);
+    if (b.action === "reply" || b.action === "direct") {
+      const text = String(b.body || "").trim().slice(0, 10000);
+      if (text.length < 2) return json({ ok: false, error: "empty" }, 400);
+      let to = "", subject = "", lang: Lang = b.lang === "ru" ? "ru" : "kz", inboundId: number | undefined, extra: Record<string, string> = {}, quote = "";
+      if (b.action === "reply") {
+        const { data: inb } = await sb.from("inbound_emails").select("id,from_email,subject,message_id,text_body,received_at").eq("id", Number(b.inboundId)).maybeSingle();
+        if (!inb?.from_email) return json({ ok: false, error: "not_found" }, 404);
+        to = inb.from_email; inboundId = inb.id;
+        subject = /^re:/i.test(inb.subject || "") ? inb.subject : `Re: ${inb.subject || "iqtest.live"}`;
+        if (inb.message_id) extra = { "In-Reply-To": inb.message_id, References: inb.message_id };
+        if (inb.text_body) quote = `<blockquote style="margin:16px 0 0;padding:0 0 0 12px;border-left:3px solid #e2e0f5;color:#8a8aa3;font-size:13px">${esc(inb.text_body.slice(0, 1500)).replace(/\n/g, "<br>")}</blockquote>`;
+      } else {
+        to = String(b.to || "").trim().toLowerCase();
+        subject = String(b.subject || "").trim().slice(0, 150);
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to) || subject.length < 2) return json({ ok: false, error: "bad_input" }, 400);
+      }
+      const html = layout(lang, esc(subject.replace(/^re:\s*/i, "")), esc(text).split(/\n{2,}/).map((p) => `<p style="font-size:15px;line-height:1.55;margin:0 0 12px">${p.replace(/\n/g, "<br>")}</p>`).join("") + quote);
+      const r = await send(key, to, { subject, html, text }, null, undefined, extra);
+      await record("reply", to, subject, r, undefined, inboundId);
+      if (r.ok && inboundId) await sb.from("inbound_emails").update({ status: "replied", replied_at: new Date().toISOString() }).eq("id", inboundId);
+      log("admin reply", { by: mask(admin), to: mask(to), ok: r.ok });
+      return json({ ok: r.ok, error: r.ok ? undefined : r.error });
+    }
     const subject = String(b.subject || "").trim().slice(0, 150), body = String(b.body || "").trim().slice(0, 8000);
     const lang: Lang = b.lang === "ru" ? "ru" : "kz";
     if (subject.length < 3 || body.length < 10) return json({ ok: false, error: "empty" }, 400);
@@ -200,7 +228,7 @@ Deno.serve(async (req) => {
       await record("test", admin, m.subject, r);
       return json({ ok: r.ok, sent: r.ok ? 1 : 0, error: r.ok ? undefined : r.error });
     }
-    const { data: rows } = await sb.from("leads").select("email,unsub_token").eq("marketing_consent", true).is("unsubscribed_at", null).limit(10000);
+    const { data: rows } = await sb.from("leads").select("email,unsub_token").eq("marketing_consent", true).is("unsubscribed_at", null).is("bounced_at", null).limit(10000);
     const seen = new Set<string>();
     const items: { to: string; m: ReturnType<typeof broadcastMail>; unsub: string }[] = [];
     for (const row of rows || []) {
@@ -213,14 +241,14 @@ Deno.serve(async (req) => {
     let sent = 0, failed = 0;
     for (let i = 0; i < items.length; i += 100) {
       const chunk = items.slice(i, i + 100);
-      const payload = chunk.map((x) => ({ from: FROM, to: [x.to], subject: x.m.subject, html: x.m.html, text: x.m.text, headers: { "List-Unsubscribe": `<${x.unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }));
+      const payload = chunk.map((x) => ({ from: FROM, to: [x.to], reply_to: REPLY_TO, subject: x.m.subject, html: x.m.html, text: x.m.text, headers: { "List-Unsubscribe": `<${x.unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }));
       let ok = false, ids: string[] = [], err = "";
       try {
         const r = await fetch(`${RESEND}/emails/batch`, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         const j = await r.json().catch(() => ({}));
         ok = r.ok; ids = (j.data || []).map((d: { id: string }) => d.id); err = ok ? "" : `${r.status}:${String(j.name || j.message || "").slice(0, 80)}`;
       } catch (e) { err = (e as Error).name; }
-      await sb.from("email_log").insert(chunk.map((x, k) => ({ kind: "broadcast", to_email: x.to, subject: subject, status: ok ? "sent" : "failed", provider_id: ok ? ids[k] ?? null : null, error: ok ? null : err })));
+      await sb.from("email_log").insert(chunk.map((x, k) => ({ kind: "broadcast", to_email: x.to, subject: subject, status: ok ? "sent" : "failed", last_event: ok ? "sent" : "failed", provider_id: ok ? ids[k] ?? null : null, error: ok ? null : err })));
       ok ? (sent += chunk.length) : (failed += chunk.length);
       await new Promise((res) => setTimeout(res, 600));
     }

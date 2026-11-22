@@ -159,6 +159,11 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
     <div class="card" style="margin-bottom:12px"><h3>Хат жүйесі (Supabase → Resend)</h3><div id="emStat" class="muted">Тексерілуде…</div>
       <p class="muted" style="font-size:12.5px;margin:8px 0 0">Автоматты хаттар: ✉️ төлемнен кейін — нәтиже сілтемесі; ⏰ 30 мин ішінде төлемегендерге — бір рет еске салу. Кілт: Supabase → Edge Functions → Secrets → <code>RESEND_API_KEY</code>.</p></div>
     <div class="grid kpis" id="emK" style="margin-bottom:12px"></div>
+    <div class="card" style="margin-bottom:12px"><h3>📥 Кіріс хаттар <span class="muted" style="font-weight:600;font-size:12.5px">support@iqtest.live</span> <button class="btn sec sm" id="ibNew" type="button" style="float:right">✉️ Жаңа хат жазу</button></h3>
+      <div class="grid two" style="margin-top:0;grid-template-columns:minmax(240px,1fr) 2fr">
+        <div class="tw" style="max-height:420px;overflow:auto"><table><tbody id="ibList"></tbody></table></div>
+        <div id="ibView" class="muted" style="font-size:14px">Хатты таңдаңыз</div>
+      </div></div>
     <div class="card" style="margin-bottom:12px"><h3>Рассылка (тек келісім бергендерге)</h3>
       <div class="form" style="grid-template-columns:1fr 140px"><label class="fld"><span>Тақырып</span><input id="bcSub" maxlength="150" placeholder="Мысалы: Жаңа IQ сұрақтары қосылды!"></label>
         <label class="fld"><span>Хат тілі</span><select id="bcLang"><option value="kz">Қазақша</option><option value="ru">Орысша</option></select></label></div>
@@ -166,10 +171,18 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn sec" id="bcTest" type="button">Өзіме тест жіберу</button><button class="btn" id="bcSend" type="button">Барлығына жіберу</button></div>
       <div id="bcOut" style="margin-top:8px;font-size:13.5px"></div></div>
     <div class="grid two" style="margin-top:0">
-      <div class="card"><h3>Email-дер <button class="btn sec sm" id="ldCsv" type="button" style="float:right">⬇ CSV</button></h3><div class="tw"><table><thead><tr><th>Уақыты</th><th>Email</th><th>Тіл</th><th>Келісім</th></tr></thead><tbody id="ldB"></tbody></table></div></div>
-      <div class="card"><h3>Жіберілген хаттар</h3><div class="tw"><table><thead><tr><th>Уақыты</th><th>Түрі</th><th>Кімге</th><th>Статус</th></tr></thead><tbody id="mlB"></tbody></table></div></div>
+      <div class="card"><h3>Email-дер <button class="btn sec sm" id="ldCsv" type="button" style="float:right">⬇ CSV</button></h3><div class="tw"><table><thead><tr><th>Уақыты</th><th>Email</th><th>Тіл</th><th>Келісім</th><th></th></tr></thead><tbody id="ldB"></tbody></table></div></div>
+      <div class="card"><h3>Жіберілген хаттар</h3><div class="tw"><table><thead><tr><th>Уақыты</th><th>Түрі</th><th>Кімге</th><th>Тақырып</th><th>Статус</th></tr></thead><tbody id="mlB"></tbody></table></div></div>
     </div>
   </div>
+
+  <div class="modal" id="cmpM" style="position:fixed;inset:0;background:rgba(15,13,46,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px"><div class="card" style="width:100%;max-width:560px">
+    <h3 id="cmpH">Жаңа хат</h3>
+    <label class="fld"><span>Кімге</span><input id="cmpTo" type="email"></label>
+    <label class="fld"><span>Тақырып</span><input id="cmpSub" maxlength="150"></label>
+    <label class="fld"><span>Мәтін</span><textarea id="cmpBody" rows="8" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;resize:vertical"></textarea></label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn sec" id="cmpX" type="button">Жабу</button><button class="btn" id="cmpGo" type="button">Жіберу</button></div>
+    <div id="cmpOut" style="margin-top:6px;font-size:13.5px"></div></div></div>
 
   <div id="t-qs" class="hide"></div>
   <div id="t-re" class="hide"></div>
@@ -357,17 +370,46 @@ $('tiRef').onclick=async()=>{if(TI.order)tiShow(await tiCall({action:'status',or
 $('tiCancel').onclick=async()=>{if(TI.order&&confirm('Шотты болдырмау керек пе?'))tiShow(await tiCall({action:'cancel',orderId:TI.order}))};
 // ---------- email ----------
 const MAILF=async(body)=>{const tk=(await sb.auth.getSession()).data?.session?.access_token;const r=await fetch(SB_URL+'/functions/v1/mail',{method:'POST',headers:{Authorization:'Bearer '+tk,apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()};
-const MLK={result:'✉️ нәтиже',reminder:'⏰ еске салу',broadcast:'📣 рассылка',test:'🧪 тест'};
+const MLK={result:'✉️ нәтиже',reminder:'⏰ еске салу',broadcast:'📣 рассылка',test:'🧪 тест',reply:'↩︎ жауап'};
 let LEADS=[];
+const EVL={sent:['жіберілді','p'],delivery_delayed:['кешігуде','w'],delivered:['жетті','ok'],opened:['ашылды','ok'],clicked:['басылды','ok'],bounced:['қайтты','bad'],complained:['спам','bad'],failed:['қате','bad']};
+let INB=[];
 async function loadEm(){
   MAILF({action:'status'}).then(r=>{const d=(r.domains||[]).map(x=>`${esc(x.name)}: <b>${esc(x.status)}</b>`).join(', ');
-    $('emStat').innerHTML=r.error?'❌ '+esc(r.error):`${r.keySet?'✅ RESEND_API_KEY бар':'❌ RESEND_API_KEY жоқ — Supabase → Edge Functions → Secrets'} · ${r.resend==='ok'?'✅ Resend байланысы':r.keySet?'❌ Resend: '+esc(r.resend||''):''}${d?' · Домен: '+d:''} · Жіберуші: <code>${esc(r.from||'')}</code>`;
-    $('emK').innerHTML=[['Email жиналды',r.leads??'—'],['Рассылкаға келісім',r.subscribers??'—']].map(k=>`<div class="card kpi"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')}).catch(e=>$('emStat').textContent='❌ '+e.message);
-  const {data:ld,error:e1}=await sb.from('leads').select('created_at,email,lang,marketing_consent,unsubscribed_at').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(e1)throw e1;LEADS=ld||[];
-  $('ldB').innerHTML=LEADS.length?LEADS.map(l=>`<tr><td>${fmtT(l.created_at)}</td><td>${esc(l.email)}</td><td>${esc(l.lang||'')}</td><td>${l.unsubscribed_at?'<span class="pill bad">бас тартты</span>':l.marketing_consent?'<span class="pill ok">иә</span>':'<span class="muted">жоқ</span>'}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">Әзірге жоқ</td></tr>';
-  const {data:ml,error:e2}=await sb.from('email_log').select('created_at,kind,to_email,status,error').order('created_at',{ascending:false}).limit(200);if(e2)throw e2;
-  $('mlB').innerHTML=(ml||[]).length?ml.map(m=>`<tr><td>${fmtT(m.created_at)}</td><td>${MLK[m.kind]||esc(m.kind)}</td><td class="muted">${esc(m.to_email)}</td><td><span class="pill ${m.status==='sent'?'ok':'bad'}" title="${esc(m.error||'')}">${m.status==='sent'?'жіберілді':'қате'}</span></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Әзірге жоқ</td></tr>'}
-$('ldCsv').onclick=()=>{const rows=[['created_at','email','lang','marketing_consent','unsubscribed_at']].concat(LEADS.map(l=>[l.created_at,l.email,l.lang||'',l.marketing_consent,l.unsubscribed_at||'']));
+    $('emStat').innerHTML=r.error?'❌ '+esc(r.error):`${r.keySet?'✅ RESEND_API_KEY':'❌ RESEND_API_KEY жоқ'} · ${r.resend==='ok'?'✅ Resend':r.keySet?'❌ Resend: '+esc(r.resend||''):''}${d?' · Домен: '+d:''} · Жіберуші: <code>${esc(r.from||'')}</code>`;
+    window._emSubs=r.subscribers}).catch(e=>$('emStat').textContent='❌ '+e.message);
+  const [ld,ml,ib]=await Promise.all([
+    sb.from('leads').select('created_at,email,lang,marketing_consent,unsubscribed_at,bounced_at').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000),
+    sb.from('email_log').select('created_at,kind,to_email,subject,status,last_event,error,opened_at,clicked_at,delivered_at,bounced_at,complained_at').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000),
+    sb.from('inbound_emails').select('id,received_at,from_email,from_name,subject,status').order('received_at',{ascending:false}).limit(200)]);
+  if(ld.error)throw ld.error;if(ml.error)throw ml.error;if(ib.error)throw ib.error;
+  LEADS=ld.data||[];const L=ml.data||[],sentOk=L.filter(m=>m.status==='sent'),pct=(n,d)=>d?Math.round(n/d*100)+'%':'—';
+  const dl=sentOk.filter(m=>m.delivered_at||m.opened_at||m.clicked_at).length,op=sentOk.filter(m=>m.opened_at||m.clicked_at).length,ck=sentOk.filter(m=>m.clicked_at).length,
+    bo=L.filter(m=>m.bounced_at).length,co=L.filter(m=>m.complained_at).length;INB=ib.data||[];const unread=INB.filter(x=>x.status==='new').length;
+  $('emK').innerHTML=[['Email жиналды',LEADS.length],['Жіберілді',sentOk.length],['Жетті',dl+' · '+pct(dl,sentOk.length)],['Ашылды',op+' · '+pct(op,sentOk.length)],['Сілтеме басылды',ck+' · '+pct(ck,sentOk.length)],['Қайтып келді',bo],['Спам деп белгіледі',co],['Жаңа кіріс хат',unread]]
+    .map((k,i)=>`<div class="card kpi"${(i===5&&bo)||(i===6&&co)?' style="border-color:#f87171"':i===7&&unread?' style="border-color:#7c3aed"':''}><small>${k[0]}</small><b>${k[1]}</b></div>`).join('');
+  $('ldB').innerHTML=LEADS.length?LEADS.map((l,i)=>`<tr><td>${fmtT(l.created_at)}</td><td>${esc(l.email)}</td><td>${esc(l.lang||'')}</td><td>${l.bounced_at?'<span class="pill bad">қайтты</span>':l.unsubscribed_at?'<span class="pill bad">бас тартты</span>':l.marketing_consent?'<span class="pill ok">иә</span>':'<span class="muted">жоқ</span>'}</td><td><button class="btn sec sm" data-w="${esc(l.email)}">✉️</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty">Әзірге жоқ</td></tr>';
+  document.querySelectorAll('#ldB [data-w]').forEach(b=>b.onclick=()=>compose(b.dataset.w));
+  $('mlB').innerHTML=L.length?L.map(m=>{const e=EVL[m.last_event||m.status]||[m.status,'w'];return `<tr><td>${fmtT(m.created_at)}</td><td>${MLK[m.kind]||esc(m.kind)}</td><td class="muted">${esc(m.to_email)}</td><td class="muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.subject||'')}</td><td><span class="pill ${e[1]}" title="${esc(m.error||'')}">${e[0]}</span></td></tr>`}).join(''):'<tr><td colspan="5" class="empty">Әзірге жоқ</td></tr>';
+  $('ibList').innerHTML=INB.length?INB.map(x=>`<tr class="click" data-i="${x.id}" style="${x.status==='new'?'font-weight:800':''}"><td><div>${esc(x.from_name||x.from_email||'')}</div><div class="muted" style="font-size:12.5px;font-weight:500">${esc(x.subject||'(тақырыпсыз)')}</div></td><td class="muted" style="font-size:12px;white-space:nowrap">${fmtT(x.received_at)}${x.status==='replied'?'<br>↩︎ жауап берілді':''}</td></tr>`).join(''):'<tr><td class="empty">Әзірге кіріс хат жоқ</td></tr>';
+  document.querySelectorAll('#ibList tr[data-i]').forEach(tr=>tr.onclick=()=>openInbound(+tr.dataset.i))}
+async function openInbound(id){const {data:m,error}=await sb.from('inbound_emails').select('*').eq('id',id).single();if(error){$('ibView').textContent=error.message;return}
+  if(m.status==='new'){await sb.from('inbound_emails').update({status:'read'}).eq('id',id);m.status='read'}
+  const v=$('ibView');v.className='';v.innerHTML=`<div style="font-size:13px" class="muted">${fmtT(m.received_at)} · <b style="color:var(--ink)">${esc(m.from_name||'')}</b> &lt;${esc(m.from_email||'')}&gt;</div>
+    <h3 style="margin:6px 0 10px">${esc(m.subject||'(тақырыпсыз)')}</h3>
+    ${m.html_body?'<iframe id="ibFrame" sandbox="" style="width:100%;height:260px;border:1px solid var(--line);border-radius:10px;background:#fff"></iframe>':`<pre style="white-space:pre-wrap;font:inherit;background:#f8f8fc;border:1px solid var(--line);border-radius:10px;padding:12px;max-height:260px;overflow:auto">${esc(m.text_body||'')}</pre>`}
+    <label class="fld" style="margin-top:10px"><span>Жауап</span><textarea id="ibReply" rows="5" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;resize:vertical"></textarea></label>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" id="ibSend" type="button">Жауап жіберу</button><button class="btn sec" id="ibArch" type="button">Мұрағатқа</button></div><div id="ibOut" style="margin-top:6px;font-size:13.5px"></div>`;
+  if(m.html_body)$('ibFrame').srcdoc=m.html_body;
+  $('ibSend').onclick=async()=>{const t=$('ibReply').value.trim();if(t.length<2)return;$('ibSend').disabled=true;$('ibOut').innerHTML='<span class="muted">Жіберілуде…</span>';
+    try{const r=await MAILF({action:'reply',inboundId:id,body:t});$('ibOut').innerHTML=r.ok?'✅ Жауап жіберілді':'❌ '+esc(r.error||'қате');if(r.ok){$('ibReply').value='';loadEm()}}catch(e){$('ibOut').textContent='❌ '+e.message}finally{$('ibSend').disabled=false}};
+  $('ibArch').onclick=async()=>{await sb.from('inbound_emails').update({status:'archived'}).eq('id',id);$('ibView').innerHTML='<span class="muted">Мұрағатқа жіберілді</span>';loadEm()}}
+function compose(to){$('cmpTo').value=to||'';$('cmpSub').value='';$('cmpBody').value='';$('cmpOut').textContent='';$('cmpM').style.display='flex';setTimeout(()=>$(to?'cmpSub':'cmpTo').focus(),50)}
+$('ibNew').onclick=()=>compose('');$('cmpX').onclick=()=>$('cmpM').style.display='none';
+$('cmpGo').onclick=async()=>{$('cmpGo').disabled=true;$('cmpOut').innerHTML='<span class="muted">Жіберілуде…</span>';
+  try{const r=await MAILF({action:'direct',to:$('cmpTo').value.trim(),subject:$('cmpSub').value.trim(),body:$('cmpBody').value});$('cmpOut').innerHTML=r.ok?'✅ Жіберілді':'❌ '+esc(r.error||'қате');if(r.ok){setTimeout(()=>{$('cmpM').style.display='none'},800);loadEm()}}
+  catch(e){$('cmpOut').textContent='❌ '+e.message}finally{$('cmpGo').disabled=false}};
+$('ldCsv').onclick=()=>{const rows=[['created_at','email','lang','marketing_consent','unsubscribed_at','bounced_at']].concat(LEADS.map(l=>[l.created_at,l.email,l.lang||'',l.marketing_consent,l.unsubscribed_at||'',l.bounced_at||'']));
   const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='iqtest-emails.csv';a.click()};
 async function bc(test){const sub=$('bcSub').value.trim(),body=$('bcBody').value.trim();if(sub.length<3||body.length<10){$('bcOut').textContent='Тақырып пен мәтінді толтырыңыз';return}
   if(!test&&!confirm('Рассылканы келісім берген барлық адамға жіберу керек пе?'))return;
