@@ -214,7 +214,7 @@ function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearIn
   setTimeout(()=>FREE?showResult():showPaywall(),steps.length*900+300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
-  $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-ыңыз есептеліп қойды.`);
+  $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-іңіз есептеліп қойды.`);
   const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
   const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
   $('pwRadar').innerHTML=radarSVG(gv,RGRP.map(g=>T(g[2])));
@@ -278,7 +278,7 @@ function showResult(re){
     $('review').innerHTML=h||`<div class="empty">${L2('🎉 Ошибок нет — отличный результат!','🎉 Қате жоқ — керемет нәтиже!')}</div>`;
     $('tBad').classList.toggle('on',f==='bad');$('tAll').classList.toggle('on',f==='all')};
   $('tBad').textContent=L2(`Ошибки (${bad+skip})`,`Қателер (${bad+skip})`);$('tAll').textContent=T('Все вопросы');window._rv(bad+skip?'bad':'all');
-  window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — iqtest.live`,`Тест бойынша менің IQ: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — iqtest.live`);
+  window._lastResult=L2(`Мой IQ по тесту: ${iq} — ${lv}. Сильная сторона: ${best.n}. А какой у тебя? — iqtest.live`,`Менің IQ-ім: ${iq} — ${T(lv)}. Мықты жағым: ${T(best.n)}. Сенікі қанша? — iqtest.live`);
   if(!re){const di=Q.findIndex(q=>q.key==='age'),de=Q.findIndex(q=>q.demo&&q.key!=='age');sbIns('results',{visit_id:VID,lang:LANG,iq,correct,total:NS,age:di>=0&&ans[di]!==null?Q[di].o[ans[di]]:null,edu:de>=0&&ans[de]!==null?Q[de].o[ans[de]]:null,duration_sec:used,traits:st.map(x=>x[1]),answers:ans});TR('result',{iq})}
   saveHist({d:new Date().toLocaleString('ru-RU'),n:userName||'—',c:correct,iq,age:ans[SEQ.indexOf('D0')],edu:ans[SEQ.indexOf('D1')]});show('result');if(!re)window.scrollTo(0,0)}
 $('tBad').onclick=()=>window._rv('bad');$('tAll').onclick=()=>window._rv('all');
@@ -347,7 +347,7 @@ function renderChal(){const c=$('chal');if(!c)return;clearInterval(c._iv);
   c.querySelectorAll('.ch-o button').forEach(b=>b.onclick=()=>finish(+b.dataset.n));
   try{const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){start();io.disconnect()}},{threshold:.6});io.observe(c)}catch(e){start()}}
 const HIST=[['lincoln','Авраам Линкольн','Авраам Линкольн',125,'АЛ'],['napoleon','Наполеон Бонапарт','Наполеон Бонапарт',135,'НБ'],['washington','Джордж Вашингтон','Джордж Вашингтон',125,'ДВ']];
-const HNOTE=()=>L2('Оценки по биографиям (исследование Кэтрин Кокс, 1926), а не результаты теста.','Өмірбаяндары бойынша жасалған бағалау (Кэтрин Кокс зерттеуі, 1926), тест нәтижесі емес.');
+const HNOTE=()=>L2('Эти цифры не измерены тестом: в 1926 году психолог Кэтрин Кокс оценила их по биографиям.','Бұл сандар тест арқылы өлшенбеген: оларды 1926 жылы психолог Кэтрин Кокс тұлғалардың өмірбаянына қарап бағалаған.');
 function renderHist(){const box=$('hist');if(!box)return;clearInterval(box._iv);
   $('hiList').innerHTML=HIST.map((h,i)=>`<div class="hi-row" data-i="${i}"><span>${L2(h[1],h[2])}</span><b>${h[3]}</b></div>`).join('')+`<div class="hi-note">${HNOTE()}</div>`;
   let k=0;const show=()=>{const h=HIST[k];box.querySelectorAll('.hi-row').forEach(r=>r.classList.toggle('on',+r.dataset.i===k));
