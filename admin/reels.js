@@ -131,7 +131,7 @@ async function pickQuiz(){$('reS2').classList.remove('hide');$('reS3').classList
     const vopt=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===pv?'selected':''}>${esc(v.name)}${v.category&&v.category!=='premade'?' · '+esc(v.category):''}</option>`).join('');
     $('rePlan').innerHTML=`<div class="grid two" style="margin-top:0"><div>${S.set.map((q,i)=>`<div class="card" style="margin-bottom:10px"><b>${i+1}-й вопрос</b>${i===3?' <span class="muted">(ответ не озвучивается)</span>':''}
        <div style="display:flex;gap:10px;align-items:center;margin:8px 0"><div id="qi${i}" style="width:150px;height:100px;border-radius:12px;background:${q.col};display:grid;place-items:center;overflow:hidden;font-size:12px;color:#555;flex:none">…</div>
-         <div style="flex:1;font-size:13px"><b>🎨 Картинка от Claude</b><div class="muted" id="qis${i}">Рисуем по теме вопроса (без ответа)…</div><button class="btn sec sm" data-ill="${i}" style="margin-top:6px">🔄 Перерисовать</button></div></div>
+         <div style="flex:1;font-size:13px"><b>🎨 Картинка (FLUX)</b><div class="muted" id="qis${i}">Рисуем по теме вопроса (без ответа)…</div><button class="btn sec sm" data-ill="${i}" style="margin-top:6px">🔄 Перерисовать</button></div></div>
        <div class="form" style="grid-template-columns:70px 1fr"><label class="fld"><span>Эмодзи</span><input id="qe${i}" value="${esc(q.emo)}" style="font-size:22px;text-align:center"></label>${fld('qq'+i,'Вопрос (экран)',q.q,2)}</div>
        <div class="form" style="grid-template-columns:repeat(3,1fr)">${q.o.map((o,k)=>`<label class="fld"><span>${k===q.a?'✅ ':''}${k+1}-й вариант</span><input id="qo${i}_${k}" value="${esc(o)}"></label>`).join('')}</div>
        <label class="fld"><span>Правильный ответ</span><select id="qa${i}">${[0,1,2].map(k=>`<option value="${k}" ${k===q.a?'selected':''}>${k+1}-й вариант</option>`).join('')}</select></label>
@@ -144,17 +144,18 @@ async function pickQuiz(){$('reS2').classList.remove('hide');$('reS3').classList
 // ---------- Claude illustrations (server /api/reels/illus → Anthropic API, key in Render env) ----------
 const ILLC={};
 async function genIll(i){const box=$('qi'+i),st=$('qis'+i);if(!box)return;const q=val('qq'+i)||S.set[i].q,o=[0,1,2].map(k=>val(`qo${i}_${k}`)),a=+($('qa'+i)?.value||0);
-  const seq=(S.illSeq=(S.illSeq||0)+1);S.ill[i]=null;box.textContent='⏳';st.textContent='Claude рисует… (≈20–40 сек)';
+  const seq=(S.illSeq=(S.illSeq||0)+1);S.ill[i]=null;box.textContent='⏳';st.textContent='Рисуем… (≈10–30 сек)';
   try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q,o,a,lang:S.lang})});
     const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(j.error||('HTTP '+r.status));
-    if(val('qq'+i)!==q&&val('qq'+i))return;S.ill[i]=j.svg;box.innerHTML='';const im=new Image();im.style.cssText='width:100%;height:100%;object-fit:cover';im.src=svgUrl(j.svg);box.appendChild(im);st.textContent='Готово ✓ — будет в видео вместо эмодзи'}
+    if(val('qq'+i)!==q&&val('qq'+i))return;const src=j.src||svgUrl(j.svg);S.ill[i]=src;box.innerHTML='';const im=new Image();im.style.cssText='width:100%;height:100%;object-fit:cover';im.src=src;box.appendChild(im);st.textContent='Готово ✓ ('+(j.src?'FLUX':'Claude')+') — будет в видео вместо эмодзи';if(j.prompt)st.title=j.prompt}
   catch(e){S.ill[i]=null;box.textContent=val('qe'+i)||S.set[i].emo;box.style.fontSize='48px';
-    st.textContent=/ANTHROPIC_API_KEY/.test(e.message)?'Ключ ANTHROPIC_API_KEY не задан в Render — будет эмодзи':'Не получилось ('+e.message+') — будет эмодзи'}}
+    st.textContent=/not set/.test(e.message)?'Ключи картинок (Cloudflare) не заданы в Render — будет эмодзи':'Не получилось ('+e.message+') — будет эмодзи'}}
 function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}
 function loadImg(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src})}
 // Rasterise once at tile size ×2 so drawing each frame is a cheap bitmap copy.
-async function illBitmap(svg){if(!svg)return null;if(ILLC[svg])return ILLC[svg];const im=await loadImg(svgUrl(svg));if(!im)return null;
-  const c=document.createElement('canvas');c.width=1200;c.height=800;c.getContext('2d').drawImage(im,0,0,1200,800);return ILLC[svg]=c}
+async function illBitmap(src){if(!src)return null;if(ILLC[src])return ILLC[src];const im=await loadImg(src);if(!im)return null;
+  const c=document.createElement('canvas');c.width=1200;c.height=800;const iw=im.naturalWidth||1200,ih=im.naturalHeight||800,sc=Math.max(1200/iw,800/ih),dw=iw*sc,dh=ih*sc;
+  c.getContext('2d').drawImage(im,(1200-dw)/2,(800-dh)/2,dw,dh);return ILLC[src]=c}
 // Kazakh style guard: fixes common colloquial forms in every editable field before voicing
 function kzFix(){if(S.lang!=='kz')return;$('rePlan').querySelectorAll('input,textarea').forEach(el=>{let v=el.value,o=v;
   v=v.replace(/(^|[\s«(])қайсы\?/g,'$1қандай?').replace(/(^|[\s«(])Қайсы\?/g,'$1Қандай?').replace(/(жылы|қашан|қай жерде|қай қалада|қай елде)(\s+)туған(\b|\?|\s|$)/g,'$1$2туылған$3');

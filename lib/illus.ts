@@ -63,3 +63,78 @@ Output ONLY one valid SVG: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
     return { ok: false, error: (e as Error).name === "TimeoutError" ? "timeout" : "request_failed" };
   }
 }
+
+// ---------- Cloudflare Workers AI · FLUX.1 schnell (free daily allocation) ----------
+// Keys: CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (Render env). Never logged or returned.
+const CF_IMG = "@cf/black-forest-labs/flux-1-schnell";
+const CF_TXT = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+
+export function fluxConfigured(): boolean {
+  return !!((env.CLOUDFLARE_ACCOUNT_ID || "").trim() && (env.CLOUDFLARE_API_TOKEN || "").trim());
+}
+
+async function cfRun(model: string, body: unknown): Promise<{ ok: boolean; status: number; json: any }> {
+  const acc = (env.CLOUDFLARE_ACCOUNT_ID || "").trim(), tok = (env.CLOUDFLARE_API_TOKEN || "").trim();
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(acc)}/ai/run/${model}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const json = await r.json().catch(() => ({}));
+  return { ok: r.ok && json?.success !== false, status: r.status, json };
+}
+
+/** Turn the (Kazakh/Russian) quiz question into a short English FLUX prompt that shows the subject, never the answer. */
+export function promptRules(q: string, opts: string[], correct: string): string {
+  return `You write image prompts for FLUX for a quiz video. Question: "${q}". Answer options: ${opts.map((x) => `"${x}"`).join(", ")}. Correct answer: "${correct}".
+Write ONE English prompt (max 45 words) describing a single picture of the main object NAMED IN THE QUESTION, big and centered (e.g. "In which city is the Eiffel Tower?" -> the Eiffel Tower alone against a clear sky; "Where do kangaroos live?" -> a kangaroo on a plain pastel background; "How many legs does a spider have?" -> a dewy spider web, no spider).
+Never depict the correct answer or any option: no cities, skylines, countries, maps, flags, people from the options, and no countable group whose count is an option.
+Reply with the prompt only, no quotes, no explanations.`;
+}
+
+async function writeFluxPrompt(q: string, opts: string[], correct: string): Promise<string> {
+  const ask = promptRules(q, opts, correct);
+  const key = (env.ANTHROPIC_API_KEY || "").trim();
+  if (key) {
+    try {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: (env.ANTHROPIC_PROMPT_MODEL || "claude-haiku-5-5").trim(), max_tokens: 200, messages: [{ role: "user", content: ask }] }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      const j: any = await r.json().catch(() => ({}));
+      const t = (j.content || []).map((c: any) => c.text || "").join("").trim();
+      if (r.ok && t) return t;
+    } catch { /* fall through to Cloudflare text model */ }
+  }
+  const r = await cfRun(CF_TXT, { messages: [{ role: "user", content: ask }], max_tokens: 150 });
+  const t = String(r.json?.result?.response || "").trim();
+  if (!t) throw new Error("prompt_" + r.status);
+  return t;
+}
+
+export function fluxPrompt(subject: string): string {
+  const s = subject.replace(/^["'\s]+|["'\s]+$/g, "").slice(0, 400);
+  return `${s}. Bright friendly 3D cartoon illustration, soft studio lighting, clean pastel background, single centered subject, high detail, vibrant colors, landscape composition. Absolutely no text, no letters, no numbers, no words, no captions, no watermark, no logos, no flags.`;
+}
+
+export async function makeFlux(input: { q: string; o: string[]; a: number }): Promise<{ ok: true; src: string; prompt: string } | { ok: false; error: string; status?: number }> {
+  if (!fluxConfigured()) return { ok: false, error: "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN not set" };
+  const q = String(input.q || "").replace(/\s+/g, " ").slice(0, 300);
+  const opts = (input.o || []).map((x) => String(x).slice(0, 60)).slice(0, 4);
+  try {
+    const subject = await writeFluxPrompt(q, opts, opts[input.a] ?? "");
+    const prompt = fluxPrompt(subject);
+    const r = await cfRun(CF_IMG, { prompt, steps: 8, seed: Math.floor(Math.random() * 1e9) });
+    const b64 = r.json?.result?.image || r.json?.image;
+    if (!r.ok || !b64) {
+      const msg = String(r.json?.errors?.[0]?.message || "").slice(0, 160);
+      return { ok: false, status: r.status, error: "cloudflare_" + r.status + (msg ? ": " + msg : "") };
+    }
+    return { ok: true, src: "data:image/jpeg;base64," + b64, prompt: subject };
+  } catch (e) {
+    return { ok: false, error: (e as Error).name === "TimeoutError" ? "timeout" : String((e as Error).message || "request_failed").slice(0, 80) };
+  }
+}

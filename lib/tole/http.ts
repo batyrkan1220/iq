@@ -133,8 +133,10 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     let b: { q?: string; o?: string[]; a?: number; lang?: string } = {};
     try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
     if (!b.q || !Array.isArray(b.o)) { send(res, 400, { error: "q_and_o_required" }); return true; }
-    const { makeIllus } = await import("../illus.ts");
-    const out = await makeIllus({ q: b.q, o: b.o, a: Number(b.a) || 0, lang: b.lang });
+    const { makeIllus, makeFlux, fluxConfigured } = await import("../illus.ts");
+    const inp = { q: b.q, o: b.o, a: Number(b.a) || 0, lang: b.lang };
+    // FLUX (Cloudflare, free daily quota) first; Claude SVG only if Cloudflare isn't configured.
+    const out = fluxConfigured() ? await makeFlux(inp) : await makeIllus(inp);
     if (!out.ok) log.log("warn", "illus failed", { error: out.error.slice(0, 40) });
     send(res, out.ok ? 200 : 502, out);
     return true;
