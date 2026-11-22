@@ -181,7 +181,7 @@ async function buildQuiz(){kzFix();$('reGoErr').textContent='';busy($('reGo'),tr
   catch(e){$('reGoErr').textContent=e.message;$('reStat').textContent='Ошибка: '+e.message}
   busy($('reGo'),false,'✅ Согласен — создать озвучку и видео')}
 async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm',url=URL.createObjectURL(blob),fn=`iqly_reels_${S.reelId||Date.now()}.${ext}`;
-  $('reOut').innerHTML=`<video src="${url}" controls playsinline style="width:270px;border-radius:14px;display:block;margin-bottom:8px"></video><a class="btn" href="${url}" download="${fn}" style="display:inline-block;text-decoration:none">⬇ Скачать видео (${ext.toUpperCase()})</a> <button class="btn sec" id="reNew">＋ Новый Reels</button>`;
+  $('reOut').innerHTML=`<video src="${url}" controls playsinline style="width:270px;border-radius:14px;display:block;margin-bottom:8px"></video><a class="btn" href="${url}" download="${fn}" style="display:inline-block;text-decoration:none">⬇ Скачать видео (${ext.toUpperCase()})</a> <button class="btn sec" id="reNew">＋ Новый Reels</button><div class="muted" style="font-size:12px;margin-top:6px">Запись: ${esc(S.recMode||'—')}</div>`;
   $('reNew').onclick=()=>{$('reS2').classList.add('hide');$('reS3').classList.add('hide');window.scrollTo({top:0,behavior:'smooth'});if(S.format==='quiz')genQuiz()};
   $('reStat').textContent='Готово ✓ Сохраняем…';
   if(S.reelId){const path=`${new Date().toISOString().slice(0,10)}/${S.reelId}.${ext}`;const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(!up.error)await sb.from('reels').update({video_path:path,status:'done'}).eq('id',S.reelId)}
@@ -298,7 +298,7 @@ async function recordWC(D,samples,dur,cc){const cv=$('reCv'),ctx=cv.getContext('
   await ve.flush();await ae.flush();if(err)throw err;ve.close();ae.close();muxer.finalize();$('reProg').style.width='100%';
   return new Blob([target.buffer],{type:'video/mp4'})}
 async function record(D,samples,dur){
-  try{const cc=await wcCodecs();if(cc)return await recordWC(D,samples,dur,cc)}catch(e){console.warn('WebCodecs failed, using realtime recorder',e)}
+  try{const cc=await wcCodecs();if(cc){const b=await recordWC(D,samples,dur,cc);S.recMode='кадр-за-кадром ('+cc.ac[1]+')';return b}S.recMode='realtime: браузер не поддерживает WebCodecs'}catch(e){console.warn('WebCodecs failed, using realtime recorder',e);S.recMode='realtime: '+String(e&&e.message||e).slice(0,80)}
   return recordRT(D,samples,dur)}
 async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const ac=new AudioContext({sampleRate:SR});await ac.resume();
   const buf=ac.createBuffer(1,samples.length,SR);buf.copyToChannel(samples,0);const src=ac.createBufferSource();src.buffer=buf;const dest=ac.createMediaStreamDestination();src.connect(dest);

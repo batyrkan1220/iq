@@ -31,7 +31,7 @@ function mix(T,c){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mus=n
   const end=T.dur*SR|0;for(let k=0;k<N;k++){const d=1-.6*Math.min(1,env[Math.min(N-1,k+(win>>1))]/.03);const fi=Math.min(1,k/(.6*SR)),fo=k>end?0:Math.min(1,(end-k)/(1.5*SR));mus[k]*=d*fi*fo*.8}
   const tick=mx(tone(1500,.04,.12,100),tone(750,.04,.06,100)),ding=mx(tone(880,.6,.28,5),tone(1320,.6,.18,6),tone(1760,.5,.1,7)),pop=mx(tone(660,.2,.25,12),tone(990,.2,.15,12));
   const wn=.28*SR|0,wh=new Float32Array(wn);for(let k=0;k<wn;k++)wh[k]=(Math.random()*2-1)*.05*Math.sin(Math.PI*k/wn);
-  T.qs.forEach((o,i)=>{add(fx,o.s,wh);for(let k=0;k<10;k++)add(fx,o.ts+k*.5,tick,k>=7?1.3:.8);add(fx,o.ra,i<3?ding:pop,.8)});
+  T.qs.forEach((o,i)=>{add(fx,o.s,wh);for(let k=0;k<5;k++)add(fx,o.ts+k,tick,k>=3?1.4:.9);add(fx,o.ra,i<3?ding:pop,.8)});
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
 // ---------- drawing (iqtest.live riddle style) ----------
@@ -60,8 +60,11 @@ function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBasel
   // timer bar (old style: black outline, purple fill) + seconds
   const by=ty+th+44,bx=110,bw=W-220,bh=84;
   if(!revealed){ctx.save();ctx.globalAlpha=ap;ctx.fillStyle='#fff';rr(ctx,bx,by,bw,bh,42);ctx.fill();ctx.lineWidth=6;ctx.strokeStyle='#111';ctx.stroke();
-    const w8=Math.max(0,t-o.ts),p=cl(w8/5);if(p>0){const fg=ctx.createLinearGradient(bx,0,bx+bw,0);fg.addColorStop(0,'#4f46e5');fg.addColorStop(1,'#7c3aed');ctx.fillStyle=fg;rr(ctx,bx+8,by+8,Math.max(68,(bw-16)*p),bh-16,34);ctx.fill()}
-    ctx.font=F(800,44);ctx.fillStyle='#5b21b6';ctx.textBaseline='alphabetic';ctx.fillText(String(t<o.ts?5:Math.max(1,Math.ceil(5-w8))),W/2,by+bh+56);ctx.restore()}
+    // bar grows smoothly from zero (no minimum width → no stall at the start of the countdown)
+    const w8=Math.max(0,t-o.ts),p=cl(w8/5),fw=(bw-16)*p;if(t>=o.ts&&fw>1){const fg=ctx.createLinearGradient(bx,0,bx+bw,0);fg.addColorStop(0,'#4f46e5');fg.addColorStop(1,'#7c3aed');ctx.fillStyle=fg;rr(ctx,bx+8,by+8,fw,bh-16,Math.min(34,fw/2));ctx.fill()}
+    // seconds appear only when the countdown really starts; each new number pops in, in sync with the tick sound
+    if(t>=o.ts){const sec=Math.max(1,Math.ceil(5-w8)),fr=w8-Math.floor(w8),pz=1+.45*Math.exp(-fr*9);ctx.translate(W/2,by+bh+40);ctx.scale(pz,pz);
+      ctx.font=F(800,48);ctx.fillStyle=sec<=2?'#dc2626':'#5b21b6';ctx.textBaseline='middle';ctx.fillText(String(sec),0,0)}ctx.restore()}
   // options
   const oy=by+bh+100,ow=780,oh=118,og=24;ctx.font=F(800,q.o.some(s=>s.length>14)?50:q.o.some(s=>s.length>10)?58:64);
   q.o.forEach((s,k)=>{const p=cl((lt-.15-k*.08)/.3);const ok=revealed&&!last&&k===q.a;const y=oy+k*(oh+og);
