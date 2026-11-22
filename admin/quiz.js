@@ -109,7 +109,8 @@ function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBasel
   // picture tile (stays as is)
   const tw=600,th=400,tx=(W-tw)/2,ty=350+ql.length*82+10;ctx.save();ctx.globalAlpha=ap;ctx.shadowColor='rgba(20,20,60,.10)';ctx.shadowBlur=34;ctx.shadowOffsetY=14;ctx.fillStyle=q.col;rr(ctx,tx,ty,tw,th,40);ctx.fill();ctx.restore();
   ctx.save();ctx.globalAlpha=ap;rr(ctx,tx,ty,tw,th,40);ctx.clip();const rg=ctx.createRadialGradient(W/2,ty+th/2,10,W/2,ty+th/2,tw*.6);rg.addColorStop(0,'rgba(255,255,255,.7)');rg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=rg;ctx.fillRect(tx,ty,tw,th);
-  ctx.textBaseline='middle';ctx.font=EF(250);ctx.fillText(q.emo,W/2,ty+th/2+12+Math.sin(t*2.2)*6);ctx.restore();
+  if(q.img){const z=1.03+.015*Math.sin(t*1.6);ctx.drawImage(q.img,W/2-tw*z/2,ty+th/2-th*z/2,tw*z,th*z)}
+  else{ctx.textBaseline='middle';ctx.font=EF(250);ctx.fillText(q.emo,W/2,ty+th/2+12+Math.sin(t*2.2)*6)}ctx.restore();
   // timer bar (old style: black outline, purple fill) + seconds
   const by=ty+th+44,bx=110,bw=W-220,bh=84;
   if(!revealed){ctx.save();ctx.globalAlpha=ap;ctx.fillStyle='#fff';rr(ctx,bx,by,bw,bh,42);ctx.fill();ctx.lineWidth=6;ctx.strokeStyle='#111';ctx.stroke();

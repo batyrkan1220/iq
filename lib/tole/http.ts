@@ -126,6 +126,20 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     return true;
   }
 
+  if (pathname === "/api/reels/illus" && req.method === "POST") {
+    const who = await requireAdmin(req, ctx);
+    if (typeof who !== "string") { send(res, who.error === "forbidden" ? 403 : 401, who); return true; }
+    const raw = await readRaw(req, 8 * 1024);
+    let b: { q?: string; o?: string[]; a?: number; lang?: string } = {};
+    try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
+    if (!b.q || !Array.isArray(b.o)) { send(res, 400, { error: "q_and_o_required" }); return true; }
+    const { makeIllus } = await import("../illus.ts");
+    const out = await makeIllus({ q: b.q, o: b.o, a: Number(b.a) || 0, lang: b.lang });
+    if (!out.ok) log.log("warn", "illus failed", { error: out.error.slice(0, 40) });
+    send(res, out.ok ? 200 : 502, out);
+    return true;
+  }
+
   if (pathname === "/api/pay/check" && req.method === "POST") {
     send(res, 200, await adminCheck(req, ctx));
     return true;
