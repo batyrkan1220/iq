@@ -9,7 +9,7 @@ function send(req, res, file, status) {
   fs.readFile(file, (err, buf) => {
     if (err) return notFound(req, res);
     const ext = path.extname(file), type = TYPES[ext] || 'application/octet-stream';
-    const h = { ...SEC, 'Content-Type': type, 'Cache-Control': ext === '.html' ? 'no-cache' : (/fonts\//.test(file) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600') };
+    const h = { ...SEC, 'Content-Type': type, 'Cache-Control': (ext === '.html' || (/[\/]admin[\/]/.test(file) && ext === '.js')) ? 'no-cache' : (/fonts\//.test(file) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600') };
     if (/\/admin\//.test(file)) h['X-Robots-Tag'] = 'noindex, nofollow';
     const gz = /gzip/.test(req.headers['accept-encoding'] || '') && /text|javascript|json|svg/.test(type) && buf.length > 1024;
     if (gz) { h['Content-Encoding'] = 'gzip'; h['Vary'] = 'Accept-Encoding'; buf = zlib.gzipSync(buf); }
