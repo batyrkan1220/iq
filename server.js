@@ -2,7 +2,7 @@
 const http = require('http'), fs = require('fs'), path = require('path'), zlib = require('zlib');
 const ROOT = __dirname, PORT = process.env.PORT || 10000;
 const ALLOW = [/^\/index\.html$/, /^\/kz\//, /^\/ru\//, /^\/admin\//, /^\/privacy\//, /^\/oferta\//, /^\/assets\//, /^\/favicon\.(ico|svg|png)$/, /^\/robots\.txt$/];
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.webp': 'image/webp' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.webp': 'image/webp', '.m4a': 'audio/mp4' };
 let apiMod = null;
 const SEC = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'SAMEORIGIN' };
 function send(req, res, file, status) {

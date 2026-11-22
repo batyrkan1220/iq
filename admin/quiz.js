@@ -17,7 +17,7 @@ function voices(set,l){const pre=l==='ru'?'Ответ — ':'Жауабы — ';
 function timeline(D,c){const L=k=>c[k]?c[k].length/SR:2.5;const T={qs:[]};let s=0;
   D.set.forEach((q,i)=>{const o={s,vq:s+.3};o.ts=+(o.vq+L('q'+i)+.25).toFixed(2);o.ra=o.ts+5;o.va=o.ra+.15;o.e=i<3?+(o.ra+Math.max(2.4,L('a'+i)+.7)).toFixed(2):+(o.va+L('a'+i)+1.6).toFixed(2);T.qs.push(o);s=o.e});
   T.dur=s;return T}
-function mix(T,c){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mus=new Float32Array(N),fx=new Float32Array(N);
+function mix(T,c,bg){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mus=new Float32Array(N),fx=new Float32Array(N);
   const add=(buf,t,s,g=1)=>{const i=Math.floor(t*SR);for(let k=0;k<s.length&&i+k<buf.length;k++)buf[i+k]+=s[k]*g};
   const fade=s=>{const o=Float32Array.from(s),f=Math.min(882,o.length>>2);for(let k=0;k<f;k++){o[k]*=k/f;o[o.length-1-k]*=k/f}return o};
   const tone=(f,l,v,dec)=>{const n=l*SR|0,o=new Float32Array(n);for(let k=0;k<n;k++){const t=k/SR;o[k]=v*Math.sin(2*Math.PI*f*t)*Math.exp(-t*dec)}return o};
@@ -26,9 +26,12 @@ function mix(T,c){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mus=n
   // light music: plucky arpeggio + soft kick
   const notes=[523.3,659.3,784,659.3,587.3,698.5,880,698.5],beat=60/110/2;const pl=f=>{const n=.25*SR|0,o=new Float32Array(n);for(let k=0;k<n;k++){const t=k/SR;o[k]=(.06*Math.sin(2*Math.PI*f*t)+.02*Math.sin(4*Math.PI*f*t))*Math.exp(-t*12)}return o};
   const kick=(()=>{const n=.3*SR|0,o=new Float32Array(n);let ph=0;for(let k=0;k<n;k++){const t=k/SR;ph+=2*Math.PI*(50+80*Math.exp(-t*30))/SR;o[k]=.35*Math.sin(ph)*Math.exp(-t*10)}return o})();
-  const P=notes.map(pl);for(let b=0;b*beat<T.dur+1;b++){add(mus,b*beat,P[b%8]);if(b%4===0)add(mus,b*beat,kick)}
+  if(bg&&bg.length>SR*4){
+    // uploaded background track, looped with a 1 s crossfade so it never stops
+    const X=SR|0,stp=bg.length-X;for(let st=0,k=0;st<N;st+=stp,k++){const o=new Float32Array(bg.length);for(let j=0;j<bg.length;j++){let g=1;if(k>0&&j<X)g=j/X;if(j>bg.length-X)g=(bg.length-j)/X;o[j]=bg[j]*g*.42}add(mus,st/SR,o)}}
+  else{const P=notes.map(pl);for(let b=0;b*beat<T.dur+1;b++){add(mus,b*beat,P[b%8]);if(b%4===0)add(mus,b*beat,kick)}}
   const win=.25*SR|0;let acc=0;const env=new Float32Array(N);for(let k=0;k<N;k++){acc+=Math.abs(voice[k]);if(k>=win)acc-=Math.abs(voice[k-win]);env[k]=acc/win}
-  const end=T.dur*SR|0;for(let k=0;k<N;k++){const d=1-.6*Math.min(1,env[Math.min(N-1,k+(win>>1))]/.03);const fi=Math.min(1,k/(.6*SR)),fo=k>end?0:Math.min(1,(end-k)/(1.5*SR));mus[k]*=d*fi*fo*.8}
+  const end=T.dur*SR|0;for(let k=0;k<N;k++){const d=1-(bg?.72:.6)*Math.min(1,env[Math.min(N-1,k+(win>>1))]/.03);const fi=Math.min(1,k/(.6*SR)),fo=k>end?0:Math.min(1,(end-k)/(1.5*SR));mus[k]*=d*fi*fo*.8}
   const tick=mx(tone(1500,.04,.12,100),tone(750,.04,.06,100)),ding=mx(tone(880,.6,.28,5),tone(1320,.6,.18,6),tone(1760,.5,.1,7)),pop=mx(tone(660,.2,.25,12),tone(990,.2,.15,12));
   const wn=.28*SR|0,wh=new Float32Array(wn);for(let k=0;k<wn;k++)wh[k]=(Math.random()*2-1)*.05*Math.sin(Math.PI*k/wn);
   T.qs.forEach((o,i)=>{add(fx,o.s,wh);for(let k=0;k<5;k++)add(fx,o.ts+k,tick,k>=3?1.4:.9);add(fx,o.ra,i<3?ding:pop,.8)});

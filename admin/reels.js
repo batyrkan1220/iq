@@ -193,7 +193,7 @@ async function buildQuiz(){kzFix();$('reGoErr').textContent='';busy($('reGo'),tr
     for(const [k,t] of parts){if(!t)continue;$('reStat').textContent=`ElevenLabs: озвучка (${Object.keys(clips).length+1}/${parts.length})…`;const r=await tts(t,vid,vname,sets);clips[k]=await decode(r.url);paths[k]=r.job&&r.job.path}
     D.tl=QUIZ.timeline(D,clips);
     const {data:row}=await sb.from('reels').insert({lang:S.lang,format:'quiz',question:{quiz:set.map(q=>q.q),set,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts},voice:{id:vid,name:vname,settings:sets},audio_paths:paths,status:'audio'}).select().single();S.reelId=row&&row.id;
-    $('reStat').textContent='Собираем аудиодорожку…';const audio=QUIZ.mix(D.tl,clips);QUIZ.draw($('reCv').getContext('2d'),D,1);
+    $('reStat').textContent='Собираем аудиодорожку…';const audio=QUIZ.mix(D.tl,clips,await bgm());QUIZ.draw($('reCv').getContext('2d'),D,1);
     $('reStat').innerHTML='Записываем видео — не закрывайте страницу и не переключайте вкладку (≈'+Math.ceil(D.tl.dur)+' сек)…';
     const blob=await record(D,audio,D.tl.dur);await finishVideo(blob)}
   catch(e){$('reGoErr').textContent=e.message;$('reStat').textContent='Ошибка: '+e.message}
@@ -208,6 +208,8 @@ async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
+// background music for quiz reels (admin/audio/quiz-bg.m4a), decoded once
+let BGM=null;function bgm(){if(!BGM)BGM=decode('audio/quiz-bg.m4a?v=1').catch(e=>{console.warn('bg music',e);BGM=null;return null});return BGM}
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
 async function build(){kzFix();const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
   if(VMODE==='design'&&!VPICK){try{$('reGoErr').textContent='';busy($('reGo'),true,'Готовим диктора…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — попробуйте через «📚 Мои голоса».';busy($('reGo'),false,'✅ Согласен — создать озвучку и видео');return}}
@@ -385,7 +387,7 @@ async function autoReel(lang,vid,vname,extraAvoid,st){
   const clean=set.map(({img,...q})=>q);
   const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
   if(error)throw new Error(error.message);
-  const audio=QUIZ.mix(D.tl,clips);D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
+  const audio=QUIZ.mix(D.tl,clips,await bgm());D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
   const blob=await record(D,audio,D.tl.dur);
   st('☁️ Сохраняем…');const ext=blob.type.includes('mp4')?'mp4':'webm',path=`${new Date().toISOString().slice(0,10)}/${row.id}.${ext}`;
   const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(up.error)throw new Error('Загрузка: '+up.error.message);
