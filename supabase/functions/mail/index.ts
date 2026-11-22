@@ -34,7 +34,7 @@ function layout(lang: Lang, title: string, inner: string, unsubUrl?: string) {
   return `<!doctype html><html><body style="margin:0;background:#f3f2fb;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d1b3a">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f2fb;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden">
-<tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:22px 24px;color:#fff;font-size:20px;font-weight:800">iqtest<span style="color:#ff8fa3">.</span>live</td></tr>
+<tr><td style="padding:20px 24px 16px;border-bottom:3px solid #7c3aed"><a href="https://iqtest.live" style="text-decoration:none"><img src="https://iqtest.live/assets/logo/email-logo.png" width="180" height="69" alt="iqtest.live" style="display:block;border:0;outline:none;width:180px;height:auto"></a></td></tr>
 <tr><td style="padding:26px 24px 8px"><h1 style="margin:0 0 12px;font-size:22px;line-height:1.3">${title}</h1>${inner}</td></tr>
 <tr><td style="padding:8px 24px 24px;font-size:12px;color:#8a8aa3;line-height:1.5">${L(lang, "Бұл хатты iqtest.live сайтында IQ тест тапсырғаныңыз үшін алдыңыз.", "Вы получили это письмо, потому что прошли IQ-тест на iqtest.live.")}${unsubUrl ? `<br><a href="${unsubUrl}" style="color:#8a8aa3">${L(lang, "Хаттардан бас тарту", "Отписаться от писем")}</a>` : ""}</td></tr>
 </table></td></tr></table></body></html>`;
