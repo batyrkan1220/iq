@@ -28,7 +28,7 @@ box.innerHTML=`
  </div>
  <div class="card" style="padding:12px;margin:4px 0 12px;background:#fff">
   <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-   <label class="fld" style="flex:1;min-width:220px;margin:0"><span>🎵 Фоновая музыка</span><select id="qkMus"><option value="builtin">🎧 Quiz Show (загруженная)</option></select></label>
+   <label class="fld" style="flex:1;min-width:220px;margin:0"><span>🎵 Фоновая музыка</span><select id="qkMus"></select></label>
    <button type="button" class="btn sec" id="qkMusPlay">▶ Послушать</button></div>
   <audio id="qkMusA" style="display:none"></audio>
   <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">✨ Создать новую уникальную музыку (ElevenLabs Music)</summary>
@@ -230,15 +230,17 @@ const MUS_PRE={
  tension:['⏱ Напряжение + тиканье','Modern minimal electronic tension track for a game show countdown, subtle ticking clock rhythm, pulsing synth bass, rising suspense, clean punchy drums, 120 BPM, no vocals'],
  arcade:['🕹 Synthwave / аркада','Retro synthwave arcade game show instrumental, bright 80s synth arpeggios, punchy drum machine, fun and nostalgic but modern mix, 118 BPM, no vocals'],
  lofi:['☕ Lo-fi chill','Modern lo-fi hip hop instrumental with a curious playful vibe, dusty drums, warm keys, soft bass, light vinyl texture, 88 BPM, background for a calm quiz video, no vocals']};
-let MUS={tracks:[],current:'builtin'};const BGC={};
-async function musLoad(){try{const {data}=await sb.from('app_settings').select('value').eq('key','reels_music').maybeSingle();if(data&&data.value)MUS=Object.assign({tracks:[],current:'builtin'},data.value)}catch(e){}
+// built-in tracks: iq-phonk / iq-future were composed for iqtest.live (scripts/make-reels-music.py), builtin = uploaded Quiz Show
+const MUS_BUILT={phonk:['🔥 IQ Phonk (наш, по умолчанию)','audio/iq-phonk.m4a?v=1'],future:['💎 IQ Future Bass (наш)','audio/iq-future.m4a?v=1'],builtin:['🎧 Quiz Show (загруженная)','audio/quiz-bg.m4a?v=1']};
+let MUS={tracks:[],current:'phonk'};const BGC={};
+async function musLoad(){try{const {data}=await sb.from('app_settings').select('value').eq('key','reels_music').maybeSingle();if(data&&data.value)MUS=Object.assign({tracks:[],current:'phonk'},data.value)}catch(e){}
   const cur=localStorage.getItem('reels_music_cur');if(cur)MUS.current=cur;musDraw()}
 async function musSave(){try{await sb.from('app_settings').upsert({key:'reels_music',value:MUS,updated_at:new Date().toISOString()})}catch(e){}}
-function musDraw(){const sel=$('qkMus');sel.innerHTML=`<option value="builtin">🎧 Quiz Show (загруженная)</option>${MUS.tracks.map(t=>`<option value="${esc(t.path)}">🎼 ${esc(t.name)}</option>`).join('')}<option value="none">🔇 Без музыки</option>`;
-  sel.value=[...sel.options].some(o=>o.value===MUS.current)?MUS.current:'builtin'}
-async function musUrl(v){if(v==='builtin')return 'audio/quiz-bg.m4a?v=1';const {data}=await sb.storage.from('reels').createSignedUrl(v,3600);if(!data)throw new Error('Трек не найден');return data.signedUrl}
+function musDraw(){const sel=$('qkMus');sel.innerHTML=`${Object.keys(MUS_BUILT).map(k=>`<option value="${k}">${MUS_BUILT[k][0]}</option>`).join('')}${MUS.tracks.map(t=>`<option value="${esc(t.path)}">🎼 ${esc(t.name)}</option>`).join('')}<option value="none">🔇 Без музыки</option>`;
+  sel.value=[...sel.options].some(o=>o.value===MUS.current)?MUS.current:'phonk';MUS.current=sel.value}
+async function musUrl(v){if(MUS_BUILT[v])return MUS_BUILT[v][1];const {data}=await sb.storage.from('reels').createSignedUrl(v,3600);if(!data)throw new Error('Трек не найден');return data.signedUrl}
 // returns Float32Array, or false for "no music"; built-in synth only if loading fails
-function bgm(){const v=MUS.current||'builtin';if(v==='none')return Promise.resolve(false);
+function bgm(){const v=MUS.current||'phonk';if(v==='none')return Promise.resolve(false);
   if(!BGC[v])BGC[v]=musUrl(v).then(decode).catch(e=>{console.warn('bg music',e);delete BGC[v];return null});return BGC[v]}
 $('qkMus').onchange=()=>{MUS.current=$('qkMus').value;localStorage.setItem('reels_music_cur',MUS.current);$('qkMusA').pause();$('qkMusPlay').textContent='▶ Послушать'};
 $('qkMusPlay').onclick=async()=>{const a=$('qkMusA');if(!a.paused){a.pause();$('qkMusPlay').textContent='▶ Послушать';return}const v=$('qkMus').value;if(v==='none')return;
