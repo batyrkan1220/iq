@@ -482,9 +482,11 @@ $('reload').onclick=()=>load();
 function rng(){return{from:new Date($('dFrom').value+'T00:00:00+05:00').toISOString(),to:new Date(new Date($('dTo').value+'T00:00:00+05:00').getTime()+864e5).toISOString()}}
 function days(){const out=[];let d=new Date($('dFrom').value+'T00:00:00Z');const e=new Date($('dTo').value+'T00:00:00Z');while(d<=e&&out.length<400){out.push(d.toISOString().slice(0,10));d=new Date(d.getTime()+864e5)}return out}
 
+// Reels/Questions scripts load after this one: if the page opens straight on those tabs, wait until they are ready
+function lazyFn(n){return()=>window[n]?window[n]():new Promise((res,rej)=>{let k=0;const t=setInterval(()=>{if(window[n]){clearInterval(t);res(window[n]())}else if(++k>200){clearInterval(t);rej(new Error('скрипт '+n+' не загрузился'))}},50)})}
 function load(){R=rng();$('upd').textContent='загрузка…';document.body.classList.add('busy');
   const f={dash:loadDash,cl:loadCl,an:loadOv,ev:loadEv,us:loadUs,py:loadPy,fr:loadFr,ps:loadPaySettings,ib:loadEm,ml:loadEm,bc:loadEm,ld:loadEm,px:loadPx,lk:mkLink,
-    re:()=>window.loadRe(),qs:()=>window.loadQs(),vo:loadVo,st:loadSt}[TAB];
+    re:lazyFn('loadRe'),qs:lazyFn('loadQs'),vo:loadVo,st:loadSt}[TAB];
   Promise.resolve(f()).then(()=>$('upd').textContent='обновлено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})).catch(e=>{$('upd').innerHTML='<span style="color:var(--bad)">Не удалось загрузить: '+esc(e.message||e)+'</span> <button class="btn sec sm" onclick="load()">Повторить</button>'}).finally(()=>document.body.classList.remove('busy'))}
 
 // ---------- charts ----------
@@ -804,9 +806,9 @@ $('npBtn').onclick=async()=>{const a=$('np1').value,b=$('np2').value;$('npErr').
 setInterval(()=>{if(!$('app').classList.contains('hide'))ibBadge()},60000);
 boot();
 </script>
-<script src="questions.js?v=20261123g"></script>
-<script src="bank.js?v=20261123g"></script>
-<script src="quiz.js?v=20261123g"></script>
-<script src="vendor/mp4-muxer.js?v=20261123g"></script>
-<script src="reels.js?v=20261123g"></script>
+<script src="questions.js?v=20261123h"></script>
+<script src="bank.js?v=20261123h"></script>
+<script src="quiz.js?v=20261123h"></script>
+<script src="vendor/mp4-muxer.js?v=20261123h"></script>
+<script src="reels.js?v=20261123h"></script>
 </body></html>
