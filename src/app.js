@@ -86,7 +86,7 @@ const fromSeq=t=>{const k=t[0],i=+t.slice(1);
 // Вопросы теста: база v2 (src/qv2.js). Казахские тексты из базы подключаются в словарь KZ.
 const Q=QV2.map(v=>{const reg=x=>{if(x&&x.ru&&x.kz&&x.kz!==x.ru)KZ[x.ru]=x.kz};
   reg(v.question);(v.options||[]).forEach(reg);reg(v.explanation);if(v.memorize)reg(v.memorize.prompt);
-  if(v.type==='survey')return fromSeq(v.code);
+  if(v.type==='survey')return{likert:1,demo:1,text:1,code:v.code,q:v.question.ru,o:v.options.map(x=>x.ru),...(/жас|лет/i.test(v.question.ru)?{key:'age'}:{})};
   const base={v2:1,fixed:1,code:v.code,cat:v.category,lvl:v.level,w:v.weight||0,q:v.question.ru,a:v.answer.index,ex:v.explanation?v.explanation.ru:''},
     o=v.options.map(x=>x.svg?null:x.ru),svg=v.options.map(x=>x.svg||null);
   if(v.image_svg||svg.some(Boolean))return{...base,img:v.image_svg||'',osvg:svg,o};
