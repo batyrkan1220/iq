@@ -301,6 +301,12 @@ export class ToleClient {
     return this.mutate("createInvoice", "/invoices", idempotencyKey, req);
   }
 
+  /** POST /invoices/{operationId}/cancel — body EmptyObject; idempotent mutation. */
+  cancelInvoice(operationId: string, idempotencyKey: string): Promise<MutationOutcome<Record<string, unknown>>> {
+    if (!UUID_RE.test(operationId)) throw new ToleError("validation", "operationId must be a UUID");
+    return this.mutate("cancelInvoice", `/invoices/${operationId}/cancel`, idempotencyKey, {});
+  }
+
   getQr(operationId: string): Promise<SuccessResponse<QrOperationData>> {
     if (!UUID_RE.test(operationId)) throw new ToleError("validation", "operationId must be a UUID");
     return this.read("getQr", `${this.o.baseUrl}${this.p("/qr/" + operationId)}`, true);

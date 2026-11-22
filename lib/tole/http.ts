@@ -112,6 +112,12 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     return true;
   }
 
+  if (pathname === "/api/pay/admin-invoice" && req.method === "POST") {
+    const r = await adminInvoice(req, ctx);
+    send(res, r.status, r.body);
+    return true;
+  }
+
   if (pathname === "/api/pay/check" && req.method === "POST") {
     send(res, 200, await adminCheck(req, ctx));
     return true;
@@ -141,20 +147,86 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
   return true;
 }
 
-/** Admin-only connectivity check. Never returns secret values — only booleans, statuses and error kinds. */
-async function adminCheck(req: IncomingMessage, c: Ctx): Promise<Record<string, unknown>> {
+/** Verify the caller is a logged-in admin (Supabase Auth token + public.admins). Returns email or an error object. */
+async function requireAdmin(req: IncomingMessage, c: Ctx): Promise<string | { ok: false; error: string }> {
   const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
   if (!token || !c.call || !c.sbKey) return { ok: false, error: c.call ? "unauthorized" : "supabase_key_missing" };
-  // 1) caller must be a logged-in admin (Supabase Auth + public.admins)
   try {
     const u = await fetch(`${c.sbUrl.replace(/\/+$/, "")}/auth/v1/user`, { headers: { apikey: c.sbKey, Authorization: `Bearer ${token}` } });
     if (u.status !== 200) return { ok: false, error: "unauthorized" };
     const email = String(((await u.json()) as { email?: string }).email || "").toLowerCase();
     const a = await c.call("GET", `/admins?select=email&email=eq.${encodeURIComponent(email)}`);
     if (a.status !== 200 || !(a.json as unknown[])?.length) return { ok: false, error: "forbidden" };
+    return email;
   } catch {
     return { ok: false, error: "auth_check_failed" };
   }
+}
+
+/** Admin test: issue a real Kaspi invoice to a phone number (live or sandbox, per TOLE_ENV), poll, cancel.
+ *  The phone number is sent to Tole only; it is never stored or logged (only the last 4 digits in `note`). */
+async function adminInvoice(req: IncomingMessage, c: Ctx): Promise<{ status: number; body: Record<string, unknown> }> {
+  const who = await requireAdmin(req, c);
+  if (typeof who !== "string") return { status: who.error === "forbidden" ? 403 : 401, body: who };
+  if (!c.client || !c.svc || !c.repo) return { status: 503, body: { ok: false, error: "payments_unavailable", problem: c.problem } };
+  const raw = await readRaw(req, 4 * 1024);
+  let b: { action?: string; phone?: string; amount?: number; orderId?: string } = {};
+  try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { return { status: 400, body: { ok: false, error: "bad_json" } }; }
+  const view = (r: import("./payments.ts").PaymentRow) => ({ ok: true, orderId: r.order_id, status: r.status, toleStatus: r.tole_status, amount: r.amount, environment: r.environment, paidAt: r.paid_at, error: r.last_error_code });
+  try {
+    if (b.action === "create") {
+      let phone = String(b.phone || "").replace(/[^\d+]/g, "");
+      if (/^8\d{10}$/.test(phone)) phone = "7" + phone.slice(1);
+      if (/^\+7\d{10}$/.test(phone)) phone = phone.slice(1);
+      if (!/^7\d{10}$/.test(phone)) return { status: 400, body: { ok: false, error: "bad_phone" } };
+      const amount = Number(b.amount);
+      if (!Number.isInteger(amount) || amount < 1 || amount > 100_000) return { status: 400, body: { ok: false, error: "bad_amount" } };
+      const orderId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      let row = await c.repo.insertOrGet({
+        order_id: orderId, visit_id: null, provider: "tole", kind: "invoice", environment: c.client.environment, amount, currency: "KZT",
+        status: "creating", idempotency_key: `iqtest-inv-${orderId}`, tole_id: null, tole_command_id: null, tole_status: null,
+        payment_url: null, qr_token: null, expires_at: null, paid_at: null, last_reconciled_at: null, last_error_code: null,
+      } as never);
+      await c.repo.update(row.id, { updated_at: now, ...( { note: `Админ тест · ${who} · ***${phone.slice(-4)}` } as Record<string, unknown>) } as never);
+      const out = await c.client.createInvoice({ phoneNumber: phone, amount, comment: "iqtest.live тест" }, row.idempotency_key);
+      if (out.state === "completed") {
+        const id = typeof out.data.id === "string" ? out.data.id : null;
+        row = await c.repo.update(row.id, { status: id ? "pending" : "outcome_unknown", tole_id: id, tole_command_id: out.commandId, tole_status: String(out.data.status || "") || null, updated_at: new Date().toISOString() });
+      } else {
+        row = await c.repo.update(row.id, { status: out.state === "in_progress" ? "processing" : "outcome_unknown", tole_command_id: out.commandId, last_error_code: out.state, updated_at: new Date().toISOString() });
+      }
+      log.log("info", "admin test invoice", { orderId, state: out.state, environment: c.client.environment });
+      return { status: 200, body: view(row) };
+    }
+    const orderId = String(b.orderId || "");
+    if (!UUID.test(orderId)) return { status: 400, body: { ok: false, error: "bad_order_id" } };
+    let row = await c.repo.findByOrderId(orderId);
+    if (!row) return { status: 404, body: { ok: false, error: "not_found" } };
+    if (b.action === "status") {
+      await c.svc.refresh(row, true);
+      row = (await c.repo.findByOrderId(orderId))!;
+      return { status: 200, body: view(row) };
+    }
+    if (b.action === "cancel") {
+      if (!row.tole_id || row.status !== "pending") return { status: 409, body: { ok: false, error: "not_cancellable", status: row.status } };
+      const out = await c.client.cancelInvoice(row.tole_id, `iqtest-inv-cancel-${orderId}`);
+      await c.svc.refresh(row, true);
+      row = (await c.repo.findByOrderId(orderId))!;
+      return { status: 200, body: { ...view(row), cancel: out.state } };
+    }
+    return { status: 400, body: { ok: false, error: "bad_action" } };
+  } catch (e) {
+    const err = e as ToleError;
+    log.log("warn", "admin test invoice failed", { kind: err.kind, status: err.status, code: err.code });
+    return { status: 200, body: { ok: false, error: (err.kind || "internal") + (err.code ? ":" + err.code : ""), message: err.kind === "validation" || err.kind === "forbidden" ? String(err.message || "").slice(0, 200) : undefined } };
+  }
+}
+
+/** Admin-only connectivity check. Never returns secret values — only booleans, statuses and error kinds. */
+async function adminCheck(req: IncomingMessage, c: Ctx): Promise<Record<string, unknown>> {
+  const who = await requireAdmin(req, c);
+  if (typeof who !== "string") return who;
   const env = (process.env.TOLE_ENV || "").trim();
   const out: Record<string, unknown> = {
     ok: true, environment: env || null,

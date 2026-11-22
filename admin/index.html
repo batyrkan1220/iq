@@ -137,6 +137,14 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
       <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">Tole кілттері қайда сақталады?</summary>
         <p class="muted" style="font-size:12.5px;line-height:1.55">Кілттер бұл бетте сақталмайды. Олар Render → iqtest-live → Environment бөлімінде тұрады: <code>TOLE_API_KEY</code>, <code>TOLE_ENV</code> (sandbox / live), <code>TOLE_CONNECTION_ID</code>, <code>TOLE_WEBHOOK_SECRET</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>. Webhook мекенжайы: <code>https://iqtest.live/api/tole/webhook</code></p></details>
     </div>
+    <div class="card" style="margin-bottom:12px"><h3>🧪 Тест төлем — Kaspi шоты телефонға</h3>
+      <p class="muted" style="font-size:12.5px;margin:0 0 8px">Нөмірге нақты Kaspi шоты жіберіледі (Render-дегі TOLE_ENV бойынша: live болса — нақты ақша). Нөмір сақталмайды, тек соңғы 4 цифры ескертпеде көрінеді.</p>
+      <form class="form" id="tiF"><label class="fld"><span>Телефон</span><input id="tiPhone" inputmode="tel" placeholder="8 701 123 45 67" required autocomplete="off"></label>
+        <label class="fld"><span>Сомасы, ₸</span><input type="number" id="tiAmt" value="100" min="1" max="100000" required></label>
+        <button class="btn" id="tiBtn">Шот жіберу</button></form>
+      <div id="tiOut" style="margin-top:8px;font-size:14px"></div>
+      <div style="margin-top:6px"><button class="btn sec sm hide" id="tiRef" type="button">↻ Статус</button> <button class="btn sec sm hide" id="tiCancel" type="button">Шотты болдырмау</button></div>
+    </div>
     <div class="grid kpis" id="pyK" style="margin-bottom:12px"></div>
     <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Орта</th><th>Төленді</th><th>Tole ID</th><th>Тапсырыс</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
     <details class="card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">Төлемді қолмен қосу</summary>
@@ -317,6 +325,20 @@ $('psCheck').onclick=async()=>{const o=$('psCheckOut'),b=$('psCheck');b.disabled
       r.sandboxPayment!==undefined?row('Тест төлемінің статусы',r.sandboxPayment,r.sandboxPayment==='paid'||r.sandboxPayment==='skipped_live'):'',
       r.webhookReceived!==undefined?row('Webhook келді және қолтаңбасы дұрыс',r.webhookReceived?'иә':'жоқ',r.webhookReceived):'',r.toleDeliveries!==undefined?`<div>ℹ️ Tole жеткізулері: <code style="font-size:12px">${esc(JSON.stringify(r.toleDeliveries))}</code></div>`:''].join('');loadPy()}
   catch(e){o.textContent='❌ '+e.message}finally{b.disabled=false}};
+const TI={order:null,timer:null};
+async function tiCall(body){const tk=(await sb.auth.getSession()).data?.session?.access_token;const r=await fetch('/api/pay/admin-invoice',{method:'POST',headers:{Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
+function tiShow(r){const o=$('tiOut');if(!r.ok){o.innerHTML='❌ '+esc(r.error||'қате')+(r.message?' — '+esc(r.message):'')+(r.problem?' — '+esc(r.problem):'');return}
+  const s=PYS[r.status]||[r.status,'w'];o.innerHTML=`<span class="pill ${s[1]}">${esc(s[0])}</span> <b>${money(r.amount)}</b> · <span class="muted">${esc(r.environment)}</span>${r.paidAt?' · төленді '+fmtT(r.paidAt):''}${r.error?' · <span class="muted">'+esc(r.error)+'</span>':''}`;
+  $('tiRef').classList.remove('hide');$('tiCancel').classList.toggle('hide',r.status!=='pending');
+  if(['paid','cancelled','expired','failed','rejected','refunded'].includes(r.status)){clearInterval(TI.timer);loadPy()}}
+$('tiF').onsubmit=async e=>{e.preventDefault();const env=(await (await fetch('/api/pay/config')).json().catch(()=>({})));
+  if(!confirm(`${$('tiPhone').value} нөміріне ${$('tiAmt').value} ₸ Kaspi шоты жіберілсін бе?`))return;
+  $('tiBtn').disabled=true;$('tiOut').innerHTML='<span class="muted">Жіберілуде…</span>';
+  try{const r=await tiCall({action:'create',phone:$('tiPhone').value,amount:+$('tiAmt').value});tiShow(r);
+    if(r.ok){TI.order=r.orderId;clearInterval(TI.timer);let n=0;TI.timer=setInterval(async()=>{if(++n>75){clearInterval(TI.timer);return}tiShow(await tiCall({action:'status',orderId:TI.order}))},4000);loadPy()}}
+  catch(err){$('tiOut').textContent='❌ '+err.message}finally{$('tiBtn').disabled=false}};
+$('tiRef').onclick=async()=>{if(TI.order)tiShow(await tiCall({action:'status',orderId:TI.order}))};
+$('tiCancel').onclick=async()=>{if(TI.order&&confirm('Шотты болдырмау керек пе?'))tiShow(await tiCall({action:'cancel',orderId:TI.order}))};
 async function loadPy(){loadPaySettings();
   const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
   const live=data.filter(p=>p.environment!=='sandbox'),paid=live.filter(p=>p.status==='paid'||p.status==='partially_refunded');

@@ -18,7 +18,7 @@ export interface PaymentRow {
   order_id: string;
   visit_id: string | null;
   provider: "tole";
-  kind: "qr";
+  kind: "qr" | "invoice";
   environment: "live" | "sandbox";
   amount: number;
   currency: "KZT";
@@ -200,7 +200,7 @@ export class PaymentService {
         row = isCommandTerminal(cmd) ? await this.applyCommand(row, cmd) : row;
       }
       if (row.tole_id && OPEN.includes(row.status)) {
-        const pi: PaymentIntent = await this.d.client.getPaymentIntent("qr", row.tole_id);
+        const pi: PaymentIntent = await this.d.client.getPaymentIntent(row.kind === "invoice" ? "invoice" : "qr", row.tole_id);
         const next = TERMINAL_FROM_INTENT[pi.status] || row.status;
         if (next !== row.status) this.d.logger.log("info", "payment status changed", { orderId: row.order_id, toleId: row.tole_id, from: row.status, to: next });
         row = await this.d.repo.update(row.id, {

@@ -156,3 +156,18 @@ test("parseRetryAfter handles seconds and HTTP-date", () => {
   assert.equal(parseRetryAfter(null), null);
   assert.equal(parseRetryAfter("soon"), null);
 });
+
+test("invoice: live payment-intent route and cancel with idempotency key + EmptyObject body", async () => {
+  const live = { apiKey: "tole_sk_live_v1_" + "y".repeat(24), environment: "live" as const, connectionId: CONN };
+  const { client, calls } = makeClient([
+    () => jsonRes(200, { ...intent("pending"), data: { ...intent("pending").data, kind: "invoice" } }),
+    () => jsonRes(200, { ok: true, data: { id: PI, status: "cancelled" }, commandId: CMD }),
+  ], live);
+  await client.getPaymentIntent("invoice", PI);
+  assert.equal(calls[0].url, `https://api.tolepay.kz/v1/payment-intents/invoices/${PI}`);
+  const out = await client.cancelInvoice(PI, "iqtest-inv-cancel-1");
+  assert.equal(out.state, "completed");
+  assert.equal(calls[1].url, `https://api.tolepay.kz/v1/invoices/${PI}/cancel`);
+  assert.deepEqual(calls[1].body, {});
+  assert.equal(calls[1].headers["Idempotency-Key"], "iqtest-inv-cancel-1");
+});
