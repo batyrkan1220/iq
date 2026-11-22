@@ -344,6 +344,12 @@ export class ToleClient {
     return null;
   }
 
+  /** GET /api-key (getCurrentApiKey, ApiKeyBearer) — used only to verify the key is accepted. Body is not returned. */
+  async verifyApiKey(): Promise<true> {
+    await this.read<unknown>("getCurrentApiKey", `${this.o.baseUrl}/api-key`, false);
+    return true;
+  }
+
   /** Sandbox-only helper used by the smoke script. */
   async sandboxSimulate(paymentIntentId: string, status: "paid" | "cancelled" | "expired" | "failed"): Promise<PaymentIntent> {
     if (this.environment !== "sandbox") throw new ToleError("config", "simulate is sandbox-only");

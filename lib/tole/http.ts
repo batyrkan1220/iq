@@ -14,14 +14,14 @@ const log = consoleLogger("pay");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DEFAULT_SUPABASE_URL = "https://dlhejkmuyyqvjzjxbwbg.supabase.co";
 
-interface Ctx { svc: PaymentService | null; settings: ReturnType<typeof restSettings> | null; repo: ReturnType<typeof restPaymentRepo> | null; webhookSecret: string | null; problem: string | null }
+interface Ctx { client: ToleClient | null; call: ReturnType<typeof restClient> | null; sbUrl: string; sbKey: string; svc: PaymentService | null; settings: ReturnType<typeof restSettings> | null; repo: ReturnType<typeof restPaymentRepo> | null; webhookSecret: string | null; problem: string | null }
 let ctx: Ctx | null = null;
 
 function init(env: NodeJS.ProcessEnv = process.env): Ctx {
   const sbUrl = (env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
   const sbKey = (env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SECRET_KEY || "").trim();
   const webhookSecret = (env.TOLE_WEBHOOK_SECRET || "").trim() || null;
-  if (!sbKey) return { svc: null, settings: null, repo: null, webhookSecret, problem: "SUPABASE_SERVICE_ROLE_KEY not set" };
+  if (!sbKey) return { client: null, call: null, sbUrl, sbKey, svc: null, settings: null, repo: null, webhookSecret, problem: "SUPABASE_SERVICE_ROLE_KEY not set" };
   const call = restClient({ url: sbUrl, serviceKey: sbKey });
   const repo = restPaymentRepo(call);
   const settings = restSettings(call);
@@ -33,9 +33,9 @@ function init(env: NodeJS.ProcessEnv = process.env): Ctx {
       client, repo, logger: log,
       price: async () => (await settings()).priceKzt ?? 0,
     });
-    return { svc, settings, repo, webhookSecret, problem: null };
+    return { client, call, sbUrl, sbKey, svc, settings, repo, webhookSecret, problem: null };
   } catch (e) {
-    return { svc: null, settings, repo, webhookSecret, problem: (e as Error).message };
+    return { client: null, call, sbUrl, sbKey, svc: null, settings, repo, webhookSecret, problem: (e as Error).message };
   }
 }
 
@@ -112,6 +112,11 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     return true;
   }
 
+  if (pathname === "/api/pay/check" && req.method === "POST") {
+    send(res, 200, await adminCheck(req, ctx));
+    return true;
+  }
+
   if (pathname === "/api/tole/webhook" && req.method === "POST") {
     const raw = await readRaw(req);
     if (!raw) { res.writeHead(413).end(); return true; }
@@ -134,6 +139,60 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
 
   send(res, 404, { error: "not_found" });
   return true;
+}
+
+/** Admin-only connectivity check. Never returns secret values — only booleans, statuses and error kinds. */
+async function adminCheck(req: IncomingMessage, c: Ctx): Promise<Record<string, unknown>> {
+  const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  if (!token || !c.call || !c.sbKey) return { ok: false, error: c.call ? "unauthorized" : "supabase_key_missing" };
+  // 1) caller must be a logged-in admin (Supabase Auth + public.admins)
+  try {
+    const u = await fetch(`${c.sbUrl.replace(/\/+$/, "")}/auth/v1/user`, { headers: { apikey: c.sbKey, Authorization: `Bearer ${token}` } });
+    if (u.status !== 200) return { ok: false, error: "unauthorized" };
+    const email = String(((await u.json()) as { email?: string }).email || "").toLowerCase();
+    const a = await c.call("GET", `/admins?select=email&email=eq.${encodeURIComponent(email)}`);
+    if (a.status !== 200 || !(a.json as unknown[])?.length) return { ok: false, error: "forbidden" };
+  } catch {
+    return { ok: false, error: "auth_check_failed" };
+  }
+  const env = (process.env.TOLE_ENV || "").trim();
+  const out: Record<string, unknown> = {
+    ok: true, environment: env || null,
+    apiKeySet: !!(process.env.TOLE_API_KEY || "").trim(), connectionIdSet: !!(process.env.TOLE_CONNECTION_ID || "").trim(),
+    webhookSecretSet: !!c.webhookSecret, webhookSecretFormatOk: !!c.webhookSecret && /^whsec_[A-Za-z0-9_-]{43}$/.test(c.webhookSecret),
+    configProblem: c.problem,
+  };
+  // 2) Supabase service key works (it already passed the admin lookup above)
+  out.supabase = "ok";
+  if (!c.client || !c.svc) return out;
+  // 3) Tole accepts the API key
+  try { await c.client.verifyApiKey(); out.toleKey = "ok"; } catch (e) { out.toleKey = (e as ToleError).kind || "error"; }
+  // 4) Sandbox only: full payment round-trip + webhook delivery
+  if (c.client.environment !== "sandbox") { out.sandboxPayment = "skipped_live"; return out; }
+  const started = new Date(Date.now() - 2000).toISOString();
+  const svc = new PaymentService({ client: c.client, repo: c.repo!, logger: log, price: async () => 100 });
+  const orderId = crypto.randomUUID();
+  try {
+    const v = await svc.startQr(orderId, null);
+    out.qrCreated = v.status;
+    const row = await c.repo!.findByOrderId(orderId);
+    if (row?.tole_id) {
+      try { await c.client.sandboxSimulate(row.tole_id, "paid"); out.simulate = "ok"; } catch (e) { out.simulate = (e as ToleError).kind || "error"; }
+      const after = await svc.refresh((await c.repo!.findByOrderId(orderId))!, true);
+      out.sandboxPayment = after.status;
+    } else out.sandboxPayment = v.status;
+  } catch (e) {
+    out.sandboxPayment = "error:" + ((e as ToleError).kind || "internal") + ((e as ToleError).code ? ":" + (e as ToleError).code : "");
+  }
+  // 5) Did a signed webhook reach /api/tole/webhook and pass verification?
+  let received = 0;
+  for (let i = 0; i < 8 && !received; i++) {
+    await new Promise((r) => setTimeout(r, 1000));
+    const w = await c.call("GET", `/tole_webhook_events?select=webhook_id&received_at=gte.${encodeURIComponent(started)}&limit=5`);
+    received = w.status === 200 ? ((w.json as unknown[]) || []).length : 0;
+  }
+  out.webhookReceived = received > 0;
+  return out;
 }
 
 /** Test hook: rebuild context from a given environment. */

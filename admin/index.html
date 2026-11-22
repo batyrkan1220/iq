@@ -132,6 +132,8 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
         <button class="btn">Сақтау</button></form>
       <div class="err" id="psErr"></div>
       <div class="muted" id="psInfo" style="margin-top:8px;font-size:13px"></div>
+      <div style="margin-top:10px"><button class="btn sec" id="psCheck" type="button">🔌 Қосылымды тексеру</button> <span class="muted" style="font-size:12px">Tole кілті, Supabase, sandbox-та тест төлемі және webhook (≈15 сек)</span></div>
+      <div id="psCheckOut" style="margin-top:8px;font-size:13.5px;line-height:1.7"></div>
       <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">Tole кілттері қайда сақталады?</summary>
         <p class="muted" style="font-size:12.5px;line-height:1.55">Кілттер бұл бетте сақталмайды. Олар Render → iqtest-live → Environment бөлімінде тұрады: <code>TOLE_API_KEY</code>, <code>TOLE_ENV</code> (sandbox / live), <code>TOLE_CONNECTION_ID</code>, <code>TOLE_WEBHOOK_SECRET</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>. Webhook мекенжайы: <code>https://iqtest.live/api/tole/webhook</code></p></details>
     </div>
@@ -304,6 +306,17 @@ $('psF').onsubmit=async e=>{e.preventDefault();$('psErr').textContent='';const p
   const who=(await sb.auth.getUser()).data?.user?.email||null,now=new Date().toISOString();
   const {error}=await sb.from('app_settings').upsert([{key:'price_kzt',value:p,updated_at:now,updated_by:who},{key:'paywall_enabled',value:$('psOn').value==='true',updated_at:now,updated_by:who}]);
   if(error){$('psErr').textContent=error.message;return}$('psInfo').textContent='Сақталды. Сайтта 30 секунд ішінде жаңарады.';setTimeout(loadPaySettings,1500)};
+$('psCheck').onclick=async()=>{const o=$('psCheckOut'),b=$('psCheck');b.disabled=true;o.innerHTML='<span class="muted">Тексерілуде…</span>';
+  try{const tk=(await sb.auth.getSession()).data?.session?.access_token;const r=await (await fetch('/api/pay/check',{method:'POST',headers:{Authorization:'Bearer '+tk}})).json();
+    if(!r.ok){o.innerHTML='❌ '+esc(r.error||'қате');return}
+    const ok=v=>v===true||v==='ok'||v==='paid',row=(t,v,good=ok(v))=>`<div>${good?'✅':'❌'} ${t}: <b>${esc(String(v))}</b></div>`;
+    o.innerHTML=[row('Орта (TOLE_ENV)',r.environment||'жоқ',r.environment==='sandbox'||r.environment==='live'),row('TOLE_API_KEY',r.apiKeySet?'бар':'жоқ',r.apiKeySet),row('TOLE_CONNECTION_ID',r.connectionIdSet?'бар':'жоқ',r.connectionIdSet||r.environment==='live'),
+      row('TOLE_WEBHOOK_SECRET',r.webhookSecretSet?(r.webhookSecretFormatOk?'бар':'формат қате (whsec_… болуы керек)'):'жоқ',r.webhookSecretFormatOk),row('Supabase кілті',r.supabase||'—'),
+      r.configProblem?`<div>❌ Баптау қатесі: <b>${esc(r.configProblem)}</b></div>`:'',r.toleKey!==undefined?row('Tole кілтті қабылдады ма',r.toleKey):'',
+      r.qrCreated!==undefined?row('Тест QR жасалды',r.qrCreated,r.qrCreated==='pending'||r.qrCreated==='paid'):'',r.simulate!==undefined?row('«Төленді» симуляциясы',r.simulate):'',
+      r.sandboxPayment!==undefined?row('Тест төлемінің статусы',r.sandboxPayment,r.sandboxPayment==='paid'||r.sandboxPayment==='skipped_live'):'',
+      r.webhookReceived!==undefined?row('Webhook келді және қолтаңбасы дұрыс',r.webhookReceived?'иә':'жоқ',r.webhookReceived):''].join('');loadPy()}
+  catch(e){o.textContent='❌ '+e.message}finally{b.disabled=false}};
 async function loadPy(){loadPaySettings();
   const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
   const live=data.filter(p=>p.environment!=='sandbox'),paid=live.filter(p=>p.status==='paid'||p.status==='partially_refunded');
