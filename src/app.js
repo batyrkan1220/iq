@@ -292,7 +292,7 @@ window._hist=()=>{const h=getHist();
   $('histModal').classList.add('on')};
 $('histClose').onclick=()=>$('histModal').classList.remove('on');
 $('histClear').onclick=()=>{try{localStorage.removeItem(HK)}catch(e){}window._hist()};
-$('startBtn').onclick=start;$('startBtn2').onclick=start;$('startBtn3').onclick=start;
+$('startBtn').onclick=start;$('startBtn2').onclick=start;
 document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);
 document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
 (function(){const seq=['?',87,96,104,112,121,'?'];let i=0;setInterval(()=>{const el=$('hvNum');if(!el||$('start').classList.contains('hidden'))return;i=(i+1)%seq.length;el.textContent=seq[i]},600)})();
@@ -302,7 +302,7 @@ try{const io=new IntersectionObserver(es=>{const vis=es[0].isIntersecting;const 
 // warm-up puzzle (not part of the test)
 const WARM={fam:'count',cells:[[{s:'circle',n:1},{s:'circle',n:2},{s:'circle',n:3}],[{s:'square',n:1},{s:'square',n:2},{s:'square',n:3}],[{s:'triangle',n:1},{s:'triangle',n:2},null]],
   opts:[{s:'triangle',n:2},{s:'triangle',n:3},{s:'square',n:3}],a:1};
-function renderWarm(){const q=WARM;let s=`<svg viewBox="0 0 330 330">${DEFS}`;
+function renderWarm(){if(!$('warmBox'))return;const q=WARM;let s=`<svg viewBox="0 0 330 330">${DEFS}`;
   for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=c*110+5,y=r*110+5,last=r==2&&c==2;
     s+=`<rect x="${x}" y="${y}" width="100" height="100" fill="#fff" stroke="${last?'#2f6fe4':'none'}" stroke-width="${last?3.5:0}"/>`;
     s+=last?`<text x="${x+50}" y="${y+66}" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`:FAM.count.render(q.cells[r][c],x+50,y+50)}
@@ -317,7 +317,7 @@ function renderWarm(){const q=WARM;let s=`<svg viewBox="0 0 330 330">${DEFS}`;
       <button class="btn big cta" onclick="start()">${L2('Начать полный тест →','Толық тестті бастау →')}</button>`;
     if(ok)confetti(45)})}
 // bell curve
-function renderBell(){const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>Math.exp(-Math.pow((v-100)/15,2)/2),my=v=>H-28-pdf(v)*(H-48);
+function renderBell(){if(!$('bell'))return;const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>Math.exp(-Math.pow((v-100)/15,2)/2),my=v=>H-28-pdf(v)*(H-48);
   const seg=(a,b,c)=>{let d=`M${mx(a)} ${H-28}`;for(let v=a;v<=b;v+=1)d+=`L${mx(v).toFixed(1)} ${my(v).toFixed(1)}`;return `<path d="${d}L${mx(b)} ${H-28}Z" fill="${c}"/>`};
   let s=`<svg viewBox="0 0 ${W} ${H}">`+seg(55,85,'#cbd5e1')+seg(85,115,'#a5b4fc')+seg(115,130,'#818cf8')+seg(130,145,'#7c3aed');
   let d='';for(let v=55;v<=145;v++)d+=(v===55?'M':'L')+mx(v).toFixed(1)+' '+my(v).toFixed(1);
@@ -325,7 +325,7 @@ function renderBell(){const W=340,H=150,mx=v=>20+(v-55)/(145-55)*(W-40),pdf=v=>M
   [70,85,100,115,130].forEach(v=>{s+=`<line x1="${mx(v)}" y1="${H-28}" x2="${mx(v)}" y2="${H-23}" stroke="#94a3b8"/><text x="${mx(v)}" y="${H-10}" font-size="11" font-weight="700" text-anchor="middle" fill="#64748b">${v}</text>`});
   s+=`<text x="${mx(100)}" y="${my(100)-8}" font-size="11" font-weight="800" text-anchor="middle" fill="#312e81">${L2('средний','орташа')}</text>`;
   $('bell').innerHTML=s+'</svg>'}
-function renderSample(){$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
+function renderSample(){if(!$('smpRadar'))return;$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
 function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want='/'+LANG+'/';const p=location.pathname;
