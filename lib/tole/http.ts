@@ -85,7 +85,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
     if (limited(ip)) { send(res, 429, { error: "rate_limited", retryAfterSec: 60 }, { "Retry-After": "60" }); return true; }
     const raw = await readRaw(req, 4 * 1024);
-    let body: { action?: string; orderId?: string; visitId?: string } = {};
+    let body: { action?: string; orderId?: string; visitId?: string; method?: string; phone?: string } = {};
     try { body = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
     const orderId = String(body.orderId || "");
     const visitId = body.visitId && UUID.test(String(body.visitId)) ? String(body.visitId) : null;
@@ -95,7 +95,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
       if (body.action === "create") {
         const s = await ctx.settings();
         if (!s.paywallEnabled || !s.priceKzt) { send(res, 403, { error: "paywall_disabled" }); return true; }
-        send(res, 200, await ctx.svc.startQr(orderId, visitId));
+        send(res, 200, body.method === "invoice" ? await ctx.svc.startInvoice(orderId, visitId, String(body.phone || "")) : await ctx.svc.startQr(orderId, visitId));
       } else if (body.action === "status") {
         const v = await ctx.svc.status(orderId);
         v ? send(res, 200, v) : send(res, 404, { error: "not_found" });
@@ -103,6 +103,8 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     } catch (e) {
       const err = e instanceof ToleError ? e : null;
       log.log("error", "pay failed", { action: body.action, orderId, kind: err?.kind ?? "internal", status: err?.status ?? null });
+      if (err?.code === "bad_phone") { send(res, 400, { error: "bad_phone" }); return true; }
+      if (err?.code === "order_kind_mismatch") { send(res, 409, { error: "order_kind_mismatch" }); return true; }
       if (err?.kind === "rate_limited") {
         const s = Math.ceil((err.retryAfterMs ?? 30_000) / 1000);
         send(res, 429, { error: "rate_limited", retryAfterSec: s }, { "Retry-After": String(s) });

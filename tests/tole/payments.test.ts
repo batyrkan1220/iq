@@ -108,3 +108,27 @@ test("price comes from the admin-managed setting at order time; unset price bloc
   await svc.startQr("1b7a3c1e-9f2d-4a55-8e61-2c3d4e5f6a7b", VISIT);
   assert.deepEqual(m.calls[0].body, { amount: 2490 });
 });
+
+test("invoice flow: phone normalised, invoice idempotency key, only last 4 digits stored, phone never logged", async () => {
+  const lines: unknown[] = [];
+  const m = makeClient([() => jsonRes(201, { ok: true, data: { id: PI, kind: "invoice", status: "created", amount: 1990, clientPhoneLast4: "4567" }, commandId: CMD })]);
+  const repo = memoryRepo();
+  const svc = new PaymentService({ client: m.client, repo, logger: { log: (...a: unknown[]) => lines.push(a) }, price: async () => 1990 });
+  const v = await svc.startInvoice(ORDER, VISIT, "8 (701) 123-45-67");
+  assert.equal(v.status, "pending");
+  assert.equal(m.calls[0].url, "https://api.tolepay.kz/v1/sandbox/invoices");
+  assert.equal((m.calls[0].body as { phoneNumber: string }).phoneNumber, "77011234567");
+  assert.equal(m.calls[0].headers["Idempotency-Key"], `iqtest-inv-${ORDER}`);
+  const row = repo.rows[0] as unknown as Record<string, unknown>;
+  assert.equal(row.kind, "invoice");
+  assert.equal(row.note, "***4567");
+  assert.ok(!JSON.stringify(repo.rows).includes("77011234567"), "full phone is not persisted");
+  assert.ok(!JSON.stringify(lines).includes("7011234567"), "phone is not logged");
+});
+
+test("invoice flow: invalid phone is rejected before any provider call", async () => {
+  const m = makeClient([]);
+  const svc = new PaymentService({ client: m.client, repo: memoryRepo(), logger: { log() {} }, price: async () => 1990 });
+  await assert.rejects(() => svc.startInvoice(ORDER, VISIT, "12345"), (e: { code: string }) => e.code === "bad_phone");
+  assert.equal(m.calls.length, 0);
+});

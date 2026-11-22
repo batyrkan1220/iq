@@ -67,8 +67,17 @@ const TERMINAL_FROM_INTENT: Record<string, LocalStatus> = {
   partially_refunded: "partially_refunded", refunded: "refunded",
 };
 
-export function idempotencyKeyFor(orderId: string): string {
-  return `iqtest-qr-${orderId}`; // stable per local business operation; matches ^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$
+export function idempotencyKeyFor(orderId: string, kind: "qr" | "invoice" = "qr"): string {
+  // stable per local business operation; matches ^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$
+  return kind === "invoice" ? `iqtest-inv-${orderId}` : `iqtest-qr-${orderId}`;
+}
+
+/** Normalise a KZ mobile number to the documented ^\+?7[0-9]{10}$ form (returns null when invalid). */
+export function normalizeKzPhone(input: string): string | null {
+  let p = String(input || "").replace(/[^\d+]/g, "");
+  if (/^8\d{10}$/.test(p)) p = "7" + p.slice(1);
+  if (/^\+7\d{10}$/.test(p)) p = p.slice(1);
+  return /^7\d{10}$/.test(p) ? p : null;
 }
 
 export function toPublic(r: PaymentRow): PublicPaymentView {
@@ -105,6 +114,17 @@ export class PaymentService {
 
   /** Create (or resume) the QR payment for an order. Safe to call repeatedly with the same orderId. */
   async startQr(orderId: string, visitId: string | null): Promise<PublicPaymentView> {
+    return this.start(orderId, visitId, "qr", null);
+  }
+
+  /** Kaspi invoice to the payer's phone. The phone is sent to Tole only; we keep just the last 4 digits. */
+  async startInvoice(orderId: string, visitId: string | null, phone: string): Promise<PublicPaymentView> {
+    const p = normalizeKzPhone(phone);
+    if (!p) throw new ToleError("validation", "bad_phone", { code: "bad_phone" });
+    return this.start(orderId, visitId, "invoice", p);
+  }
+
+  private async start(orderId: string, visitId: string | null, kind: "qr" | "invoice", phone: string | null): Promise<PublicPaymentView> {
     let row = await this.d.repo.findByOrderId(orderId);
     if (!row) {
       if (visitId) {
@@ -114,14 +134,19 @@ export class PaymentService {
       const amount = await this.d.price();
       if (!Number.isInteger(amount) || amount < 1 || amount > 100_000_000) throw new ToleError("config", "Price is not configured");
       row = await this.d.repo.insertOrGet({
-        order_id: orderId, visit_id: visitId, provider: "tole", kind: "qr", environment: this.d.client.environment,
-        amount, currency: "KZT", status: "creating", idempotency_key: idempotencyKeyFor(orderId),
+        order_id: orderId, visit_id: visitId, provider: "tole", kind, environment: this.d.client.environment,
+        amount, currency: "KZT", status: "creating", idempotency_key: idempotencyKeyFor(orderId, kind),
         tole_id: null, tole_command_id: null, tole_status: null, payment_url: null, qr_token: null, expires_at: null,
         paid_at: null, last_reconciled_at: null, last_error_code: null,
       });
     }
     // Only a row that never got a definitive answer is (re)sent — with the SAME idempotency key, so Tole replays.
-    if (row.status === "creating") return toPublic(await this.sendCreate(row));
+    if (row.kind !== kind) throw new ToleError("conflict", "order_kind_mismatch", { code: "order_kind_mismatch" });
+    if (row.status === "creating") {
+      if (kind === "invoice" && !phone) throw new ToleError("validation", "bad_phone", { code: "bad_phone" });
+      if (phone) await this.d.repo.update(row.id, { note: `***${phone.slice(-4)}` } as Partial<PaymentRow>);
+      return toPublic(await this.sendCreate(row, phone));
+    }
     return this.refresh(row);
   }
 
@@ -131,10 +156,12 @@ export class PaymentService {
     return row ? this.refresh(row) : null;
   }
 
-  private async sendCreate(row: PaymentRow): Promise<PaymentRow> {
+  private async sendCreate(row: PaymentRow, phone: string | null = null): Promise<PaymentRow> {
     let outcome;
     try {
-      outcome = await this.d.client.createQr({ amount: row.amount }, row.idempotency_key);
+      outcome = row.kind === "invoice"
+        ? await this.d.client.createInvoice({ phoneNumber: phone!, amount: row.amount, comment: "iqtest.live — IQ тест нәтижесі" }, row.idempotency_key)
+        : await this.d.client.createQr({ amount: row.amount }, row.idempotency_key);
     } catch (e) {
       const err = e as ToleError;
       if (err.kind === "validation" || err.kind === "conflict" || err.kind === "not_found") {

@@ -581,6 +581,9 @@ h2{letter-spacing:-.02em}
   .word{font-size:28px!important}
 }
 /* pay modal */
+.pm-lbl{display:block;text-align:left;font-size:13.5px;font-weight:700;color:#2e2a5a;margin:4px 0 6px}.pm-in{width:100%;box-sizing:border-box;font:inherit;font-size:20px;font-weight:700;letter-spacing:.04em;padding:13px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:12px;text-align:center}.pm-in:focus{outline:none;border-color:#7c3aed}
+.pm-note{font-size:12.5px;color:#7a7a95;margin:0 0 12px}.pm-err{color:#dc2626;font-size:14px;font-weight:600;margin:0 0 10px}.pm-link{background:none;border:0;color:#4f46e5;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;margin:0 0 12px;text-decoration:underline}
+
 .pm{text-align:center}.pm-amt{font-size:30px;font-weight:900;margin:4px 0 6px;color:#0f0d2e}.pm-msg{color:#5b5b76;margin:0 0 14px}
 .pm-go{display:block;width:100%;text-decoration:none;margin-bottom:12px}.pm-wait{display:flex;gap:10px;align-items:center;justify-content:center;font-size:13.5px;color:#5b5b76;margin:0 0 12px;text-align:left}
 .pm-dot{flex:none;width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pmPulse 1.4s infinite}@keyframes pmPulse{70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
@@ -756,7 +759,7 @@ h2{letter-spacing:-.02em}
         <div><i>🎯</i><b data-kz="IQ бағасы">Оценка IQ</b><span data-kz="және деңгейіңіз">и ваш уровень</span></div>
         <div><i>📊</i><b data-kz="Процентиль">Процентиль</b><span data-kz="басқалармен салыстыру">сравнение с другими</span></div>
         <div><i>🕸</i><b data-kz="5 қабілет профилі">Профиль 5 способностей</b><span data-kz="логикадан кеңістікке дейін">от логики до пространства</span></div>
-        <div><i>🧭</i><b data-kz="Ойлау стилі">Стиль мышления</b><span data-kz="мықты жақтарыңыз">ваши сильные стороны</span></div>
+        <div><i>🏛</i><b data-kz="Тарихи тұлғалар">Исторические личности</b><span data-kz="Наполеон, Линкольнмен салыстыру">сравнение с Наполеоном, Линкольном</span></div>
         <div class="w2"><i>💡</i><b data-kz="Жауаптар талдауы">Разбор ответов</b><span id="pwReview"></span></div>
       </div>
 
@@ -772,7 +775,8 @@ h2{letter-spacing:-.02em}
         <h3 data-kz="Қалай төлеймін?">Как оплатить?</h3>
         <ol>
           <li data-kz="«Нәтижемді ашу» батырмасын басыңыз">Нажмите «Открыть мой результат»</li>
-          <li data-kz="Kaspi қосымшасында төлемді растаңыз">Подтвердите оплату в приложении Kaspi</li>
+          <li data-kz="Kaspi-ге тіркелген нөміріңізді жазыңыз — шот келеді">Введите номер, привязанный к Kaspi — придёт счёт</li>
+          <li data-kz="Kaspi қосымшасында шотты төлеңіз">Оплатите счёт в приложении Kaspi</li>
           <li data-kz="Нәтижеңіз осы бетте бірден ашылады">Результат сразу откроется на этой странице</li>
         </ol>
       </div>
@@ -826,10 +830,19 @@ h2{letter-spacing:-.02em}
 <canvas id="confetti"></canvas>
 <div class="modal" id="payModal"><div class="card pm">
   <h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
-  <div class="pm-amt"><span class="price">1 390 ₸</span></div>
-  <p class="pm-msg" id="pmMsg" data-kz="Төлем дайындалуда…">Готовим оплату…</p>
-  <a class="btn big cta pm-go hidden" id="pmGo" href="#" target="_blank" rel="noopener noreferrer" data-kz="Kaspi-да төлеу →">Оплатить в Kaspi →</a>
-  <p class="pm-wait hidden" id="pmWait"><i class="pm-dot"></i><span data-kz="Төлемді күтіп тұрмыз. Төлегеннен кейін нәтиже осы жерде өзі ашылады.">Ждём оплату. После оплаты результат откроется здесь автоматически.</span></p>
+  <div class="pm-amt"><span class="price"></span></div>
+  <div id="pmStep1">
+    <label class="pm-lbl" for="pmPhone" data-kz="Kaspi-ге тіркелген телефон нөміріңіз">Ваш номер, привязанный к Kaspi</label>
+    <input class="pm-in" id="pmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" maxlength="18">
+    <button class="btn big cta pm-go" id="pmSend" data-kz="Kaspi-ге шот жіберу →">Отправить счёт в Kaspi →</button>
+    <p class="pm-note" data-kz="Нөміріңізге Kaspi шоты келеді. Нөмір тек төлем үшін қолданылады.">На ваш номер придёт счёт в Kaspi. Номер используется только для оплаты.</p>
+  </div>
+  <div id="pmStep2" class="hidden">
+    <p class="pm-msg" id="pmMsg"></p>
+    <p class="pm-wait hidden" id="pmWait"><i class="pm-dot"></i><span data-kz="Kaspi қосымшасын ашып, келген шотты төлеңіз. Төлегеннен кейін нәтиже осы жерде өзі ашылады.">Откройте приложение Kaspi и оплатите пришедший счёт. После оплаты результат откроется здесь автоматически.</span></p>
+    <button class="pm-link" id="pmChange" type="button" data-kz="Нөмірді өзгерту">Изменить номер</button>
+  </div>
+  <p class="pm-err hidden" id="pmErr"></p>
   <div class="row"><button class="btn line" id="payClose" data-kz="Жабу">Закрыть</button><button class="btn line hidden" id="pmRetry" data-kz="Қайталау">Повторить</button></div>
 </div></div>
 <div class="modal" id="langModal"><div class="card" style="text-align:center">
