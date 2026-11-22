@@ -133,8 +133,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     let b: { lang?: string; n?: number; avoid?: string[] } = {};
     try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
     const { makeQuiz } = await import("../quizgen.ts");
-    let out = await makeQuiz(b);
-    if (!out.ok && out.error === "bad_reply") out = await makeQuiz(b); // one retry on an unusable reply
+    const out = await makeQuiz(b); // retries internally (up to 3 model calls)
     if (!out.ok) log.log("warn", "quizgen failed", { error: out.error.slice(0, 40) });
     send(res, out.ok ? 200 : 502, out);
     return true;
