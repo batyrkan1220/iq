@@ -5,7 +5,7 @@ src = Path(__file__).parent / "src"
 t = (src / "template.html").read_text(encoding="utf-8")
 g = (src / "gen.js").read_text(encoding="utf-8").replace(
     "if(typeof module!=='undefined')module.exports={buildQuestions,FAM};", "")
-app = (src / "i18n.js").read_text(encoding="utf-8") + "\n" + (src / "track.js").read_text(encoding="utf-8") + "\n" + (src / "vis.js").read_text(encoding="utf-8") + "\n" + (src / "app.js").read_text(encoding="utf-8")
+app = (src / "i18n.js").read_text(encoding="utf-8") + "\n" + (src / "track.js").read_text(encoding="utf-8") + "\n" + (src / "vis.js").read_text(encoding="utf-8") + "\n" + (src / "qv2.js").read_text(encoding="utf-8") + "\n" + (src / "app.js").read_text(encoding="utf-8")
 out = t.replace("/*GEN*/", g).replace("/*APP*/", app)
 (Path(__file__).parent / "index.html").write_text(out, encoding="utf-8")
 for d in ("kz", "ru"):

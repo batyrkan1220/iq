@@ -79,11 +79,19 @@ const LVLS=[0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2];
 const MAT=buildQuestions().map((m,i)=>({...m,lvl:LVLS[i]}));
 // лёгкий старт → «ага»-вопросы → рост сложности → пик → финиш на посильном задании
 const SEQ='T0 M0 T12 V0 A0 R0 V1 M3 V2 M4 N2 V3 T3 V4 V5 M7 V6 T13 A2 V7 V8 M6 M10 A5 P4 P1 T14 W0 D0 D1'.split(' ');
-const Q=SEQ.map(t=>{const k=t[0],i=+t.slice(1);
+const fromSeq=t=>{const k=t[0],i=+t.slice(1);
   if(k==='T')return{text:1,...TEXT[i]};if(k==='R')return{text:1,cat:'mem',...MEM[i]};if(k==='L')return{likert:1,text:1,...LIK[i],o:LIKO};if(k==='P')return{pat:1,cat:'spat',...PAT[i]};if(k==='A')return{ana:1,cat:'spat',...ANA[i]};if(k==='D')return{likert:1,demo:1,text:1,...DEMO[i]};if(k==='N')return{nmx:1,text:1,cat:'num',...NM[i]};if(k==='V')return{vq:1,...VIS[i]};
   if(k==='U')return{text:1,cat:'mem',q:'Какое число мы просили запомнить в середине теста?',o:['5893','5839','5398','8539','5938'],a:1,ex:'Число было 5839. Это задание на отложенное запоминание чисел.'};
-  if(k==='W')return{text:1,cat:'mem',q:'Какое слово мы просили запомнить в самом начале теста?',o:['Граница','Галактика','Горизонт','Гармония','Город'],a:2,ex:'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.'};return MAT[i]});
-Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
+  if(k==='W')return{text:1,cat:'mem',q:'Какое слово мы просили запомнить в самом начале теста?',o:['Граница','Галактика','Горизонт','Гармония','Город'],a:2,ex:'В начале теста мы просили запомнить слово «Горизонт». Это задание на отложенное запоминание.'};return MAT[i]};
+// Вопросы теста: база v2 (src/qv2.js). Казахские тексты из базы подключаются в словарь KZ.
+const Q=QV2.map(v=>{const reg=x=>{if(x&&x.ru&&x.kz&&x.kz!==x.ru)KZ[x.ru]=x.kz};
+  reg(v.question);(v.options||[]).forEach(reg);reg(v.explanation);if(v.memorize)reg(v.memorize.prompt);
+  if(v.type==='survey')return fromSeq(v.code);
+  const base={v2:1,fixed:1,code:v.code,cat:v.category,lvl:v.level,w:v.weight||0,q:v.question.ru,a:v.answer.index,ex:v.explanation?v.explanation.ru:''},
+    o=v.options.map(x=>x.svg?null:x.ru),svg=v.options.map(x=>x.svg||null);
+  if(v.image_svg||svg.some(Boolean))return{...base,img:v.image_svg||'',osvg:svg,o};
+  const r={...base,text:1,o};if(v.memorize){r.mem=v.memorize.digits.split('').map(Number);r.show=v.memorize.show_sec}return r});
+Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o||q.fixed)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
   const o=idx.map(k=>q.o[k]),na=idx.indexOf(q.a);Q[i]={...q,o,a:na}});
 Q.forEach((q,i)=>{if(!q.vq)return;const R=mkR(i*9173+57),idx=perm(R,q.opts.map((_,k)=>k));Q[i]={...q,opts:idx.map(k=>q.opts[k]),a:idx.indexOf(q.a)}});
 const SC=Q.map((q,i)=>i).filter(i=>!Q[i].likert),NS=SC.length;
@@ -125,8 +133,9 @@ function anaMain(q){let s=`<svg class="matrix" viewBox="0 0 330 230">${DEFS}`;
   s+=cell(15,120)+anaCell(q.C,65,170)+arr(170)+cell(215,120,1)+`<text x="265" y="188" text-anchor="middle" font-size="50" font-weight="900" fill="#2f6fe4">?</text>`;
   return uniq(s+'</svg>')}
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const optView=(q,k,sz)=>q.vq?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${q.opts[k](50,50)}</svg>`):q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
-const nOpts=q=>q.text&&!q.vq?q.o.length:q.opts.length;
+const svgSz=(s,sz)=>sz?s.replace(/width="80" height="80"/,`width="${sz}" height="${sz}"`):s;
+const optView=(q,k,sz)=>q.osvg?(q.osvg[k]?uniq(svgSz(q.osvg[k],sz)):`<b>${esc(T(q.o[k]))}</b>`):q.vq?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${q.opts[k](50,50)}</svg>`):q.ana?uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${anaCell(q.opts[k],50,50)}</svg>`):q.pat?patOpt(q.opts[k],sz?sz*1.3:0):q.text?`<b>${esc(T(q.o[k]))}</b>`:uniq(`<svg viewBox="0 0 100 100" width="${sz||80}" height="${sz||80}" style="vertical-align:middle">${DEFS}${FAM[q.fam].render(q.opts[k],50,50)}</svg>`);
+const nOpts=q=>q.osvg?q.osvg.length:q.text&&!q.vq?q.o.length:q.opts.length;
 
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
@@ -138,7 +147,7 @@ function begin(){TR('begin',{l:LANG});paceShown=false;shownI={};userName='';Q.fo
   clearInterval(tick);tick=setInterval(()=>{left--},1000)}
 function drawTimer(){return;const t=Math.max(left,0);$('timer').textContent=`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;$('timer').classList.toggle('low',left<=120)}
 const CATN={attn:'Внимательность',num:'Числовое мышление',logic:'Логика',verb:'Вербальное мышление',mem:'Кратковременная память',spat:'Пространственное мышление'};
-function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.text||q.vq?CATN[q.cat]:'Пространственное мышление')}
+function tagOf(q){return T(q.demo?'О вас':q.likert?'Стиль мышления':q.v2||q.text||q.vq?CATN[q.cat]:'Пространственное мышление')}
 function confetti(n){try{const c=$('confetti'),x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,C=['#4f46e5','#a855f7','#22c55e','#f59e0b','#ec4899','#06b6d4'];
   const P=Array.from({length:n},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*11,vy:-Math.random()*12-4,r:Math.random()*6+4,c:C[Math.random()*C.length|0],a:Math.random()*6,va:(Math.random()-.5)*.3}));
   const t0=performance.now();(function f(now){x.clearRect(0,0,W,H);const el=now-t0;P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-el/2200);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(el<2200)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})(t0)}catch(e){}}
@@ -161,9 +170,9 @@ function render(){const q=Q[cur];clearTimeout(memT);
     let t=q.show;const step=()=>{t--;if(t<=0){q.seen=1;$('skipBtn').classList.remove('invisible');render();return}const c=$('memc');if(c)c.innerHTML=L2(`Исчезнет через <b>${t}</b> сек.`,`<b>${t}</b> секундтан кейін жоғалады`);memT=setTimeout(step,1000)};
     memT=setTimeout(step,1000);return}
   $('skipBtn').classList.remove('invisible');
-  $('qtext').textContent=T(q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
-  $('qvis').innerHTML=q.vq?uniq(q.main()):q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
-  $('opts').className=q.vq?'opts vis':q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
+  $('qtext').textContent=T(q.v2||q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
+  $('qvis').innerHTML=q.img!==undefined?(q.img?uniq(q.img):''):q.vq?uniq(q.main()):q.nmx?nmMain(q):q.ana?anaMain(q):q.pat?patMain(q):q.text?'':matrixSVG(q);
+  $('opts').className=q.osvg?(q.osvg.some(Boolean)?'opts vis':'opts vis nums'):q.vq?'opts vis':q.nmx?'opts vis nums':q.demo?'opts':q.likert?'opts lik':q.text?'opts':'opts vis';
   let h='';for(let k=0;k<nOpts(q);k++)h+=q.demo?`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span><span>${T(q.o[k])}</span></button>`:q.likert?`<button class="opt lk${k}${ans[cur]===k?' sel':''}" data-i="${k}">${T(LIKO[k])}</button>`:`<button class="opt${ans[cur]===k?' sel':''}" data-i="${k}"><span class="l">${L[k]}</span>${optView(q,k)}</button>`;
   $('opts').innerHTML=h;
   $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
@@ -180,7 +189,7 @@ function inter(){const once=k=>!shownI[k]&&(shownI[k]=1);
   if(cur===Math.floor(TOTAL/2)&&!paceShown){showPace();return}
   if(cur===RADAT&&once('rad')){showRadar();return}
   if(TOTAL-cur===5&&once('prog')){showProg();return}}
-const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
+const GRP=[['Логика',q=>q.cat==='logic'],['Внимательность',q=>q.cat==='attn'],['Память',q=>q.cat==='mem'],['Числа и слова',q=>q.cat==='num'||q.cat==='verb'],['Пространство',q=>q.v2?q.cat==='spat':(!q.text&&!q.vq)||q.cat==='spat']];
 function showRadar(){const cx=110,cy=105,R=80,n=5;let s=`<svg viewBox="-40 0 300 210" width="300" height="210" style="max-width:100%">`;
   const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
   [1,.66,.33].forEach(f=>{s+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#e3e5f0"/>`});
@@ -206,6 +215,9 @@ $('skipBtn').onclick=()=>{if(cur<TOTAL-1){cur++;render()}else askFinish()};
 $('cNo').onclick=()=>{$('confirmModal').classList.remove('on');const i=ans.indexOf(null);if(i>=0){cur=i;render()}};
 $('cYes').onclick=()=>{$('confirmModal').classList.remove('on');finish()};
 
+// v2: салмақты балл (жеңіл 1, орташа 1.5, күрделі 2; max 42.5) → IQ = 70 + (балл/max)^1.15 × 75
+const WMAX=Q.reduce((s,q)=>s+(q.likert?0:(q.w||1)),0);
+function iqW(ok){const ws=Q.reduce((s,q,i)=>s+(ok[i]?(q.w||1):0),0);return Math.round(70+Math.pow(ws/WMAX,1.15)*75)}
 function iqFrom(raw){const m=NS*0.55,sd=NS/6;return Math.max(55,Math.min(150,Math.round(100+15*(raw-m)/sd)))}
 function pctOf(iq){const z=(iq-100)/15,t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return Math.round((z>0?1-p:p)*100)}
 function levelOf(iq){
@@ -317,7 +329,7 @@ function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(
   return s+'</svg>'}
 const RGRP=[['🧩','Логика','Логика',q=>q.cat==='logic'],['🔍','Внимательность','Внимание',q=>q.cat==='attn'],['🧠','Память','Память',q=>q.cat==='mem'],
   ['🔢','Числа и слова','Числа',q=>q.cat==='num'||q.cat==='verb'],['🧊','Пространственное мышление','Пространство',q=>(!q.text&&!q.vq)||q.cat==='spat']];
-const qTitle=q=>q.vq?T(q.q):q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
+const qTitle=q=>q.v2&&!q.mem?T(q.q):q.vq?T(q.q):q.nmx?T('Числовая матрица'):q.ana?T('Аналогия фигур'):q.pat?T('Дополните узор'):q.mem?T('Память')+': '+T(q.q):q.text?T(q.q):L2('Матрица · '+LV[q.lvl]+' сложность','Матрица · '+T(LV[q.lvl])+' күрделілік');
 function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i]};const yes=v=>v!==null&&v!==undefined&&v<=1;const has=k=>Q.some(q=>q.key===k);const st=[];
   if(has('prac'))st.push(yes(lk('prac'))?['🛠','Практик','Лучше усваиваете знания через действие и опыт.']:['📚','Теоретик','Сначала разбираетесь в принципах, потом действуете.']);
   if(has('det'))st.push(yes(lk('det'))?['🔍','Внимание к деталям','Замечаете мелочи, которые другие пропускают.']:['🌐','Целостное восприятие','Быстро схватываете суть, видите картину целиком.']);
@@ -326,7 +338,7 @@ function styleList(){const lk=k=>{const i=Q.findIndex(q=>q.key===k);return ans[i
   if(has('plan'))st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);return st}
 function showResult(re){if(!re)mailResult();
   const ok=Q.map((q,i)=>!q.likert&&ans[i]===q.a);const correct=ok.filter(Boolean).length;
-  const iq=iqFrom(correct),lv=levelOf(iq),used=TIME-Math.max(left,0),pc=Math.min(99,Math.max(1,pctOf(iq)));
+  const iq=iqW(ok),lv=levelOf(iq),used=TIME-Math.max(left,0),pc=Math.min(99,Math.max(1,pctOf(iq)));
   $('level').textContent=T(lv);$('shDate').textContent=new Date().toLocaleDateString('ru-RU');
   $('pctLine').innerHTML=L2(`Ваш результат выше, чем примерно у <b>${pc}%</b> людей`,`Нәтижеңіз адамдардың шамамен <b>${pc}%</b>-ынан жоғары`);
   $('fCorrect').textContent=`${correct}/${NS}`;$('fTime').textContent=`${Math.floor(used/60)}:${String(used%60).padStart(2,'0')}`;$('fPct').textContent=pc+'%';

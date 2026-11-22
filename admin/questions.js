@@ -8,14 +8,15 @@ box.innerHTML=`<div class="bar"><div class="seg" id="qsLang"><button data-l="kz"
 const CAT={attn:'Внимание',num:'Числа',logic:'Логика',verb:'Слова',mem:'Память',spat:'Пространство'};
 const L='АБВГДЕ';
 function load(){$('qsList').textContent='Загрузка…';const f=$('qsFrame');f.onload=()=>{setTimeout(()=>{try{draw(f.contentWindow)}catch(e){$('qsList').textContent='Ошибка: '+e.message}},300)};f.src=`/${LNG}/?notrack=1&adm=${Date.now()}`}
-function draw(w){const Q=w.eval('Q'),SEQ=w.eval('SEQ'),T=w.eval('T'),optView=w.eval('optView'),vis=q=>q.vq?w.eval('uniq')(q.main()):q.nmx?w.eval('nmMain')(q):q.ana?w.eval('anaMain')(q):q.pat?w.eval('patMain')(q):q.text?'':w.eval('matrixSVG')(q);
-  const prompt=q=>T(q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
-  const ty=q=>q.demo?'Демография':q.likert?'Анкета':q.vq?'Визуальный':q.nmx?'Числовая матрица':q.ana?'Аналогия':q.pat?'Узор':q.mem?'Память (цифры)':q.text?'Текст':'Матрица';
-  const items=Q.map((q,i)=>{const n=q.text&&!q.vq?q.o.length:q.opts?q.opts.length:0;let opts='';
-    for(let k=0;k<n;k++){const ok=!q.likert&&k===q.a;opts+=`<div class="qo${ok?' ok':''}"><span>${L[k]}</span>${q.text&&!q.vq?`<b>${esc(T(q.o[k]))}</b>`:optView(q,k,56)}</div>`}
+function draw(w){const Q=w.eval('Q'),SEQ=w.eval('SEQ'),T=w.eval('T'),optView=w.eval('optView'),vis=q=>q.img!==undefined?(q.img?w.eval('uniq')(q.img):''):q.vq?w.eval('uniq')(q.main()):q.nmx?w.eval('nmMain')(q):q.ana?w.eval('anaMain')(q):q.pat?w.eval('patMain')(q):q.text?'':w.eval('matrixSVG')(q);
+  const prompt=q=>T(q.v2||q.vq?q.q:q.nmx?'Какое число должно стоять на месте «?»':q.ana?'Первая пара фигур связана по правилу. Какая фигура продолжает вторую пару?':q.pat?'Какой фрагмент дополняет узор?':q.text?q.q:'Какая фигура должна стоять на месте «?»');
+  const TY={text:'Текст',matrix:'Матрица',visual:'Визуальный',analogy:'Аналогия',number_matrix:'Числовая матрица',memory_digits:'Память (цифры)'};
+  const ty=q=>q.v2?(q.mem?'Память (цифры)':q.img!==undefined?(q.osvg.some(Boolean)?'Визуальный':'Числовая матрица'):'Текст'):q.demo?'Демография':q.likert?'Анкета':q.vq?'Визуальный':q.nmx?'Числовая матрица':q.ana?'Аналогия':q.pat?'Узор':q.mem?'Память (цифры)':q.text?'Текст':'Матрица';
+  const items=Q.map((q,i)=>{const code=q.code||SEQ[i]||'',n=q.osvg?q.osvg.length:q.text&&!q.vq?q.o.length:q.opts?q.opts.length:0;let opts='';
+    for(let k=0;k<n;k++){const ok=!q.likert&&k===q.a;opts+=`<div class="qo${ok?' ok':''}"><span>${L[k]}</span>${q.text&&!q.vq&&!q.osvg?`<b>${esc(T(q.o[k]))}</b>`:optView(q,k,56)}</div>`}
     const mem=q.mem?`<div class="muted" style="margin:6px 0">Сначала показывается: <b style="font-size:18px;letter-spacing:4px;color:var(--ink)">${q.mem.join(' ')}</b> (${q.show} сек)</div>`:'';
-    const html=`<div class="card qc" data-s="${esc((i+1)+' '+SEQ[i]+' '+prompt(q)+' '+ty(q)).toLowerCase()}">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill p">№${i+1}</span><span class="pill">${SEQ[i]}</span><span class="pill">${ty(q)}</span>${q.cat?`<span class="pill">${CAT[q.cat]||q.cat}</span>`:''}${q.likert?'<span class="pill w">не влияет на балл</span>':''}</div>
+    const html=`<div class="card qc" data-s="${esc((i+1)+' '+code+' '+prompt(q)+' '+ty(q)).toLowerCase()}">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill p">№${i+1}</span><span class="pill">${code}</span>${q.w?`<span class="pill">вес ${q.w}</span>`:''}<span class="pill">${ty(q)}</span>${q.cat?`<span class="pill">${CAT[q.cat]||q.cat}</span>`:''}${q.likert?'<span class="pill w">не влияет на балл</span>':''}</div>
       <div style="font-weight:800;font-size:16px;margin:10px 0;white-space:pre-line">${esc(prompt(q))}</div>${mem}
       <div class="qv">${vis(q)}</div><div class="qos">${opts}</div>
       ${q.ex?`<div class="qx">✅ <b>Правильный ответ: ${L[q.a]}</b><br>${esc(T(q.ex))}</div>`:''}</div>`;return html});
