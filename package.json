@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "iqtest.live — IQ test platform (static files served by a tiny Node server)",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" }
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/tole/*.test.ts",
+    "tole:smoke": "node scripts/tole-sandbox-smoke.ts"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
 }

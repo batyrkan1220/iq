@@ -1,6 +1,8 @@
 /* ===== App ===== */
-const PRICE='1 390 ₸';
-const FREE=true; // временно: результат открывается без оплаты
+let PRICE='';
+let FREE=true; // admin-managed: /api/pay/config → paywall_enabled + price_kzt (Render server)
+function fmtKzt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸'}
+const PAYCFG=fetch('/api/pay/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c&&c.enabled&&c.priceKzt){FREE=false;PRICE=fmtKzt(c.priceKzt);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE)}}).catch(()=>{});
 const TEXT=[
  {cat:'attn',q:'У фермера 15 овец. Все, кроме 8, погибли. Сколько овец осталось?',o:['7','8','15','0','3'],a:1,ex:'«Все, кроме 8» означает, что выжили ровно 8 овец. Вопрос проверяет внимательность к формулировке.'},
  {cat:'num',q:'Какого числа не хватает?\n5, 10, 15, 20, __, 30',o:['22','24','25','26','28'],a:2,ex:'Каждое число больше предыдущего на 5: 20 + 5 = 25.'},
@@ -211,20 +213,38 @@ function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearIn
   const steps=[...document.querySelectorAll('#steps li')];steps.forEach(s=>s.className='');
   steps.forEach((s,i)=>setTimeout(()=>{if(i)steps[i-1].className='done';s.className='act'},i*900));
   const T=steps.length*900+200,t0=performance.now();(function tk(now){const p=Math.min(1,(now-t0)/T);$('ringC').style.strokeDashoffset=327*(1-p);$('ringP').textContent=Math.round(p*100)+'%';if(p<1)requestAnimationFrame(tk)})(t0);
-  setTimeout(()=>FREE?showResult():showPaywall(),steps.length*900+300)}
+  setTimeout(()=>PAYCFG.then(()=>FREE?showResult():showPaywall()),steps.length*900+300)}
 function showPaywall(re){
   const done=ans.filter(x=>x!==null).length,used=TIME-Math.max(left,0);
   $('pwStats').textContent=L2(`Вы ответили на ${done} из ${TOTAL} вопросов за ${Math.floor(used/60)} мин ${used%60} с — ваш IQ уже рассчитан.`,`Сіз ${TOTAL} сұрақтың ${done}-іне ${Math.floor(used/60)} мин ${used%60} с ішінде жауап бердіңіз — IQ-іңіз есептеліп қойды.`);
   const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
   const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
   $('pwRadar').innerHTML=radarSVG(gv,RGRP.map(g=>T(g[2])));
-  const st=styleList()[0];
-  $('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2(`Ещё ${styleList().length-1} черты — в полном отчёте.`,`Тағы ${styleList().length-1} ерекшелік — толық есепте.`)}</span></div>`;
+  const st=styleList()[0];$('pwGift').style.display=st?'':'none';
+  if(st)$('pwGift').innerHTML=`<div class="ge">${st[0]}</div><div><small>${L2('🎁 Уже открыто бесплатно','🎁 Тегін ашылды')}</small><b>${L2('Ваш стиль обучения','Сіздің үйрену стиліңіз')}: ${T(st[1])}</b><span>${T(st[2])} ${L2(`Ещё ${styleList().length-1} черты — в полном отчёте.`,`Тағы ${styleList().length-1} ерекшелік — толық есепте.`)}</span></div>`;
   $('pwReview').textContent=L2(`объяснение всех ${NS} вопросов`,`барлық ${NS} сұрақтың түсіндірмесі`);
   show('paywall');if(!re)confetti(70);pwObs()}
-$('payBtn').onclick=$('payBtn2').onclick=()=>TR('pay_click')||$('payModal').classList.add('on');
-$('payClose').onclick=()=>$('payModal').classList.remove('on');
-$('demoUnlock').onclick=()=>{$('payModal').classList.remove('on');showResult()};
+const PAY_FN='/api/pay';
+function uuid4(){try{return crypto.randomUUID()}catch(e){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}}
+function orderId(){let o=null;try{o=sessionStorage.getItem('iq_order')}catch(e){}if(!o){o=uuid4();try{sessionStorage.setItem('iq_order',o)}catch(e){}}return o}
+async function payApi(action){const r=await fetch(PAY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,orderId:orderId(),visitId:VID})});let j={};try{j=await r.json()}catch(e){}return{http:r.status,...j}}
+const PM={timer:null,busy:false};
+function pmView(v){const msg=$('pmMsg'),go=$('pmGo'),wait=$('pmWait'),retry=$('pmRetry');go.classList.add('hidden');wait.classList.add('hidden');retry.classList.add('hidden');
+  const set=(ru,kz)=>{msg.textContent=L2(ru,kz)};
+  if(v.paid){set('Оплата получена ✓','Төлем қабылданды ✓');clearInterval(PM.timer);TR('paid');setTimeout(()=>{$('payModal').classList.remove('on');showResult()},700);return}
+  if(v.status==='pending'&&v.paymentUrl){set('Нажмите кнопку — откроется Kaspi.','Батырманы басыңыз — Kaspi ашылады.');go.href=v.paymentUrl;go.classList.remove('hidden');wait.classList.remove('hidden');return}
+  if(v.status==='creating'||v.status==='processing'||v.status==='outcome_unknown'){set('Готовим оплату…','Төлем дайындалуда…');if(v.status==='creating'&&v.retryable)retry.classList.remove('hidden');return}
+  if(v.status==='expired'||v.status==='cancelled'||v.status==='failed'||v.status==='rejected'){set('Оплата не прошла. Попробуйте ещё раз.','Төлем өтпеді. Қайта байқап көріңіз.');retry.dataset.fresh='1';retry.classList.remove('hidden');clearInterval(PM.timer);return}
+  if(v.http===403){set('Оплата сейчас не требуется.','Қазір төлем қажет емес.');clearInterval(PM.timer);setTimeout(()=>{$('payModal').classList.remove('on');showResult()},900);return}
+  if(v.http===429){set('Слишком много попыток. Попробуйте через несколько минут.','Тым көп әрекет. Бірнеше минуттан кейін қайталаңыз.');retry.classList.remove('hidden');return}
+  set('Оплата временно недоступна. Попробуйте позже.','Төлем уақытша қолжетімсіз. Кейінірек қайталаңыз.');retry.classList.remove('hidden')}
+async function pmCall(action){if(PM.busy)return;PM.busy=true;try{pmView(await payApi(action))}catch(e){pmView({http:0})}finally{PM.busy=false}}
+function pmOpen(){TR('pay_click');$('payModal').classList.add('on');pmView({status:'creating'});pmCall('create');clearInterval(PM.timer);
+  PM.timer=setInterval(()=>{if(!$('payModal').classList.contains('on')||document.hidden)return;pmCall('status')},3000)}
+$('payBtn').onclick=$('payBtn2').onclick=pmOpen;
+$('pmRetry').onclick=()=>{if($('pmRetry').dataset.fresh){delete $('pmRetry').dataset.fresh;try{sessionStorage.removeItem('iq_order')}catch(e){}}pmOpen()};
+$('payClose').onclick=()=>{$('payModal').classList.remove('on');clearInterval(PM.timer)};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('payModal').classList.contains('on'))pmCall('status')});
 function radarSVG(vals,labels){const cx=130,cy=96,Rr=70,n=vals.length;const pt=(i,r)=>{const an=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(an),cy+r*Math.sin(an)]};
   let s=`<svg viewBox="0 0 260 200" width="260" height="200">`;
   [1,.66,.33].forEach(f=>{s+=`<polygon points="${vals.map((_,i)=>pt(i,Rr*f).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.18)"/>`});

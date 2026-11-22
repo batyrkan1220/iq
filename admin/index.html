@@ -125,14 +125,24 @@ code.url{display:block;padding:12px;background:#f5f3ff;border:1px solid #ddd6fe;
   </div>
 
   <div id="t-py" class="hide">
-    <div class="note">Kaspi Pay әлі қосылмаған — сайттағы тест қазір тегін (FREE режимі). Kaspi қосылғанда төлемдер осы жерге автоматты түседі. Әзірге төлемді қолмен енгізуге болады.</div>
-    <div class="card" style="margin-bottom:12px"><h3>Төлемді қолмен қосу</h3>
-      <form class="form" id="pyF"><label class="fld"><span>Сомасы, ₸</span><input type="number" id="pyA" value="1390" min="0" required></label>
-      <label class="fld"><span>Статус</span><select id="pyS"><option value="paid">paid — төленді</option><option value="pending">pending — күтуде</option><option value="refund">refund — қайтарылды</option></select></label>
+    <div class="card" style="margin-bottom:12px"><h3>Төлем баптаулары</h3>
+      <form class="form" id="psF">
+        <label class="fld"><span>Нәтижені ашу бағасы, ₸</span><input type="number" id="psPrice" min="1" max="100000000" step="1" placeholder="мысалы, 1990" required></label>
+        <label class="fld"><span>Төлем (paywall)</span><select id="psOn"><option value="false">Өшірулі — нәтиже тегін көрсетіледі</option><option value="true">Қосулы — нәтиже төлемнен кейін ашылады</option></select></label>
+        <button class="btn">Сақтау</button></form>
+      <div class="err" id="psErr"></div>
+      <div class="muted" id="psInfo" style="margin-top:8px;font-size:13px"></div>
+      <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">Tole кілттері қайда сақталады?</summary>
+        <p class="muted" style="font-size:12.5px;line-height:1.55">Кілттер бұл бетте сақталмайды. Олар Render → iqtest-live → Environment бөлімінде тұрады: <code>TOLE_API_KEY</code>, <code>TOLE_ENV</code> (sandbox / live), <code>TOLE_CONNECTION_ID</code>, <code>TOLE_WEBHOOK_SECRET</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>. Webhook мекенжайы: <code>https://iqtest.live/api/tole/webhook</code></p></details>
+    </div>
+    <div class="grid kpis" id="pyK" style="margin-bottom:12px"></div>
+    <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Орта</th><th>Төленді</th><th>Tole ID</th><th>Тапсырыс</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
+    <details class="card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">Төлемді қолмен қосу</summary>
+      <form class="form" id="pyF" style="margin-top:10px"><label class="fld"><span>Сомасы, ₸</span><input type="number" id="pyA" min="0" required></label>
+      <label class="fld"><span>Статус</span><select id="pyS"><option value="paid">paid — төленді</option><option value="pending">pending — күтуде</option><option value="refunded">refunded — қайтарылды</option></select></label>
       <label class="fld"><span>Kaspi ID / түбіртек</span><input id="pyE"></label>
       <label class="fld"><span>Ескертпе</span><input id="pyN"></label>
-      <button class="btn">Қосу</button></form><div class="err" id="pyErr"></div></div>
-    <div class="tw"><table><thead><tr><th>Уақыты</th><th>Сомасы</th><th>Статус</th><th>Провайдер</th><th>ID</th><th>Ескертпе</th></tr></thead><tbody id="pyB"></tbody></table></div>
+      <button class="btn">Қосу</button></form><div class="err" id="pyErr"></div></details>
   </div>
 
   <div id="t-qs" class="hide"></div>
@@ -284,8 +294,24 @@ async function loadLg(){let q=sb.from('events').select('*').gte('created_at',R.f
 $('lgT').onchange=()=>load();
 
 // ---------- payments ----------
-async function loadPy(){const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
-  $('pyB').innerHTML=data.length?data.map(p=>`<tr><td>${fmtT(p.created_at)}</td><td><b>${(p.amount||0).toLocaleString('ru-RU')} ₸</b></td><td><span class="pill ${p.status==='paid'?'ok':p.status==='refund'?'bad':'w'}">${esc(p.status)}</span></td><td>${esc(p.provider)}</td><td class="muted">${esc(p.ext_id||'')}</td><td class="muted">${esc(p.note||'')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">Төлем әзірге жоқ</td></tr>'}
+const PYS={paid:['төленді','ok'],partially_refunded:['ішінара қайтарылды','w'],refunded:['қайтарылды','bad'],pending:['күтуде','w'],creating:['жасалуда','p'],processing:['өңделуде','p'],outcome_unknown:['нәтижесі белгісіз','bad'],cancelled:['бас тартылды','bad'],expired:['мерзімі өтті','bad'],failed:['сәтсіз','bad'],rejected:['қабылданбады','bad'],refund:['қайтарылды','bad']};
+const money=n=>(Math.round(n||0)).toLocaleString('ru-RU')+' ₸';
+async function loadPaySettings(){const {data,error}=await sb.from('app_settings').select('key,value').in('key',['price_kzt','paywall_enabled']);if(error){$('psErr').textContent=error.message;return}
+  const m=Object.fromEntries((data||[]).map(x=>[x.key,x.value]));$('psPrice').value=Number.isInteger(m.price_kzt)?m.price_kzt:'';$('psOn').value=m.paywall_enabled===true?'true':'false';
+  try{const c=await (await fetch('/api/pay/config',{cache:'no-store'})).json();
+    $('psInfo').innerHTML=c.enabled?`✅ Сайтта төлем қосулы: <b>${money(c.priceKzt)}</b>`:(m.paywall_enabled===true&&Number.isInteger(m.price_kzt)?'⚠️ Төлем қосулы, бірақ сервер дайын емес: Render-де Tole кілттерін тексеріңіз (баға жаңа сақталған болса, 30 секунд күтіңіз).':'ℹ️ Төлем өшірулі — нәтиже тегін көрсетіледі.')}catch(e){$('psInfo').textContent=''}}
+$('psF').onsubmit=async e=>{e.preventDefault();$('psErr').textContent='';const p=parseInt($('psPrice').value,10);if(!(p>=1&&p<=100000000)){$('psErr').textContent='Баға 1-ден 100 000 000-ға дейінгі бүтін сан болуы керек';return}
+  const who=(await sb.auth.getUser()).data?.user?.email||null,now=new Date().toISOString();
+  const {error}=await sb.from('app_settings').upsert([{key:'price_kzt',value:p,updated_at:now,updated_by:who},{key:'paywall_enabled',value:$('psOn').value==='true',updated_at:now,updated_by:who}]);
+  if(error){$('psErr').textContent=error.message;return}$('psInfo').textContent='Сақталды. Сайтта 30 секунд ішінде жаңарады.';setTimeout(loadPaySettings,1500)};
+async function loadPy(){loadPaySettings();
+  const {data,error}=await sb.from('payments').select('*').gte('created_at',R.from).lt('created_at',R.to).order('created_at',{ascending:false}).limit(1000);if(error)throw error;
+  const live=data.filter(p=>p.environment!=='sandbox'),paid=live.filter(p=>p.status==='paid'||p.status==='partially_refunded');
+  const rev=paid.reduce((s,p)=>s+(p.amount||0),0),open=live.filter(p=>['pending','creating','processing'].includes(p.status)).length,
+    bad=live.filter(p=>['expired','cancelled','failed','rejected'].includes(p.status)).length,unk=live.filter(p=>p.status==='outcome_unknown').length,
+    orders=live.filter(p=>p.provider==='tole').length,conv=orders?Math.round(paid.filter(p=>p.provider==='tole').length/orders*100):0;
+  $('pyK').innerHTML=[['Табыс',money(rev)],['Төленген',paid.length],['Орташа чек',paid.length?money(rev/paid.length):'—'],['Күтуде',open],['Өтпеген',bad],['Тапсырыс → төлем',orders?conv+'%':'—']].map(k=>`<div class="card kpi"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')+(unk?`<div class="card kpi" style="border-color:#f87171"><small>Нәтижесі белгісіз — тексеріңіз</small><b>${unk}</b></div>`:'');
+  $('pyB').innerHTML=data.length?data.map(p=>{const s=PYS[p.status]||[p.status,'w'];return `<tr><td>${fmtT(p.created_at)}</td><td><b>${money(p.amount)}</b></td><td><span class="pill ${s[1]}">${esc(s[0])}</span></td><td class="muted">${esc(p.environment||p.provider||'')}</td><td class="muted">${p.paid_at?fmtT(p.paid_at):''}</td><td class="muted" title="${esc(p.tole_id||p.ext_id||'')}">${esc((p.tole_id||p.ext_id||'').slice(0,8))}</td><td class="muted" title="${esc(p.order_id||'')}">${esc((p.order_id||'').slice(0,8))}</td><td class="muted">${esc(p.last_error_code||p.note||'')}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Төлем әзірге жоқ</td></tr>'}
 $('pyF').onsubmit=async e=>{e.preventDefault();$('pyErr').textContent='';const {error}=await sb.from('payments').insert({amount:+$('pyA').value,status:$('pyS').value,ext_id:$('pyE').value||null,note:$('pyN').value||null,provider:'manual'});
   if(error){$('pyErr').textContent=error.message;return}$('pyE').value=$('pyN').value='';loadPy()};
 

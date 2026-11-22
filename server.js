@@ -3,6 +3,7 @@ const http = require('http'), fs = require('fs'), path = require('path'), zlib =
 const ROOT = __dirname, PORT = process.env.PORT || 10000;
 const ALLOW = [/^\/index\.html$/, /^\/kz\//, /^\/ru\//, /^\/admin\//, /^\/privacy\//, /^\/oferta\//, /^\/assets\//, /^\/favicon\.(ico|svg|png)$/, /^\/robots\.txt$/];
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.webp': 'image/webp' };
+let apiMod = null;
 const SEC = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'SAMEORIGIN' };
 function send(req, res, file, status) {
   fs.readFile(file, (err, buf) => {
@@ -19,6 +20,11 @@ function notFound(req, res) { res.writeHead(302, { ...SEC, Location: '/' }); res
 http.createServer((req, res) => {
   let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { return notFound(req, res); }
   if (p === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
+  if (p.startsWith('/api/')) {
+    // Payments API (Tole). Loaded lazily; secrets are read from Render env vars inside lib/tole/http.ts.
+    apiMod ??= import('./lib/tole/http.ts');
+    return apiMod.then(m => m.handleApi(req, res, p)).catch(() => { if (!res.headersSent) { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end('{"error":"internal"}'); } });
+  }
   // canonical host: www → apex
   const host = (req.headers.host || '').toLowerCase();
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }

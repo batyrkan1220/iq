@@ -580,6 +580,11 @@ h2{letter-spacing:-.02em}
   .modal h2{font-size:19px}
   .word{font-size:28px!important}
 }
+/* pay modal */
+.pm{text-align:center}.pm-amt{font-size:30px;font-weight:900;margin:4px 0 6px;color:#0f0d2e}.pm-msg{color:#5b5b76;margin:0 0 14px}
+.pm-go{display:block;width:100%;text-decoration:none;margin-bottom:12px}.pm-wait{display:flex;gap:10px;align-items:center;justify-content:center;font-size:13.5px;color:#5b5b76;margin:0 0 12px;text-align:left}
+.pm-dot{flex:none;width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pmPulse 1.4s infinite}@keyframes pmPulse{70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.pm .hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -819,9 +824,14 @@ h2{letter-spacing:-.02em}
 </div>
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
-<div class="modal" id="payModal"><div class="card"><h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
-  <p data-kz="Мұнда Kaspi арқылы төлем болады (келесі қадамда қосамыз).">Здесь будет оплата через Kaspi (подключим на следующем шаге).</p>
-  <div class="row"><button class="btn line" id="payClose" data-kz="Жабу">Закрыть</button><button class="btn" id="demoUnlock" data-kz="Нәтижені көрсету (демо)">Показать результат (демо)</button></div></div></div>
+<div class="modal" id="payModal"><div class="card pm">
+  <h2 data-kz="Kaspi арқылы төлем">Оплата через Kaspi</h2>
+  <div class="pm-amt"><span class="price">1 390 ₸</span></div>
+  <p class="pm-msg" id="pmMsg" data-kz="Төлем дайындалуда…">Готовим оплату…</p>
+  <a class="btn big cta pm-go hidden" id="pmGo" href="#" target="_blank" rel="noopener noreferrer" data-kz="Kaspi-да төлеу →">Оплатить в Kaspi →</a>
+  <p class="pm-wait hidden" id="pmWait"><i class="pm-dot"></i><span data-kz="Төлемді күтіп тұрмыз. Төлегеннен кейін нәтиже осы жерде өзі ашылады.">Ждём оплату. После оплаты результат откроется здесь автоматически.</span></p>
+  <div class="row"><button class="btn line" id="payClose" data-kz="Жабу">Закрыть</button><button class="btn line hidden" id="pmRetry" data-kz="Қайталау">Повторить</button></div>
+</div></div>
 <div class="modal" id="langModal"><div class="card" style="text-align:center">
   <h2 style="margin-bottom:6px">Выберите язык теста</h2>
   <p style="margin-bottom:18px">Тест тілін таңдаңыз</p>
