@@ -19,7 +19,19 @@ box.innerHTML=`
  <details id="reKeyBox" style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">Ввести / заменить API-ключ</summary>
   <p class="muted" style="font-size:12px">console.anthropic.com → API Keys → Create Key. Ключ хранится только на сервере.</p>
   <div class="form"><label class="fld"><span>API-ключ Anthropic</span><input type="password" id="reKey" autocomplete="off" placeholder="sk-ant-…"></label><button class="btn" id="reKeyBtn">Сохранить</button></div><div class="err" id="reKeyErr"></div></details></div></details>
-<div class="card" id="reS1"><h3>1. Вопросы</h3>
+<div class="card" id="reQk" style="margin-bottom:12px;border-color:#ddd6fe;background:linear-gradient(180deg,#faf8ff,#fff)">
+ <h3 style="margin-bottom:4px">⚡ Быстрый запуск</h3><div class="muted" style="font-size:13px;margin-bottom:10px">Один клик: ИИ пишет 4 вопроса → картинки (FLUX) → озвучка → видео → сохранение. Можно сразу пачкой.</div>
+ <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+  <label class="fld"><span>Язык</span><select id="qkLang"><option value="kz">Казахский</option><option value="ru">Русский</option><option value="mix">По очереди KZ / RU</option></select></label>
+  <label class="fld"><span>Голос</span><select id="qkVoice"><option value="">Загрузка…</option></select></label>
+  <label class="fld"><span>Сколько видео</span><input id="qkN" type="number" min="1" max="30" value="1"></label>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qkGo" style="flex:1;min-width:200px">⚡ Создать</button><button class="btn sec hide" id="qkStop">⏹ Остановить после текущего</button></div>
+ <div class="muted" id="qkNote" style="font-size:12px;margin-top:8px">Пока идёт создание, держите эту вкладку открытой. Одно видео ≈ 1–2 мин. Расход ElevenLabs ≈ 400–500 символов на видео.</div>
+ <div id="qkQ" style="display:grid;gap:6px;margin-top:10px"></div>
+</div>
+<details class="card" id="reManual" style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:700">🛠 Ручной режим (пошагово, с правками)</summary><div style="margin-top:10px">
+<div id="reS1"><h3>1. Вопросы</h3>
  <div class="form">
   <label class="fld"><span>Источник вопросов</span><select id="reSrc"><option value="ai" selected>ИИ (Claude) придумает</option></select></label>
   <label class="fld"><span>Язык</span><select id="reLang"><option value="kz">Казахский</option><option value="ru">Русский</option></select></label>
@@ -29,13 +41,19 @@ box.innerHTML=`
  <button class="btn" id="reGen" style="width:100%">✨ ИИ: предложить вопросы</button><div class="err" id="reGenErr"></div>
  <div id="reQs" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:12px"></div>
 </div>
+</div></details>
 <div class="card hide" id="reS2" style="margin-top:12px"><h3>2. Озвучка: предложение</h3><div id="rePlan"></div></div>
 <div class="card hide" id="reS3" style="margin-top:12px"><h3>3. Видео</h3>
  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
   <canvas id="reCv" width="${W}" height="${H}" style="width:270px;height:480px;border-radius:14px;border:1px solid var(--line);background:#f7f8fb"></canvas>
   <div style="flex:1;min-width:240px"><div id="reStat" class="muted"></div><div class="fun"><div class="tr" style="height:12px;margin:10px 0"><i id="reProg" style="width:0"></i></div></div><div id="reOut"></div></div>
  </div></div>
-<div class="card" style="margin-top:12px"><h3>Созданные Reels</h3><div id="reHist" class="muted">—</div></div>`;
+<div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎬 Созданные Reels <span class="muted" id="reHistN" style="font-weight:500"></span></h3><button class="btn sec sm" id="reHistR">↻ Обновить</button></div>
+ <div id="reHist" class="rgal" style="margin-top:12px">—</div><button class="btn sec hide" id="reMore" style="width:100%;margin-top:12px">Показать ещё</button></div>
+<style>.rgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}.rgal .rv{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rgal .rvv{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#111;border:1px solid var(--line)}.rgal video{width:100%;height:100%;object-fit:cover;display:block;background:#111}
+.rgal .rvn{position:absolute;inset:0;display:grid;place-items:center;color:#cbd5e1;font-size:13px;text-align:center;padding:10px;background:#1f2937}.rgal .rvq{font-size:12px;line-height:1.35;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rgal .rvm{font-size:11px;color:var(--mut,#6b7280);display:flex;gap:6px;flex-wrap:wrap;align-items:center}@media(max-width:520px){.rgal{grid-template-columns:repeat(2,1fr);gap:10px}}</style>`;
 
 async function status(){try{const s=await RL({action:'status'});S.ai=s.connected;$('reInfoS').textContent=s.connected?'· подключён':'· не подключён';$('reInfo').innerHTML=s.connected?`<span class="pill ok">Подключено</span> Модель: <b>${esc(s.model)}</b>`:`<span class="pill w">Не подключено</span> Работает и без Claude — выберите «Готовая база».`;$('reKeyBox').open=!s.connected}catch(e){$('reInfo').innerHTML=`<span class="pill bad">Ошибка</span> ${esc(e.message)}`}}
 $('reFmt').onchange=()=>{const q=$('reFmt').value==='quiz';$('reSrc').closest('label').style.display=q?'none':''};$('reFmt').onchange();
@@ -120,7 +138,7 @@ function narr(vopt,st){return `<div class="card" style="background:#faf8ff;borde
 // Questions come only from AI (Claude via /api/reels/quiz). Previously used questions are sent so they are not repeated.
 async function usedQs(){const {data:prev}=await sb.from('reels').select('question').eq('format','quiz').order('created_at',{ascending:false}).limit(60);
   const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(String(x).replace(/\n/g,' '))));return used}
-async function aiQuiz(n,extra){const r=await fetch('/api/reels/quiz',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({lang:S.lang,n,avoid:[...(extra||[]),...await usedQs()]})});
+async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({lang:lang||S.lang,n,avoid:[...(extra||[]),...await usedQs()]})});
   const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — ИИ не может написать вопросы':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'). Нажмите ещё раз.');return QUIZ.fromAI(j.items)}
 async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGen'),true,'ИИ пишет вопросы… (≈20–40 сек)');
   try{S.set=await aiQuiz(4);drawSet()}
@@ -281,6 +299,8 @@ function drawFrame(ctx,D,t){const T=D.tl;ctx.textAlign='center';ctx.textBaseline
 
 // ---------- recording ----------
 function pickMime(){const c=['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.4D0028,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4;codecs=avc1,opus','video/mp4','video/webm;codecs=vp9,opus','video/webm'];return c.find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''}
+// MessageChannel yield is not throttled like setTimeout in background tabs
+const yieldMC=()=>new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>r();c.port2.postMessage(0)});
 // Frame-by-frame offline encoding (WebCodecs + mp4-muxer): no dropped frames even on a slow computer or a background tab → smooth 30 fps.
 async function wcCodecs(){if(!window.VideoEncoder||!window.AudioEncoder||!window.Mp4Muxer||!window.VideoFrame||!window.AudioData)return null;
   let vc=null;for(const c of ['avc1.640028','avc1.4d0028','avc1.42e028']){try{const r=await VideoEncoder.isConfigSupported({codec:c,width:W,height:H,bitrate:8e6,framerate:FPS});if(r.supported){vc=c;break}}catch(e){}}
@@ -293,8 +313,8 @@ async function recordWC(D,samples,dur,cc){const cv=$('reCv'),ctx=cv.getContext('
   const N=Math.ceil(dur*FPS),step=8192;for(let i=0;i<samples.length;i+=step){const part=samples.slice(i,Math.min(samples.length,i+step));
     const ad=new AudioData({format:'f32-planar',sampleRate:SR,numberOfFrames:part.length,numberOfChannels:1,timestamp:Math.round(i/SR*1e6),data:part});ae.encode(ad);ad.close()}
   for(let i=0;i<N;i++){if(err)throw err;const t=i/FPS;(D.draw||drawFrame)(ctx,D,t);const vf=new VideoFrame(cv,{timestamp:Math.round(t*1e6),duration:Math.round(1e6/FPS)});ve.encode(vf,{keyFrame:i%(FPS*2)===0});vf.close();
-    if(ve.encodeQueueSize>6)await new Promise(r=>{const w=()=>ve.encodeQueueSize>2?setTimeout(w,4):r();w()});
-    if(i%6===0){$('reProg').style.width=(cl(i/N)*100)+'%';await new Promise(r=>setTimeout(r,0))}}
+    if(ve.encodeQueueSize>6)while(ve.encodeQueueSize>2)await yieldMC();
+    if(i%6===0){$('reProg').style.width=(cl(i/N)*100)+'%';if(D.onProg)D.onProg(i/N);await yieldMC()}}
   await ve.flush();await ae.flush();if(err)throw err;ve.close();ae.close();muxer.finalize();$('reProg').style.width='100%';
   return new Blob([target.buffer],{type:'video/mp4'})}
 async function record(D,samples,dur){
@@ -308,12 +328,75 @@ async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d'
   await new Promise(res=>{const loop=()=>{const t=ac.currentTime-t0;(D.draw||drawFrame)(ctx,D,Math.max(0,t));$('reProg').style.width=(cl(t/dur)*100)+'%';if(t>=dur){res();return}requestAnimationFrame(loop)};requestAnimationFrame(loop)});
   rec.stop();await done;src.stop();ac.close();return new Blob(chunks,{type:rec.mimeType||mime||'video/webm'})}
 
-// ---------- history ----------
-async function loadHist(){const {data,error}=await sb.from('reels').select('*').order('created_at',{ascending:false}).limit(30);if(error){$('reHist').textContent=error.message;return}
-  $('reHist').innerHTML=data.length?data.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)"><div style="flex:1"><div class="muted" style="font-size:12px">${fmtT(r.created_at)} · ${esc(r.lang)} · ${r.format==='answer'?'жауабымен':'коммент'} · <span class="pill ${r.status==='done'?'ok':'w'}">${esc(r.status)}</span></div><div style="font-size:13px;color:var(--ink)">${esc((r.question&&r.question.q_screen||'').replace(/\n/g,' '))}</div></div>
-    ${r.video_path?`<button class="btn sec sm" data-p="${esc(r.video_path)}">⬇ Видео</button>`:''}</div>`).join(''):'<div class="empty">Пока пусто</div>';
-  $('reHist').querySelectorAll('button[data-p]').forEach(b=>b.onclick=async()=>{const {data:s}=await sb.storage.from('reels').createSignedUrl(b.dataset.p,3600,{download:b.dataset.p.split('/').pop()});if(s)location.href=s.signedUrl})}
+// ---------- history (video gallery, same size cards) ----------
+let HOFF=0;const HPAGE=24;
+async function loadHist(more){if(!more){HOFF=0;$('reHist').innerHTML='<div class="muted">Загрузка…</div>'}
+  const {data,error,count}=await sb.from('reels').select('id,created_at,lang,format,status,video_path,question',{count:'exact'}).order('created_at',{ascending:false}).range(HOFF,HOFF+HPAGE-1);
+  if(error){$('reHist').textContent=error.message;return}
+  const paths=data.filter(r=>r.video_path).map(r=>r.video_path);let urls={};
+  if(paths.length){const {data:su}=await sb.storage.from('reels').createSignedUrls(paths,3600*6);(su||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
+  const card=r=>{const u=r.video_path&&urls[r.video_path],q=(r.question&&r.question.q_screen||'').replace(/\n/g,' ');
+    return `<div class="rv"><div class="rvv">${u?`<video data-src="${esc(u)}#t=1" preload="none" controls playsinline></video>`:`<div class="rvn">${r.status==='done'?'Видео нет':'⏳ '+esc(r.status||'')}</div>`}</div>
+      <div class="rvm"><span>#${r.id}</span><span>${fmtT(r.created_at)}</span><span class="pill">${esc((r.lang||'').toUpperCase())}</span></div>
+      <div class="rvq" title="${esc(q)}">${esc(q)}</div>
+      ${u?`<button class="btn sec sm" data-p="${esc(r.video_path)}">⬇ Скачать</button>`:''}</div>`};
+  const html=data.map(card).join('');
+  if(!more)$('reHist').innerHTML=html||'<div class="empty">Пока пусто</div>';else $('reHist').insertAdjacentHTML('beforeend',html);
+  HOFF+=data.length;$('reHistN').textContent=count?`· ${count}`:'';$('reMore').classList.toggle('hide',!(count>HOFF));
+  lazyVids();
+  $('reHist').querySelectorAll('button[data-p]:not([data-b])').forEach(b=>{b.dataset.b=1;b.onclick=async()=>{const {data:s}=await sb.storage.from('reels').createSignedUrl(b.dataset.p,3600,{download:b.dataset.p.split('/').pop()});if(s)location.href=s.signedUrl}})}
+let IO=null;function lazyVids(){const vs=$('reHist').querySelectorAll('video[data-src]');if(!('IntersectionObserver' in window)){vs.forEach(v=>{v.src=v.dataset.src;v.preload='metadata';v.removeAttribute('data-src')});return}
+  IO=IO||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const v=e.target;v.preload='metadata';v.src=v.dataset.src;v.removeAttribute('data-src');IO.unobserve(v)}}),{rootMargin:'300px'});vs.forEach(v=>IO.observe(v))}
+$('reMore').onclick=()=>loadHist(true);$('reHistR').onclick=()=>loadHist();
+// only one video plays at a time
+document.addEventListener('play',e=>{if(e.target.closest&&e.target.closest('.rgal'))document.querySelectorAll('.rgal video').forEach(v=>{if(v!==e.target)v.pause()})},true);
 
-window.loadRe=async()=>{elStatus();status();loadHist();loadFonts()};
+// ---------- ⚡ quick launch / batch ----------
+const DEF_SET={stability:.45,similarity:.8,style:.25,speed:1.05};
+function kzText(t){return String(t).replace(/(^|[\s«(])қайсы\?/g,'$1қандай?').replace(/(^|[\s«(])Қайсы\?/g,'$1Қандай?').replace(/(жылы|қашан|қай жерде|қай қалада|қай елде)(\s+)туған(\b|\?|\s|$)/g,'$1$2туылған$3')}
+async function qkVoices(){try{const vs=await voices();const pv=localStorage.getItem('el_voice');const h=vs.find(v=>/^\s*Hale\b/i.test(v.name));const def=(vs.find(v=>v.id===pv)||h||vs[0]||{}).id;
+  $('qkVoice').innerHTML=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===def?'selected':''}>${esc(v.name)}</option>`).join('')}catch(e){$('qkVoice').innerHTML='<option value="">ElevenLabs не подключён</option>'}}
+$('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
+async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a})});
+  const j=await r.json().catch(()=>({}));if(!j.ok)return null;return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return null}}
+async function autoReel(lang,vid,vname,extraAvoid,st){
+  st('🤖 ИИ пишет вопросы…');const set=await aiQuiz(4,extraAvoid,lang);
+  st('🎨 Картинки + 🎙 озвучка…');const imgsP=Promise.all(set.map(illFor));
+  const vo=QUIZ.voices(set,lang);const parts=[];set.forEach((q,i)=>{parts.push(['q'+i,lang==='kz'?kzText(vo[i].q):vo[i].q]);parts.push(['a'+i,lang==='kz'?kzText(vo[i].a):vo[i].a])});
+  if(lang==='kz')set.forEach(q=>q.q=kzText(q.q));
+  const clips={},paths={};let n=0;
+  for(const [k,t] of parts){if(!t)continue;st(`🎙 Озвучка ${++n}/${parts.length}…`);const r=await tts(t,vid,vname,DEF_SET);clips[k]=await decode(r.url);paths[k]=r.job&&r.job.path}
+  const imgs=await imgsP;imgs.forEach((b,i)=>{if(b)set[i].img=b});
+  const D={set,draw:QUIZ.draw};D.tl=QUIZ.timeline(D,clips);
+  const clean=set.map(({img,...q})=>q);
+  const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
+  if(error)throw new Error(error.message);
+  const audio=QUIZ.mix(D.tl,clips);D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
+  const blob=await record(D,audio,D.tl.dur);
+  st('☁️ Сохраняем…');const ext=blob.type.includes('mp4')?'mp4':'webm',path=`${new Date().toISOString().slice(0,10)}/${row.id}.${ext}`;
+  const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(up.error)throw new Error('Загрузка: '+up.error.message);
+  await sb.from('reels').update({video_path:path,status:'done'}).eq('id',row.id);
+  return {id:row.id,qs:set.map(q=>q.q.replace(/\n/g,' ')),url:URL.createObjectURL(blob),ext,imgs:imgs.filter(Boolean).length}}
+let QK_STOP=false,QK_RUN=false;
+$('qkStop').onclick=()=>{QK_STOP=true;$('qkStop').textContent='Остановится после текущего…';$('qkStop').disabled=true};
+$('qkGo').onclick=async()=>{if(QK_RUN)return;const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
+  if(!vid){alert('Выберите голос (ElevenLabs должен быть подключён)');return}
+  const N=Math.max(1,Math.min(30,+$('qkN').value||1)),mode=$('qkLang').value;QK_RUN=true;QK_STOP=false;
+  busy($('qkGo'),true,`⏳ Создаём 0/${N}…`);$('qkStop').classList.toggle('hide',N<2);$('qkStop').disabled=false;$('qkStop').textContent='⏹ Остановить после текущего';
+  await loadFonts();const made=[];let ok=0,fail=0;
+  $('qkQ').innerHTML=Array.from({length:N},(_,i)=>`<div id="qkr${i}" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px"><b style="width:28px">${i+1}</b><span class="pill" id="qkl${i}">${mode==='mix'?(i%2?'RU':'KZ'):mode.toUpperCase()}</span><span id="qks${i}" class="muted" style="flex:1">В очереди</span></div>`).join('');
+  for(let i=0;i<N;i++){if(QK_STOP){for(let k=i;k<N;k++)$('qks'+k).textContent='Отменено';break}
+    const lang=mode==='mix'?(i%2?'ru':'kz'):mode;const stt=$('qks'+i);stt.classList.remove('muted');$('qkr'+i).style.borderColor='#a78bfa';
+    try{const r=await autoReel(lang,vid,vname,made,t=>{stt.textContent=t});made.push(...r.qs);ok++;
+      $('qkr'+i).style.borderColor='#86efac';stt.innerHTML=`✅ #${r.id} · ${esc(r.qs[0])}… ${r.imgs<4?`<span class="muted">(картинок ${r.imgs}/4, остальные — эмодзи)</span>`:''}`;
+      $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`)}
+    catch(e){fail++;$('qkr'+i).style.borderColor='#fca5a5';stt.innerHTML=`<span style="color:#b91c1c">❌ ${esc(e.message)}</span>`;
+      if(/ElevenLabs|quota|credits|ANTHROPIC_API_KEY/i.test(e.message)){for(let k=i+1;k<N;k++)$('qks'+k).textContent='Пропущено (см. ошибку выше)';break}}
+    busy($('qkGo'),true,`⏳ Создаём ${Math.min(i+2,N)}/${N}…`);loadHist()}
+  busy($('qkGo'),false,'⚡ Создать');$('qkStop').classList.add('hide');QK_RUN=false;
+  $('qkNote').innerHTML=`Готово: <b>${ok}</b> видео${fail?`, ошибок: <b style="color:#b91c1c">${fail}</b>`:''}. Все видео ниже в «Созданные Reels».`}
+window.addEventListener('beforeunload',e=>{if(QK_RUN){e.preventDefault();e.returnValue=''}});
+
+window.loadRe=async()=>{elStatus();status();loadHist();loadFonts();qkVoices()};
 window.__reelsTest={drawFrame,timeline,mixAudio,S,loadFonts};
 })();
