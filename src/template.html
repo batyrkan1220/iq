@@ -684,6 +684,7 @@ input,select,textarea{transition:border-color var(--dur),box-shadow var(--dur)}
   .hist .hi-pic{max-height:260px}}
 #payModal .row{display:flex;gap:8px;justify-content:center}#payModal .row .btn{flex:1;max-width:260px}
 .hero-txt .trust{justify-content:center}
+#wordTxt{font-size:clamp(22px,7.2vw,34px)!important;letter-spacing:.05em;line-height:1.2}
 /* layering: confetti never covers dialogs; sticky bars hide behind open dialogs */
 #confetti{z-index:25}.modal{z-index:40}.toast{z-index:45}
 body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-events:none}
@@ -712,9 +713,9 @@ body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-ev
         <div class="hero-txt">
           <span class="livepill"><i></i><span data-kz="Онлайн IQ тест · қазақша және орысша">Онлайн IQ-тест · на казахском и русском</span></span>
           <h1 data-kz="Сіздің &lt;em&gt;IQ&lt;/em&gt;-іңіз&lt;br&gt;қанша?">Какой у вас <em>IQ</em>?</h1>
-          <p data-kz="30 сұрақ арқылы IQ балыңызды, басқалар арасындағы орныңызды және мықты жақтарыңызды біліңіз. Шамамен 15 минут.">Ответьте на 30 вопросов и узнайте свой балл IQ, место среди других людей и сильные стороны. Около 15 минут.</p>
+          <p data-kz="25 сұрақ арқылы IQ балыңызды, басқалар арасындағы орныңызды және мықты жақтарыңызды біліңіз. Шамамен 12 минут.">Ответьте на 25 вопросов и узнайте свой балл IQ, место среди других людей и сильные стороны. Около 12 минут.</p>
           <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
-          <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~15 минут">⏱ ~15 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
+          <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~12 минут">⏱ ~12 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
         </div>
         <div class="demo hv" id="demo">
           <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
@@ -801,10 +802,10 @@ body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-ev
     </section>
     <section class="fin">
       <h2 data-kz="Дайынсыз ба?">Готовы?</h2>
-      <p data-kz="30 сұраққа жауап беріңіз де, IQ-іңізді және мықты жақтарыңызды біліңіз.">30 вопросов — и вы узнаете свой IQ и сильные стороны.</p>
+      <p data-kz="25 сұраққа жауап беріңіз де, IQ-іңізді және мықты жақтарыңызды біліңіз.">25 вопросов — и вы узнаете свой IQ и сильные стороны.</p>
       <div class="hcount" id="hcount2"></div>
       <button class="btn big cta" id="startBtn4" data-kz="Тестті бастау →">Начать тест →</button>
-      <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~15 минут">⏱ ~15 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
+      <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~12 минут">⏱ ~12 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
     </section>
     <footer class="ft">
       <div class="ft-l"><b>iqtest.live</b> © 2026</div>
@@ -991,8 +992,8 @@ body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-ev
   </div></div></div>
 <div class="modal" id="wordModal"><div class="card" style="text-align:center">
   <span class="tag" data-kz="Жадыға арналған тапсырма">Задание на память</span>
-  <h2 data-kz="Мына сөзді есте сақтаңыз">Запомните это слово</h2>
-  <div class="word" id="wordTxt">ГОРИЗОНТ</div>
+  <h2 data-kz="Мына кодты есте сақтаңыз">Запомните этот код</h2>
+  <div class="word" id="wordTxt">СИНИЙ БАРС — 47</div>
   <p data-kz="Біз оны тест соңында сұраймыз. Жазып алмаңыз — жадыңыз тексеріледі.">Мы спросим его в конце теста. Не записывайте — проверяется память.</p>
   <button class="btn big" id="wordBtn" data-kz="Есте сақтадым, бастау →">Запомнил(а), начать →</button></div></div>
 <div class="modal" id="radarModal"><div class="card" style="text-align:center">

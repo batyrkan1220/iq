@@ -63,7 +63,7 @@ const ANA=[
   opts:[{k:'sh',s:'triangle',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:0,ln:1},{k:'sh',s:'triangle',f:0,d:1,ln:1},{k:'sh',s:'triangle',f:2,d:1,ln:0},{k:'sh',s:'square',f:2,d:1,ln:1},{k:'sh',s:'triangle',f:1,d:1,ln:1}],a:0,
   ex:'Фигура закрашивается, и в ней появляется точка, остальное не меняется. Треугольник с линией тоже становится тёмным с точкой.'}
 ];
-const WORD='ГОРИЗОНТ';
+const WORD=(QV2_META.code_to_remember||{}).ru||'ГОРИЗОНТ';if(QV2_META.code_to_remember)KZ[WORD]=QV2_META.code_to_remember.kz;
 const DEMO=[
  {q:'Сколько вам лет?',o:['До 18','18–25','26–34','35–44','45–59','60 и старше'],key:'age'},
  {q:'Ваше образование?',o:['Среднее школьное','Среднее специальное (колледж)','Высшее (бакалавриат)','Высшее (магистратура и выше)','Учусь сейчас']}
@@ -90,14 +90,15 @@ const Q=QV2.map(v=>{const reg=x=>{if(x&&x.ru&&x.kz&&x.kz!==x.ru)KZ[x.ru]=x.kz};
   const base={v2:1,fixed:1,code:v.code,cat:v.category,lvl:v.level,w:v.weight||0,q:v.question.ru,a:v.answer.index,ex:v.explanation?v.explanation.ru:''},
     o=v.options.map(x=>x.svg?null:x.ru),svg=v.options.map(x=>x.svg||null);
   if(v.image_svg||svg.some(Boolean))return{...base,img:v.image_svg||'',osvg:svg,o};
-  const r={...base,text:1,o};if(v.memorize){r.mem=v.memorize.digits.split('').map(Number);r.show=v.memorize.show_sec}return r});
+  const r={...base,text:1,o};if(v.memorize){r.mem=v.memorize.digits.split('');r.mprompt=v.memorize.prompt&&v.memorize.prompt.ru;r.show=v.memorize.show_sec}return r});
 Q.forEach((q,i)=>{if(!q.text||q.likert||!q.o||q.fixed)return;const R=mkR(i*7717+31),idx=perm(R,q.o.map((_,k)=>k));
   const o=idx.map(k=>q.o[k]),na=idx.indexOf(q.a);Q[i]={...q,o,a:na}});
 Q.forEach((q,i)=>{if(!q.vq)return;const R=mkR(i*9173+57),idx=perm(R,q.opts.map((_,k)=>k));Q[i]={...q,opts:idx.map(k=>q.opts[k]),a:idx.indexOf(q.a)}});
 const SC=Q.map((q,i)=>i).filter(i=>!Q[i].likert),NS=SC.length;
 const TOTAL=Q.length,TIME=24*3600,L='АБВГДЕ';
 const LV=['лёгкая','средняя','высокая'];
-const CHEER={5:'Отличное начало! 👍',10:'Уже 10 вопросов позади — так держать!',15:'Отлично идёте! Дальше будет интереснее.',20:'Половина позади — так держать!'};
+const CHEER={5:'Отличное начало! 👍',10:'Уже 10 вопросов позади — так держать!',13:'Половина позади — так держать!',20:'Осталось всего 5 вопросов — финишная прямая! 🏁'};
+KZ['Осталось всего 5 вопросов — финишная прямая! 🏁']='Небәрі 5 сұрақ қалды — мәреге жақындадыңыз! 🏁';
 
 let _u=0;const uniq=s=>{const n=++_u;return s.replace(/id="(\w+)"/g,`id="$1_${n}"`).replace(/url\(#(\w+)\)/g,`url(#$1_${n})`)};
 function matrixSVG(q){const R=FAM[q.fam];let s=`<svg class="matrix" viewBox="0 0 330 330">${DEFS}`;
@@ -164,7 +165,7 @@ function render(){const q=Q[cur];clearTimeout(memT);
   $('dots').querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render()});
   const card=$('qcard');card.classList.remove('enter','enterBack');void card.offsetWidth;card.classList.add(window._back?'enterBack':'enter');window._back=false;
   if(q.mem&&!q.seen){ // фаза запоминания
-    $('qtext').textContent=T('Запомните эту последовательность цифр');
+    $('qtext').textContent=T(q.mprompt||'Запомните эту последовательность цифр');
     $('qvis').innerHTML=`<div class="memb"><div class="digs">${q.mem.map(d=>`<span>${d}</span>`).join('')}</div><div class="mbar"><i style="animation-duration:${q.show}s"></i></div></div><div class="fine" id="memc">${L2(`Исчезнет через <b>${q.show}</b> сек.`,`<b>${q.show}</b> секундтан кейін жоғалады`)}</div>`;
     $('opts').innerHTML='';$('skipBtn').classList.add('invisible');
     let t=q.show;const step=()=>{t--;if(t<=0){q.seen=1;$('skipBtn').classList.remove('invisible');render();return}const c=$('memc');if(c)c.innerHTML=L2(`Исчезнет через <b>${t}</b> сек.`,`<b>${t}</b> секундтан кейін жоғалады`);memT=setTimeout(step,1000)};
