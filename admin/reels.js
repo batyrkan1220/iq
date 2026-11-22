@@ -257,7 +257,26 @@ function drawFrame(ctx,D,t){const T=D.tl;ctx.textAlign='center';ctx.textBaseline
 
 // ---------- recording ----------
 function pickMime(){const c=['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.4D0028,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4;codecs=avc1,opus','video/mp4','video/webm;codecs=vp9,opus','video/webm'];return c.find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''}
-async function record(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const ac=new AudioContext({sampleRate:SR});await ac.resume();
+// Frame-by-frame offline encoding (WebCodecs + mp4-muxer): no dropped frames even on a slow computer or a background tab → smooth 30 fps.
+async function wcCodecs(){if(!window.VideoEncoder||!window.AudioEncoder||!window.Mp4Muxer||!window.VideoFrame||!window.AudioData)return null;
+  let vc=null;for(const c of ['avc1.640028','avc1.4d0028','avc1.42e028']){try{const r=await VideoEncoder.isConfigSupported({codec:c,width:W,height:H,bitrate:8e6,framerate:FPS});if(r.supported){vc=c;break}}catch(e){}}
+  let ac=null;for(const a of [['mp4a.40.2','aac'],['opus','opus']]){try{const r=await AudioEncoder.isConfigSupported({codec:a[0],sampleRate:SR,numberOfChannels:1,bitrate:192000});if(r.supported){ac=a;break}}catch(e){}}
+  return vc&&ac?{vc,ac}:null}
+async function recordWC(D,samples,dur,cc){const cv=$('reCv'),ctx=cv.getContext('2d');const {Muxer,ArrayBufferTarget}=window.Mp4Muxer;
+  const target=new ArrayBufferTarget();const muxer=new Muxer({target,fastStart:'in-memory',firstTimestampBehavior:'offset',video:{codec:'avc',width:W,height:H,frameRate:FPS},audio:{codec:cc.ac[1],numberOfChannels:1,sampleRate:SR}});
+  let err=null;const ve=new VideoEncoder({output:(c,m)=>muxer.addVideoChunk(c,m),error:e=>err=e});ve.configure({codec:cc.vc,width:W,height:H,bitrate:8e6,framerate:FPS,latencyMode:'quality',avc:{format:'avc'}});
+  const ae=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>err=e});ae.configure({codec:cc.ac[0],sampleRate:SR,numberOfChannels:1,bitrate:192000});
+  const N=Math.ceil(dur*FPS),step=8192;for(let i=0;i<samples.length;i+=step){const part=samples.slice(i,Math.min(samples.length,i+step));
+    const ad=new AudioData({format:'f32-planar',sampleRate:SR,numberOfFrames:part.length,numberOfChannels:1,timestamp:Math.round(i/SR*1e6),data:part});ae.encode(ad);ad.close()}
+  for(let i=0;i<N;i++){if(err)throw err;const t=i/FPS;(D.draw||drawFrame)(ctx,D,t);const vf=new VideoFrame(cv,{timestamp:Math.round(t*1e6),duration:Math.round(1e6/FPS)});ve.encode(vf,{keyFrame:i%(FPS*2)===0});vf.close();
+    if(ve.encodeQueueSize>6)await new Promise(r=>{const w=()=>ve.encodeQueueSize>2?setTimeout(w,4):r();w()});
+    if(i%6===0){$('reProg').style.width=(cl(i/N)*100)+'%';await new Promise(r=>setTimeout(r,0))}}
+  await ve.flush();await ae.flush();if(err)throw err;ve.close();ae.close();muxer.finalize();$('reProg').style.width='100%';
+  return new Blob([target.buffer],{type:'video/mp4'})}
+async function record(D,samples,dur){
+  try{const cc=await wcCodecs();if(cc)return await recordWC(D,samples,dur,cc)}catch(e){console.warn('WebCodecs failed, using realtime recorder',e)}
+  return recordRT(D,samples,dur)}
+async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const ac=new AudioContext({sampleRate:SR});await ac.resume();
   const buf=ac.createBuffer(1,samples.length,SR);buf.copyToChannel(samples,0);const src=ac.createBufferSource();src.buffer=buf;const dest=ac.createMediaStreamDestination();src.connect(dest);
   (D.draw||drawFrame)(ctx,D,0);const vs=cv.captureStream(FPS);const stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);
   const mime=pickMime();const rec=new MediaRecorder(stream,{mimeType:mime||undefined,videoBitsPerSecond:8e6,audioBitsPerSecond:192e3});const chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
