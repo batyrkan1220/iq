@@ -462,7 +462,7 @@ h2{letter-spacing:-.02em}
 .st-n{display:inline-block;margin:18px 0 8px;padding:4px 11px;border-radius:999px;background:#eef0f7;font-weight:700;font-size:13px;color:#33334d}
 .st h3{margin:0 0 6px;font-size:20px;font-weight:800;color:#0f0d2e}.st p{margin:0;color:#4b4b66;font-size:15.5px;line-height:1.5}
 .hist{width:min(1100px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);margin:36px 0 10px;border-radius:26px;background:#0b0d2b;color:#fff;display:grid;gap:22px;padding:26px 22px;overflow:hidden;text-align:left}
-@media(min-width:820px){.hist .hi-pic{height:330px}.hist{grid-template-columns:300px 1fr 300px;align-items:center;padding:34px 40px 0}.hist .hi-pic{align-self:end}.hist .hi-list{padding-bottom:34px}.hist .hi-mid{padding-bottom:34px}}
+@media(min-width:820px){.hist .hi-pic{height:330px}.hist{grid-template-columns:280px 1.3fr 290px;align-items:center;padding:34px 40px 0}.hist .hi-pic{align-self:end}.hist .hi-list{padding-bottom:34px}.hist .hi-mid{padding-bottom:34px}}
 .hi-pic{height:260px;display:flex;align-items:flex-end;justify-content:center;position:relative}
 .hi-pic img{height:100%;width:auto;max-width:100%;object-fit:contain;object-position:bottom;display:block;animation:hiF .6s ease;filter:drop-shadow(0 0 30px rgba(124,58,237,.25))}
 .hi-mono{width:150px;height:150px;border-radius:50%;margin-bottom:30px;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900;letter-spacing:-.03em;background:radial-gradient(circle at 30% 25%,#4f46e5,#1e1b4b 70%);box-shadow:0 0 0 8px rgba(124,58,237,.18),0 0 60px rgba(124,58,237,.45);animation:hiF .6s ease}
@@ -475,6 +475,24 @@ h2{letter-spacing:-.02em}
 .hi-row.on{color:#fff;font-weight:600}.hi-row b{font-weight:inherit;font-variant-numeric:tabular-nums}
 .hi-note{margin-top:12px;font-size:12.5px;line-height:1.45;color:#7c80a6}
 .hi-res .hi-row{color:#4b4b66;border-bottom-color:#eceef6}.hi-res .hi-row.me{color:#4f46e5;font-weight:800}.hi-res .hi-note{color:#8a8aa3}
+/* ===== landing unify ===== */
+:root{--lpw:min(1080px,calc(100vw - 32px))}
+#start{display:flex;flex-direction:column;gap:18px}
+#start>.hero-card,#start>.steps,#start>.hist{position:relative;left:auto;transform:none;margin:0;border-radius:28px;box-shadow:0 1px 0 rgba(20,20,60,.03),0 22px 48px -22px rgba(40,30,110,.28)}
+#start>.steps{background:linear-gradient(160deg,#ffffff 0%,#fbfaff 60%,#f4f1ff 100%);border:1px solid var(--line);padding:30px 22px 26px}
+#start>.steps h2{font-size:26px;line-height:1.15}
+#start .st-art{height:150px;border-radius:18px}
+#start .st-grid{gap:22px}
+#start .st-n{margin:14px 0 6px;background:#ede9fe;color:#5b21b6}
+#start>.hist{border:1px solid #1c1f4a}
+@media(min-width:820px){
+  .wrap:has(#start:not(.hidden)) header{width:var(--lpw);margin-left:calc((100% - var(--lpw))/2)}
+  #start>.hero-card,#start>.steps,#start>.hist{width:var(--lpw);margin-left:calc((100% - var(--lpw))/2)}
+  #start{gap:24px}
+  #start>.hero-card{padding:44px 48px 36px}#start>.hero-card .hero{grid-template-columns:1.15fr 1fr;gap:40px}#start>.hero-card h1{font-size:46px}
+  #start>.steps{padding:44px 48px 40px}#start>.steps h2{font-size:38px}#start .st-art{height:180px}#start .st-grid{gap:28px}
+  #start>.hist{padding:36px 48px 0}
+}
 </style>
 </head>
 <body>
