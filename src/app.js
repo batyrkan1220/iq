@@ -217,8 +217,8 @@ function finish(){TR('finish',{answered:ans.filter(a=>a!==null).length});clearIn
   show('email');TR('email_view');setTimeout(()=>{try{$('emIn').focus()}catch(e){}},350)}
 const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 function emSubmit(){const v=$('emIn').value.trim().toLowerCase(),er=$('emErr');
-  if(!EMAIL_RE.test(v)||v.length>254){er.textContent=L2('Введите корректный email, например name@mail.com','Дұрыс email жазыңыз, мысалы name@mail.com');er.classList.remove('hidden');return}
-  er.classList.add('hidden');try{localStorage.setItem('iq_email',v)}catch(e){}
+  if(!EMAIL_RE.test(v)||v.length>254){er.textContent=L2('Введите корректный email, например name@mail.com','Дұрыс email жазыңыз, мысалы name@mail.com');er.classList.remove('hidden');$('emIn').setAttribute('aria-invalid','true');$('emIn').focus();return}
+  er.classList.add('hidden');$('emIn').removeAttribute('aria-invalid');try{localStorage.setItem('iq_email',v)}catch(e){}
   sbIns('leads',{visit_id:VID,email:v,lang:LANG,marketing_consent:!!$('emConsent').checked});saveSession(v);TR('email',{consent:!!$('emConsent').checked});runAnalyze()}
 // A finished test, saved server-side so the emailed link can reopen it (Supabase test_sessions).
 function saveSession(email){const token=uuid4();try{localStorage.setItem('iq_session',token)}catch(e){}
@@ -226,7 +226,7 @@ function saveSession(email){const token=uuid4();try{localStorage.setItem('iq_ses
 const MAIL_FN='https://dlhejkmuyyqvjzjxbwbg.supabase.co/functions/v1/mail';
 function mailResult(){let t=null;try{t=localStorage.getItem('iq_session')}catch(e){}if(!t)return;
   setTimeout(()=>{fetch(MAIL_FN,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY},body:JSON.stringify({action:'result',token:t})}).catch(()=>{})},2500)}
-$('emBtn').onclick=emSubmit;$('emIn').addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()});
+$('emBtn').onclick=emSubmit;$('emIn').addEventListener('input',()=>{$('emIn').removeAttribute('aria-invalid');$('emErr').classList.add('hidden')});$('emIn').addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()});
 function runAnalyze(){show('analyze');const box=document.querySelector('#analyze .az');box.classList.remove('fin');
   const okA=Q.map((q,i)=>!q.likert&&ans[i]===q.a);
   const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>okA[i]).length;return idx.length?k/idx.length:0});
@@ -282,8 +282,9 @@ async function pmOpen(){TR('pay_click');$('payModal').classList.add('on');pmErr(
   else{pmStep(1);setTimeout(()=>$('pmPhone').focus(),50)}}
 $('pmPhone').addEventListener('input',e=>{e.target.value=pmPhoneFmt(e.target.value)});
 $('pmPhone').addEventListener('keydown',e=>{if(e.key==='Enter')$('pmSend').click()});
-$('pmSend').onclick=async()=>{const d=$('pmPhone').value.replace(/\D/g,'');if(!/^7\d{10}$/.test(d)){pmErr('Введите номер в формате +7 7XX XXX XX XX.','Нөмірді +7 7XX XXX XX XX түрінде жазыңыз.');return}
-  $('pmSend').disabled=true;TR('pay_phone');PM.phone=d;await pmApi('create',{method:'invoice',phone:d});$('pmSend').disabled=false;if(!$('pmStep2').classList.contains('hidden'))pmPoll()};
+$('pmSend').onclick=async()=>{const d=$('pmPhone').value.replace(/\D/g,'');if(!/^7\d{10}$/.test(d)){pmErr('Введите номер в формате +7 7XX XXX XX XX.','Нөмірді +7 7XX XXX XX XX түрінде жазыңыз.');$('pmPhone').setAttribute('aria-invalid','true');$('pmPhone').focus();return}
+  $('pmPhone').removeAttribute('aria-invalid');
+  $('pmSend').disabled=true;$('pmSend').setAttribute('aria-busy','true');TR('pay_phone');PM.phone=d;await pmApi('create',{method:'invoice',phone:d});$('pmSend').disabled=false;$('pmSend').removeAttribute('aria-busy');if(!$('pmStep2').classList.contains('hidden'))pmPoll()};
 $('pmChange').onclick=()=>{clearInterval(PM.timer);pmNewOrder();pmStep(1);pmErr();$('pmPhone').focus()};
 $('payBtn').onclick=$('payBtn2').onclick=pmOpen;
 $('pmRetry').onclick=async()=>{$('pmRetry').classList.add('hidden');if(PM.phone){await pmApi('create',{method:'invoice',phone:PM.phone});pmPoll()}else pmOpen()};

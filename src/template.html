@@ -646,6 +646,56 @@ h2{letter-spacing:-.02em}
 @media (max-width:360px){.az-brain{width:150px;height:150px}.az-pct b{font-size:32px}}
 .az.fin .az-pct b{animation:azPop .6s ease}@keyframes azPop{50%{transform:scale(1.25)}}
 @media (prefers-reduced-motion:reduce){.az-net,.az-net .az-nodes circle,.em-ic,.em-ic i{animation:none}}
+
+/* ===== Design tokens & polish layer (applies on top of all screens) ===== */
+:root{--r-sm:10px;--r-md:14px;--r-lg:22px;--dur:180ms;--ease:cubic-bezier(.2,.8,.2,1);--focus:0 0 0 3px #fff,0 0 0 6px rgba(79,70,229,.55);--sh-1:0 1px 2px rgba(20,20,60,.05),0 6px 18px -8px rgba(40,30,110,.18);--sh-2:0 14px 34px -12px rgba(40,30,110,.32)}
+html,body{overflow-x:hidden;overflow-x:clip}
+body{-webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
+p{max-width:75ch}
+:where(button,a,input,select,textarea,[tabindex]):focus{outline:none}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{box-shadow:var(--focus);outline:none}
+.btn{transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),filter var(--dur) var(--ease),background-color var(--dur)}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:disabled,.btn[aria-busy=true]{opacity:.6;cursor:not-allowed;transform:none;filter:none}
+.btn[aria-busy=true]::after{content:'';display:inline-block;width:14px;height:14px;margin-left:8px;vertical-align:-2px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:sp .7s linear infinite}
+.btn.line:hover{border-color:#c7c9f5;background:#fafaff}
+.opt{transition:border-color var(--dur),background-color var(--dur),transform var(--dur) var(--ease),box-shadow var(--dur)}
+@media (hover:hover){.opt:hover{box-shadow:0 6px 16px -10px rgba(79,70,229,.45);transform:translateY(-1px)}}
+.lsw button{min-height:34px;min-width:44px;transition:background-color var(--dur),color var(--dur)}
+.lsw button:not(.on):hover{color:var(--ink);background:#f1f1fb}
+input,select,textarea{transition:border-color var(--dur),box-shadow var(--dur)}
+.em-in:focus-visible,.pm-in:focus-visible{box-shadow:0 0 0 4px rgba(124,58,237,.18);border-color:#7c3aed}
+.em-in[aria-invalid=true],.pm-in[aria-invalid=true]{border-color:#dc2626;box-shadow:0 0 0 4px rgba(220,38,38,.12)}
+/* trust micro-copy under CTAs */
+.trust{list-style:none;display:flex;flex-wrap:wrap;gap:6px 14px;padding:0;margin:12px 0 0;font-size:13px;font-weight:600;color:#55597a}
+.trust li{white-space:nowrap}
+.fin .trust{justify-content:center}
+.trust.sm{justify-content:center;font-size:12.5px;margin:-4px 0 12px;gap:4px 12px}
+/* hero: CTA lives in the text column */
+.hero-txt .btn.big.cta{margin-top:18px}
+@media (min-width:640px){.hero-txt .trust{max-width:440px;justify-content:center}}
+@media (min-width:820px){.hero-txt .btn.big.cta{max-width:440px}#start>.hero-card{padding-bottom:44px}}
+/* tablet: keep landing sections inside the column (no horizontal overflow) */
+@media (max-width:819px){#start>.steps,#start>.hist{width:auto}}
+@media (min-width:640px) and (max-width:819px){
+  #start .st-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}#start .st{min-width:0}#start .st-art{overflow:hidden}#start .st-art{height:120px}#start .st-card{transform:scale(.82)}
+  #start .st h3{font-size:16px}#start .st p{font-size:13.5px}
+  .hist .hi-pic{max-height:260px}}
+#payModal .row{display:flex;gap:8px;justify-content:center}#payModal .row .btn{flex:1;max-width:260px}
+.hero-txt .trust{justify-content:center}
+/* layering: confetti never covers dialogs; sticky bars hide behind open dialogs */
+#confetti{z-index:25}.modal{z-index:40}.toast{z-index:45}
+body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-events:none}
+/* bigger tap targets on phones */
+@media (max-width:639px){
+  .ft nav a{display:inline-block;padding:10px 6px}
+  .em-ok{padding:6px 0}.em-ok input{width:20px;height:20px}
+  #tBad,#tAll{min-height:44px}
+  #payClose,#pmRetry{min-height:46px}
+  .dots{gap:6px}.dots button{min-width:40px;min-height:40px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -663,6 +713,8 @@ h2{letter-spacing:-.02em}
           <span class="livepill"><i></i><span data-kz="Онлайн IQ тест · қазақша және орысша">Онлайн IQ-тест · на казахском и русском</span></span>
           <h1 data-kz="Сіздің &lt;em&gt;IQ&lt;/em&gt;-іңіз&lt;br&gt;қанша?">Какой у вас <em>IQ</em>?</h1>
           <p data-kz="30 сұрақ арқылы IQ балыңызды, басқалар арасындағы орныңызды және мықты жақтарыңызды біліңіз. Шамамен 15 минут.">Ответьте на 30 вопросов и узнайте свой балл IQ, место среди других людей и сильные стороны. Около 15 минут.</p>
+          <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
+          <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~15 минут">⏱ ~15 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
         </div>
         <div class="demo hv" id="demo">
           <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
@@ -704,7 +756,6 @@ h2{letter-spacing:-.02em}
           <span class="hv-chip c4" data-kz="🧊 Кеңістік">🧊 Пространство</span>
         </div>
       </div>
-      <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
     </div>
     <section class="steps">
       <h2 data-kz="IQ-іңізді 3 қадамда біліңіз">Ваш IQ за 3 шага</h2>
@@ -753,6 +804,7 @@ h2{letter-spacing:-.02em}
       <p data-kz="30 сұраққа жауап беріңіз де, IQ-іңізді және мықты жақтарыңызды біліңіз.">30 вопросов — и вы узнаете свой IQ и сильные стороны.</p>
       <div class="hcount" id="hcount2"></div>
       <button class="btn big cta" id="startBtn4" data-kz="Тестті бастау →">Начать тест →</button>
+      <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ ~15 минут">⏱ ~15 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
     </section>
     <footer class="ft">
       <div class="ft-l"><b>iqtest.live</b> © 2026</div>
@@ -916,7 +968,8 @@ h2{letter-spacing:-.02em}
     <label class="pm-lbl" for="pmPhone" data-kz="Kaspi-ге тіркелген телефон нөміріңіз">Ваш номер, привязанный к Kaspi</label>
     <input class="pm-in" id="pmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" maxlength="18">
     <button class="btn big cta pm-go" id="pmSend" data-kz="&lt;img class=&quot;kl&quot; src=&quot;/assets/img/kaspi.webp&quot; alt=&quot;&quot; width=&quot;22&quot; height=&quot;22&quot;&gt; Kaspi-ге шот жіберу →"><img class="kl" src="/assets/img/kaspi.webp" alt="" width="22" height="22"> Отправить счёт в Kaspi →</button>
-    <p class="pm-note" data-kz="Нөміріңізге Kaspi шоты келеді. Нөмір тек төлем үшін қолданылады.">На ваш номер придёт счёт в Kaspi. Номер используется только для оплаты.</p>
+    <p class="pm-note" data-kz="Нөміріңізге Kaspi шоты келеді — төлемді Kaspi қосымшасында растайсыз.">На ваш номер придёт счёт — оплату вы подтверждаете в приложении Kaspi.</p>
+    <ul class="trust sm"><li data-kz="🔒 Карта деректері бізге келмейді">🔒 Данные карты к нам не попадают</li><li data-kz="⚡ Нәтиже бірден ашылады">⚡ Результат откроется сразу</li></ul>
   </div>
   <div id="pmStep2" class="hidden">
     <p class="pm-msg" id="pmMsg"></p>
