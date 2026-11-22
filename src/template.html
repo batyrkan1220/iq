@@ -461,6 +461,20 @@ h2{letter-spacing:-.02em}
 .pr{height:7px;border-radius:9px;background:#eef0f7;margin-top:10px;overflow:hidden}.pr i{display:block;height:100%;width:var(--w);border-radius:9px;background:linear-gradient(90deg,#4f46e5,#7c3aed)}
 .st-n{display:inline-block;margin:18px 0 8px;padding:4px 11px;border-radius:999px;background:#eef0f7;font-weight:700;font-size:13px;color:#33334d}
 .st h3{margin:0 0 6px;font-size:20px;font-weight:800;color:#0f0d2e}.st p{margin:0;color:#4b4b66;font-size:15.5px;line-height:1.5}
+.hist{width:min(1100px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);margin:36px 0 10px;border-radius:26px;background:#0b0d2b;color:#fff;display:grid;gap:22px;padding:26px 22px;overflow:hidden;text-align:left}
+@media(min-width:820px){.hist{grid-template-columns:260px 1fr 300px;align-items:center;padding:34px 40px 0}.hist .hi-pic{align-self:end}.hist .hi-list{padding-bottom:34px}.hist .hi-mid{padding-bottom:34px}}
+.hi-pic{height:230px;display:flex;align-items:flex-end;justify-content:center;position:relative}
+.hi-pic img{max-height:100%;max-width:100%;object-fit:contain;filter:grayscale(1) contrast(1.05);animation:hiF .6s ease}
+.hi-mono{width:150px;height:150px;border-radius:50%;margin-bottom:30px;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900;letter-spacing:-.03em;background:radial-gradient(circle at 30% 25%,#4f46e5,#1e1b4b 70%);box-shadow:0 0 0 8px rgba(124,58,237,.18),0 0 60px rgba(124,58,237,.45);animation:hiF .6s ease}
+@keyframes hiF{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hi-k{font-size:12.5px;letter-spacing:.12em;color:#9ca3c7;font-weight:700}
+.hist h2{margin:10px 0 12px;font-size:28px;line-height:1.15;font-weight:800;color:#fff}@media(min-width:820px){.hist h2{font-size:34px}}
+.hi-mid p{margin:0;color:#c7c9e0;font-size:16px;line-height:1.5}
+@media(min-width:820px){.hi-list{border-left:1px solid rgba(255,255,255,.14);padding-left:30px}}
+.hi-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:17px;color:#8d90b3;transition:color .4s}
+.hi-row.on{color:#fff;font-weight:600}.hi-row b{font-weight:inherit;font-variant-numeric:tabular-nums}
+.hi-note{margin-top:12px;font-size:12.5px;line-height:1.45;color:#7c80a6}
+.hi-res .hi-row{color:#4b4b66;border-bottom-color:#eceef6}.hi-res .hi-row.me{color:#4f46e5;font-weight:800}.hi-res .hi-note{color:#8a8aa3}
 </style>
 </head>
 <body>
@@ -549,6 +563,15 @@ h2{letter-spacing:-.02em}
           <p data-kz="5 қабілет бойынша жеке профиль: қай жағыңыз мықты, қайсысын дамыту керек.">Личный профиль по 5 способностям: что у вас сильнее всего и что стоит развивать.</p>
         </div>
       </div>
+    </section>
+    <section class="hist" id="hist">
+      <div class="hi-pic" id="hiPic"></div>
+      <div class="hi-mid">
+        <div class="hi-k" data-kz="НӘТИЖЕҢІЗДЕ ТАҒЫ БАР">ЕЩЁ В ВАШЕМ РЕЗУЛЬТАТЕ</div>
+        <h2 data-kz="Тарихи тұлғалармен салыстыру">Сравнение с историческими личностями</h2>
+        <p data-kz="IQ балыңыз Наполеон, Линкольн және Вашингтонның бағаланған IQ-імен қатар көрсетіледі.">Ваш балл IQ покажем рядом с оценочным IQ Наполеона, Линкольна и Вашингтона.</p>
+      </div>
+      <div class="hi-list" id="hiList"></div>
     </section>
 
     
@@ -656,6 +679,10 @@ h2{letter-spacing:-.02em}
     <div class="card rc">
       <h2 data-kz="Қабілеттеріңіз">Ваши способности</h2>
       <div class="abil" id="bars"></div>
+    </div>
+    <div class="card rc">
+      <h2 data-kz="Тарихи тұлғалармен салыстыру">Сравнение с историческими личностями</h2>
+      <div class="hi-res" id="hiRes"></div>
     </div>
     <div class="card rc">
       <h2 data-kz="Ойлау стиліңіз">Ваш стиль мышления</h2>

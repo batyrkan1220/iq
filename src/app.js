@@ -250,7 +250,7 @@ function showResult(re){
   $('pctLine').innerHTML=L2(`Ваш результат выше, чем примерно у <b>${pc}%</b> людей`,`Нәтижеңіз адамдардың шамамен <b>${pc}%</b>-ынан жоғары`);
   $('fCorrect').textContent=`${correct}/${NS}`;$('fTime').textContent=`${Math.floor(used/60)}:${String(used%60).padStart(2,'0')}`;$('fPct').textContent=pc+'%';
   const gv=RGRP.map(([e,n,sn,f])=>{const idx=Q.map((q,i)=>!q.likert&&f(q)?i:-1).filter(i=>i>=0),k=idx.filter(i=>ok[i]).length;return{e,n,sn,k,t:idx.length,p:idx.length?k/idx.length:0}});
-  $('shRadar').innerHTML=radarSVG(gv.map(g=>g.p),gv.map(g=>T(g.sn)));
+  histResult(iq);$('shRadar').innerHTML=radarSVG(gv.map(g=>g.p),gv.map(g=>T(g.sn)));
   const best=gv.slice().sort((a,b)=>b.p-a.p)[0];
   $('shStr').innerHTML=L2(`Сильная сторона: <b>${best.n}</b>`,`Мықты жағыңыз: <b>${T(best.n)}</b>`);
   $('bars').innerHTML=gv.map(g=>`<div class="ab"><div class="ae">${g.e}</div><div><div class="an">${T(g.n)}${g===best?`<span class="tagS">${T('сильная сторона')}</span>`:''}</div><div class="at"><i data-w="${Math.round(g.p*100)}"></i></div></div><div class="ap">${Math.round(g.p*100)}%</div></div>`).join('');
@@ -344,6 +344,15 @@ function renderChal(){const c=$('chal');if(!c)return;clearInterval(c._iv);
   const start=()=>{if(started)return;started=1;c._iv=setInterval(()=>{left--;sec.textContent=Math.max(0,left);bar.style.transform=`scaleX(${Math.max(0,left)/10})`;if(left<=0)finish(null)},1000)};
   c.querySelectorAll('.ch-o button').forEach(b=>b.onclick=()=>finish(+b.dataset.n));
   try{const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){start();io.disconnect()}},{threshold:.6});io.observe(c)}catch(e){start()}}
+const HIST=[['lincoln','Авраам Линкольн','Авраам Линкольн',125,'АЛ'],['napoleon','Наполеон Бонапарт','Наполеон Бонапарт',135,'НБ'],['washington','Джордж Вашингтон','Джордж Вашингтон',125,'ДВ']];
+const HNOTE=()=>L2('Оценки по биографиям (исследование Кэтрин Кокс, 1926), а не результаты теста.','Өмірбаяндары бойынша жасалған бағалау (Кэтрин Кокс зерттеуі, 1926), тест нәтижесі емес.');
+function renderHist(){const box=$('hist');if(!box)return;clearInterval(box._iv);
+  $('hiList').innerHTML=HIST.map((h,i)=>`<div class="hi-row" data-i="${i}"><span>${L2(h[1],h[2])}</span><b>${h[3]}</b></div>`).join('')+`<div class="hi-note">${HNOTE()}</div>`;
+  let k=0;const show=()=>{const h=HIST[k];box.querySelectorAll('.hi-row').forEach(r=>r.classList.toggle('on',+r.dataset.i===k));
+    const pic=$('hiPic');pic.innerHTML=`<img src="/assets/img/p_${h[0]}.webp" alt="">`;const im=pic.querySelector('img');im.onerror=()=>{pic.innerHTML=`<div class="hi-mono">${h[4]}</div>`};k=(k+1)%HIST.length};
+  show();box._iv=setInterval(show,2600)}
+function histResult(iq){const el=$('hiRes');if(!el)return;const rows=HIST.map(h=>({n:L2(h[1],h[2]),v:h[3]})).concat([{n:L2('Вы','Сіз'),v:iq,me:1}]).sort((a,b)=>b.v-a.v||(b.me?1:-1));
+  el.innerHTML=rows.map(r=>`<div class="hi-row${r.me?' me':''}"><span>${r.me?'👉 ':''}${r.n}</span><b>${r.v}</b></div>`).join('')+`<div class="hi-note">${HNOTE()}</div>`}
 function renderSample(){if(!$('smpRadar'))return;$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
@@ -352,7 +361,7 @@ function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want=
 function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});
   document.querySelectorAll('.totalN').forEach(e=>e.textContent=TOTAL);document.querySelectorAll('.price').forEach(e=>e.textContent=PRICE);
-  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();renderWow();renderChal();
+  $('wordTxt').textContent=T(WORD);renderWarm();renderBell();renderSample();renderWow();renderChal();renderHist();
   document.querySelectorAll('.lsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
   document.title=L2('iqtest.live — тест IQ','iqtest.live — IQ тест');
   if(!$('test').classList.contains('hidden'))render();
