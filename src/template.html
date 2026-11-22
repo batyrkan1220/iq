@@ -520,8 +520,40 @@ h2{letter-spacing:-.02em}
 .hv-core #hvNum{font-size:52px;font-weight:900;background:linear-gradient(180deg,#fff 30%,#e9d5ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 14px rgba(255,255,255,.55));animation:hvq 1.6s ease-in-out infinite}
 .hv-eq{display:flex;gap:3px;align-items:flex-end;height:12px;margin-top:4px}.hv-eq i{width:3px;border-radius:2px;background:rgba(255,255,255,.85);animation:hvEq 1s ease-in-out infinite}
 .hv-eq i:nth-child(1){animation-delay:-.2s}.hv-eq i:nth-child(2){animation-delay:-.5s}.hv-eq i:nth-child(3){animation-delay:-.1s}.hv-eq i:nth-child(4){animation-delay:-.7s}.hv-eq i:nth-child(5){animation-delay:-.35s}
-@keyframes hvEq{0%,100%{height:3px}50%{height:12px}}
+@keyframes hvEq{0%,100%{height:25%}50%{height:100%}}
 @media (prefers-reduced-motion:reduce){.hv-scan,.hv-ticks,.hv-eq i,#hvNum{animation:none}}
+/* ===== mobile compact ===== */
+@media(max-width:600px){
+  .wrap{padding:10px 12px 40px}
+  header{margin-bottom:10px}
+  #start{gap:14px}
+  #start>.hero-card{padding:16px 16px 16px;border-radius:24px}
+  .hv{max-width:230px}
+  #start .hero{gap:6px}
+  .hv-core .hv-tag{font-size:8px;padding:2px 6px 2px 8px;margin-bottom:0}
+  .hv-core #hvNum{font-size:34px}
+  .hv-eq{height:8px;margin-top:2px;gap:2px}.hv-eq i{width:2px}
+  .hv-chip{font-size:11px!important;padding:4px 8px!important}
+  .livepill{font-size:11.5px}
+  #start h1{font-size:25px;line-height:1.15;margin:8px 0 6px}
+  .hero-txt p{font-size:14.5px;line-height:1.45;margin:0}
+  .hero-card .btn.big.cta{padding:15px;font-size:16.5px;margin-top:12px}
+  #start>.steps{padding:20px 14px 18px;border-radius:24px}
+  #start>.steps h2{font-size:21px}.st-sub{font-size:14px;margin-bottom:14px}
+  #start .st-grid{gap:12px}
+  #start .st{display:grid;grid-template-columns:96px 1fr;column-gap:12px;align-items:start}
+  #start .st-art{grid-row:1/4;height:96px;border-radius:14px}
+  #start .st-card{transform:scale(.42);transform-origin:center}
+  #start .st-n{margin:0 0 4px;justify-self:start;font-size:11.5px;padding:2px 8px}
+  #start .st h3{font-size:16px;margin:0 0 3px}
+  #start .st p{font-size:13.5px;line-height:1.45}
+  #start>.hist{padding:18px 16px;gap:12px;border-radius:24px}
+  .hi-pic{height:170px!important}
+  .hist h2{font-size:22px;margin:6px 0 8px}
+  .hi-mid p{font-size:14px}
+  .hi-row{font-size:15px;padding:9px 0}
+  #start>.fin{padding:22px 16px;border-radius:24px}.fin h2{font-size:22px}.fin p{font-size:14px;margin-bottom:6px}
+}
 </style>
 </head>
 <body>
