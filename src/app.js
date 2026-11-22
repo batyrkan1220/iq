@@ -266,7 +266,7 @@ function showResult(re){
   if(has('puz'))st.push(yes(lk('puz'))?['🧩','Любитель сложных задач','Интеллектуальные вызовы вас заряжают.']:['⚡','Прагматик','Лучше всего думаете, когда видна практическая цель.']);
   if(has('vis'))st.push(yes(lk('vis'))?['🧊','Пространственное воображение','Легко вращаете объекты в уме.']:['🗺','Словесно-логический тип','Опираетесь на слова, схемы и правила.']);
   if(has('plan'))st.push(yes(lk('plan'))?['🧭','Стратег','Продумываете шаги заранее и реже ошибаетесь.']:['🎯','Импровизатор','Быстро действуете по ситуации и легко адаптируетесь.']);
-  $('style').innerHTML=st.map(([e,t,d])=>`<div class="stc"><div class="se">${e}</div><b>${T(t)}</b><p>${T(d)}</p></div>`).join('');
+  $('style').closest('.card').style.display=st.length?'':'none';$('style').innerHTML=st.map(([e,t,d])=>`<div class="stc"><div class="se">${e}</div><b>${T(t)}</b><p>${T(d)}</p></div>`).join('');
   $('shChips').innerHTML=st.slice(0,3).map(([e,t])=>`<span>${e} ${T(t)}</span>`).join('');
   // review
   const sc=Q.map((q,i)=>i).filter(i=>!Q[i].likert),bad=sc.filter(i=>ans[i]!==null&&!ok[i]).length,skip=sc.filter(i=>ans[i]===null).length;
