@@ -10,7 +10,11 @@ export function buildPrompt(lang: "kz" | "ru", n: number, avoid: string[]): stri
   return `You write questions for a fast general-knowledge quiz video (TikTok/Reels).
 Write ${n + 2} NEW questions. ${lang === "kz" ? KZ_RULES : RU_RULES}
 Requirements for every question:
-- ANY topic from the whole world, as varied as possible: space, planets, animals, nature, geography of all continents, world history, inventions, science, the human body, food, sport, music, art, films, languages, records, technology, everyday logic. Each question in the set from a DIFFERENT topic. Kazakhstan-related questions are allowed but rare: at most one in the whole reply, often none. Easy-to-medium difficulty; answerable in 5 seconds.
+- ANY topic from the whole world, as varied as possible: space, planets, animals, nature, geography of all continents, world history, inventions, science, the human body, food, sport, music, art, films, languages, records, technology, everyday logic. Each question in the set from a DIFFERENT topic. Kazakhstan-related questions are allowed but rare: at most one in the whole reply, often none.
+- DIFFICULTY: medium-to-hard and genuinely interesting — NOT school-basic trivia (avoid things like "how many legs does a spider have", "what is H2O", "which planet is red", "how many days in a week"). Prefer surprising "wow, I didn't know that" facts, counter-intuitive answers and questions where the popular guess is wrong, but still answerable by an educated adult in 5 seconds and still undisputed.
+  Good examples of the level: "Which animal has three hearts?" (octopus / squid / starfish), "Which country has the most time zones?" (France / Russia / USA), "Which metal is liquid at room temperature?" (mercury / gallium / sodium), "What colour is a polar bear's skin?" (black / white / pink), "Which planet has the longest day?" (Venus / Mercury / Jupiter).
+- The two wrong options must be tempting (the "obvious" guess should often be wrong), never silly.
+- Mix question styles: "which…", "how many…", "what is the only…", "which is bigger/older/longer…", "which country…", "what was invented first…".
 - Only undisputed, stable facts you are 100% sure about. No facts that change over time (populations, current office holders, records that may have been broken, prices), no trick questions, no ambiguous wording.
 - Exactly 3 short options (max 18 characters each), exactly ONE correct, the two wrong ones plausible.
 - Question text max ~60 characters; insert "\\n" line breaks so each line is at most ~24 characters.
