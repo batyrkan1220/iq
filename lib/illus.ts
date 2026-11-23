@@ -64,6 +64,34 @@ Output ONLY one valid SVG: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
   }
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Call Claude with a model fallback list; retries once on overload/rate limit. Returns text or the last HTTP status. */
+async function claudeText(content: unknown, maxTokens: number): Promise<{ text: string; status: number }> {
+  const key = (env.ANTHROPIC_API_KEY || "").trim();
+  if (!key) return { text: "", status: 0 };
+  const models = [...new Set([(env.ANTHROPIC_PROMPT_MODEL || "claude-haiku-5-5").trim(), "claude-sonnet-5-5"])];
+  let status = 0;
+  for (const model of models) {
+    for (let t = 0; t < 2; t++) {
+      try {
+        const r = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: "user", content }] }),
+          signal: AbortSignal.timeout(40_000),
+        });
+        status = r.status;
+        const j: any = await r.json().catch(() => ({}));
+        const text = (j.content || []).map((c: any) => c.text || "").join("").trim();
+        if (r.ok && text) return { text, status };
+        if (r.status === 429 || r.status === 529 || r.status >= 500) { await sleep(1500 * (t + 1)); continue; }
+        break; // 400/404 (e.g. unknown model) → try next model
+      } catch { status = -1; }
+    }
+  }
+  return { text: "", status };
+}
+
 // ---------- Cloudflare Workers AI · FLUX.1 schnell (free daily allocation) ----------
 // Keys: CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (Render env). Never logged or returned.
 const CF_IMG = "@cf/black-forest-labs/flux-1-schnell";
@@ -73,7 +101,14 @@ export function fluxConfigured(): boolean {
   return !!((env.CLOUDFLARE_ACCOUNT_ID || "").trim() && (env.CLOUDFLARE_API_TOKEN || "").trim());
 }
 
-async function cfRun(model: string, body: unknown): Promise<{ ok: boolean; status: number; json: any }> {
+async function cfRun(model: string, body: unknown, tries = 3): Promise<{ ok: boolean; status: number; json: any }> {
+  for (let t = 0; ; t++) {
+    const r = await cfRun1(model, body);
+    if (r.status !== 429 || t >= tries - 1) return r;
+    await sleep(2500 * (t + 1));
+  }
+}
+async function cfRun1(model: string, body: unknown): Promise<{ ok: boolean; status: number; json: any }> {
   const acc = (env.CLOUDFLARE_ACCOUNT_ID || "").trim(), tok = (env.CLOUDFLARE_API_TOKEN || "").trim();
   const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(acc)}/ai/run/${model}`, {
     method: "POST",
@@ -99,46 +134,20 @@ Reply with ONE English prompt (max 40 words) only, no quotes, no explanations.`;
 
 /** Ask Claude (vision) whether a generated picture shows or hints at any option. Returns true if it leaks. */
 export async function leaksAnswer(b64: string, q: string, opts: string[]): Promise<boolean> {
-  const key = (env.ANTHROPIC_API_KEY || "").trim();
-  if (!key) return false;
-  try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({
-        model: (env.ANTHROPIC_PROMPT_MODEL || "claude-haiku-5-5").trim(), max_tokens: 5,
-        messages: [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } },
-          { type: "text", text: `Quiz question: "${q}". Options: ${opts.map((x) => `"${x}"`).join(", ")}.\nDoes this picture show, depict or clearly hint at ANY of the options (the thing itself, its typical look, habitat, symbol, flag, landmark, or readable text/number)? Answer only YES or NO.` },
-        ] }],
-      }),
-      signal: AbortSignal.timeout(30_000),
-    });
-    const j: any = await r.json().catch(() => ({}));
-    const t = (j.content || []).map((c: any) => c.text || "").join("").trim().toUpperCase();
-    return r.ok && t.startsWith("YES");
-  } catch { return false; }
+  const c = await claudeText([
+    { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } },
+    { type: "text", text: `Quiz question: "${q}". Options: ${opts.map((x) => `"${x}"`).join(", ")}.\nDoes this picture show, depict or clearly hint at ANY of the options (the thing itself, its typical look, habitat, symbol, flag, landmark, or readable text/number)? Answer only YES or NO.` },
+  ], 5);
+  return c.text.toUpperCase().startsWith("YES");
 }
 
 async function writeFluxPrompt(q: string, opts: string[], correct: string, strict = false): Promise<string> {
   const ask = promptRules(q, opts, correct, strict);
-  const key = (env.ANTHROPIC_API_KEY || "").trim();
-  if (key) {
-    try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: (env.ANTHROPIC_PROMPT_MODEL || "claude-haiku-5-5").trim(), max_tokens: 200, messages: [{ role: "user", content: ask }] }),
-        signal: AbortSignal.timeout(30_000),
-      });
-      const j: any = await r.json().catch(() => ({}));
-      const t = (j.content || []).map((c: any) => c.text || "").join("").trim();
-      if (r.ok && t) return t;
-    } catch { /* fall through to Cloudflare text model */ }
-  }
+  const c = await claudeText(ask, 200);
+  if (c.text) return c.text;
   const r = await cfRun(CF_TXT, { messages: [{ role: "user", content: ask }], max_tokens: 150 });
   const t = String(r.json?.result?.response || "").trim();
-  if (!t) throw new Error("prompt_" + r.status);
+  if (!t) throw new Error(`prompt_claude${c.status}_cf${r.status}`);
   return t;
 }
 
@@ -147,7 +156,14 @@ export function fluxPrompt(subject: string): string {
   return `${s}. Bright friendly 3D cartoon illustration, soft studio lighting, clean pastel background, single centered subject, high detail, vibrant colors, landscape composition. Absolutely no text, no letters, no numbers, no words, no captions, no watermark, no logos, no flags.`;
 }
 
-export async function makeFlux(input: { q: string; o: string[]; a: number }): Promise<{ ok: true; src: string; prompt: string } | { ok: false; error: string; status?: number }> {
+let ACTIVE = 0; const WAIT: (() => void)[] = [];
+async function slot<T>(fn: () => Promise<T>): Promise<T> {
+  if (ACTIVE >= 2) await new Promise<void>((r) => WAIT.push(r));
+  ACTIVE++;
+  try { return await fn(); } finally { ACTIVE--; WAIT.shift()?.(); }
+}
+export function makeFlux(input: { q: string; o: string[]; a: number }) { return slot(() => makeFlux1(input)); }
+async function makeFlux1(input: { q: string; o: string[]; a: number }): Promise<{ ok: true; src: string; prompt: string } | { ok: false; error: string; status?: number }> {
   if (!fluxConfigured()) return { ok: false, error: "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN not set" };
   const q = String(input.q || "").replace(/\s+/g, " ").slice(0, 300);
   const opts = (input.o || []).map((x) => String(x).slice(0, 60)).slice(0, 4);
