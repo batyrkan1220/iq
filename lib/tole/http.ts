@@ -148,9 +148,14 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     if (!b.q || !Array.isArray(b.o)) { send(res, 400, { error: "q_and_o_required" }); return true; }
     const { makeIllus, makeFlux, fluxConfigured } = await import("../illus.ts");
     const inp = { q: b.q, o: b.o, a: Number(b.a) || 0, lang: b.lang };
-    // FLUX (Cloudflare, free daily quota) first; Claude SVG only if Cloudflare isn't configured.
-    const out = fluxConfigured() ? await makeFlux(inp) : await makeIllus(inp);
-    if (!out.ok) log.log("warn", "illus failed", { error: out.error.slice(0, 40) });
+    // FLUX (Cloudflare, free daily quota) first; if it fails (e.g. daily quota used up → 429) fall back to a Claude-drawn SVG.
+    let out: any = fluxConfigured() ? await makeFlux(inp) : null;
+    if (!out || !out.ok) {
+      if (out) log.log("warn", "illus flux failed", { error: String(out.error).slice(0, 60) });
+      const svg = await makeIllus(inp);
+      out = svg.ok ? { ...svg, fallback: "svg" } : { ok: false, error: (out ? out.error + " | " : "") + svg.error };
+    }
+    if (!out.ok) log.log("warn", "illus failed", { error: String(out.error).slice(0, 80) });
     send(res, out.ok ? 200 : 502, out);
     return true;
   }
