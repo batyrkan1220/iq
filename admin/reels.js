@@ -345,7 +345,7 @@ async function loadHist(more){const box=$('reHist');if(!HSEEN.size&&!more)box.in
   const paths=todo.filter(r=>r.video_path).map(r=>r.video_path);let urls={};
   if(paths.length){const {data:su}=await sb.storage.from('reels').createSignedUrls(paths,3600*12);(su||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
   const card=r=>{const u=r.video_path&&urls[r.video_path],q=(r.question&&r.question.q_screen||'').replace(/\n/g,' ');
-    return `<div class="rv" data-id="${r.id}"><div class="rvv">${u?`<video data-src="${esc(u)}#t=1" preload="none" controls playsinline></video>`:`<div class="rvn">${r.status==='done'?'Видео нет':'⏳ '+esc(r.status||'')}</div>`}</div>
+    return `<div class="rv" data-id="${r.id}"><div class="rvv">${u?`<video data-src="${esc(u)}#t=1" preload="none" controls playsinline></video>`:`<div class="rvn">${r.status==='done'?'Видео нет':r.status==='upload_failed'?'⚠️ Видео не загрузилось в облако':'⏳ '+esc(r.status||'')}</div>`}</div>
       <div class="rvm"><span>#${r.id}</span><span>${fmtT(r.created_at)}</span><span class="pill">${esc((r.lang||'').toUpperCase())}</span></div>
       <div class="rvq" title="${esc(q)}">${esc(q)}</div>
       ${u?`<button class="btn sec sm" data-p="${esc(r.video_path)}">⬇ Скачать</button>`:''}</div>`};
@@ -395,9 +395,18 @@ async function autoReel(lang,vid,vname,extraAvoid,st){
   const audio=QUIZ.mix(D.tl,clips,await bgm());D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
   const blob=await record(D,audio,D.tl.dur);
   st('☁️ Сохраняем…');const ext=blob.type.includes('mp4')?'mp4':'webm',path=`${new Date().toISOString().slice(0,10)}/${row.id}.${ext}`;
-  const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(up.error)throw new Error('Загрузка: '+up.error.message);
-  await sb.from('reels').update({video_path:path,status:'done',script:{voices:parts,auto:true,rec:S.recMode||'',ua:navigator.userAgent.slice(0,140)}}).eq('id',row.id);
-  return {id:row.id,qs:set.map(q=>q.q.replace(/\n/g,' ')),url:URL.createObjectURL(blob),ext,imgs:imgs.filter(Boolean).length}}
+  const meta={voices:parts,auto:true,rec:S.recMode||'',ua:navigator.userAgent.slice(0,140)};
+  const res={id:row.id,qs:set.map(q=>q.q.replace(/\n/g,' ')),url:URL.createObjectURL(blob),ext,imgs:imgs.filter(Boolean).length,blob,path,meta};
+  const err=await uploadReel(res,st);if(err)res.uploadErr=err;return res}
+// upload with retries (mobile networks drop big uploads: "Load failed"); the finished video is never lost — it stays downloadable
+async function uploadReel(r,st){let last='';
+  for(let k=0;k<4;k++){if(k)st&&st(`☁️ Повтор загрузки ${k+1}/4…`);
+    try{const up=await sb.storage.from('reels').upload(r.path,r.blob,{contentType:r.blob.type.split(';')[0],upsert:true});
+      if(!up.error){await sb.from('reels').update({video_path:r.path,status:'done',script:r.meta}).eq('id',r.id);return ''}last=up.error.message}
+    catch(e){last=String(e&&e.message||e)}
+    await new Promise(z=>setTimeout(z,2000*(k+1)))}
+  try{await sb.from('reels').update({status:'upload_failed',script:{...r.meta,upload_error:last.slice(0,120)}}).eq('id',r.id)}catch(e){}
+  return last||'network'}
 let QK_STOP=false,QK_RUN=false;
 $('qkStop').onclick=()=>{QK_STOP=true;$('qkStop').textContent='Остановится после текущего…';$('qkStop').disabled=true};
 $('qkGo').onclick=async()=>{if(QK_RUN)return;unlockAudio();const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
@@ -408,9 +417,13 @@ $('qkGo').onclick=async()=>{if(QK_RUN)return;unlockAudio();const vid=$('qkVoice'
   $('qkQ').innerHTML=Array.from({length:N},(_,i)=>`<div id="qkr${i}" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px"><b style="width:28px">${i+1}</b><span class="pill" id="qkl${i}">${mode==='mix'?(i%2?'RU':'KZ'):mode.toUpperCase()}</span><span id="qks${i}" class="muted" style="flex:1">В очереди</span></div>`).join('');
   for(let i=0;i<N;i++){if(QK_STOP){for(let k=i;k<N;k++)$('qks'+k).textContent='Отменено';break}
     const lang=mode==='mix'?(i%2?'ru':'kz'):mode;const stt=$('qks'+i);stt.classList.remove('muted');$('qkr'+i).style.borderColor='#a78bfa';
-    try{const r=await autoReel(lang,vid,vname,made,t=>{stt.textContent=t});made.push(...r.qs);ok++;
+    try{const r=await autoReel(lang,vid,vname,made,t=>{stt.textContent=t});made.push(...r.qs);
+      if(r.uploadErr){fail++;$('qkr'+i).style.borderColor='#fcd34d';stt.innerHTML=`⚠️ #${r.id} видео готово, но не загрузилось в облако (${esc(r.uploadErr)}). Скачайте или повторите:`;
+        const bt=document.createElement('button');bt.className='btn sec sm';bt.textContent='☁️ Загрузить снова';bt.onclick=async()=>{bt.disabled=true;const e=await uploadReel(r,t=>bt.textContent=t);if(e){bt.disabled=false;bt.textContent='☁️ Загрузить снова'}else{bt.remove();stt.innerHTML=`✅ #${r.id} загружено`;loadHist()}};
+        $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`);$('qkr'+i).appendChild(bt)}
+      else{ok++;
       $('qkr'+i).style.borderColor='#86efac';stt.innerHTML=`✅ #${r.id} · ${esc(r.qs[0])}… <span class="muted" style="font-size:11px">[${esc(S.recMode||'')}]</span> ${r.imgs<4?`<span class="muted">(картинок ${r.imgs}/4, остальные — эмодзи)</span>`:''}`;
-      $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`)}
+      $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`)}}
     catch(e){fail++;$('qkr'+i).style.borderColor='#fca5a5';stt.innerHTML=`<span style="color:#b91c1c">❌ ${esc(e.message)}</span>`;
       if(/ElevenLabs|quota|credits|ANTHROPIC_API_KEY/i.test(e.message)){for(let k=i+1;k<N;k++)$('qks'+k).textContent='Пропущено (см. ошибку выше)';break}}
     busy($('qkGo'),true,`⏳ Создаём ${Math.min(i+2,N)}/${N}…`);loadHist()}
