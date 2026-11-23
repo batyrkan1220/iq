@@ -184,7 +184,7 @@ async function illBitmap(src){if(!src)return null;if(ILLC[src])return ILLC[src];
 function kzFix(){if(S.lang!=='kz')return;$('rePlan').querySelectorAll('input,textarea').forEach(el=>{let v=el.value,o=v;
   v=v.replace(/(^|[\s«(])қайсы\?/g,'$1қандай?').replace(/(^|[\s«(])Қайсы\?/g,'$1Қандай?').replace(/(жылы|қашан|қай жерде|қай қалада|қай елде)(\s+)туған(\b|\?|\s|$)/g,'$1$2туылған$3');
   if(v!==o)el.value=v})}
-async function buildQuiz(){kzFix();$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
+async function buildQuiz(){unlockAudio();kzFix();$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
   if(VMODE==='design'&&!VPICK){try{busy($('reGo'),true,'Готовим диктора…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — попробуйте через «📚 Мои голоса».';busy($('reGo'),false,'✅ Согласен — создать озвучку и видео');return}}
   const set=S.set.map((q,i)=>({emo:val('qe'+i)||q.emo,col:q.col,q:val('qq'+i),o:[0,1,2].map(k=>val(`qo${i}_${k}`)),a:+$('qa'+i).value}));
   const D={set,draw:QUIZ.draw};const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,sets={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
@@ -312,24 +312,28 @@ async function wcCodecs(){if(!window.VideoEncoder||!window.AudioEncoder||!window
 async function recordWC(D,samples,dur,cc){const cv=$('reCv'),ctx=cv.getContext('2d');const {Muxer,ArrayBufferTarget}=window.Mp4Muxer;
   const target=new ArrayBufferTarget();const muxer=new Muxer({target,fastStart:'in-memory',firstTimestampBehavior:'offset',video:{codec:'avc',width:W,height:H,frameRate:FPS},audio:{codec:cc.ac[1],numberOfChannels:1,sampleRate:SR}});
   let err=null;const ve=new VideoEncoder({output:(c,m)=>muxer.addVideoChunk(c,m),error:e=>err=e});ve.configure({codec:cc.vc,width:W,height:H,bitrate:8e6,framerate:FPS,latencyMode:'quality',avc:{format:'avc'}});
-  const ae=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>err=e});ae.configure({codec:cc.ac[0],sampleRate:SR,numberOfChannels:1,bitrate:192000});
+  let nA=0;const ae=new AudioEncoder({output:(c,m)=>{nA++;muxer.addAudioChunk(c,m)},error:e=>err=e});ae.configure({codec:cc.ac[0],sampleRate:SR,numberOfChannels:1,bitrate:192000});
   const N=Math.ceil(dur*FPS),step=8192;for(let i=0;i<samples.length;i+=step){const part=samples.slice(i,Math.min(samples.length,i+step));
     const ad=new AudioData({format:'f32-planar',sampleRate:SR,numberOfFrames:part.length,numberOfChannels:1,timestamp:Math.round(i/SR*1e6),data:part});ae.encode(ad);ad.close()}
   for(let i=0;i<N;i++){if(err)throw err;const t=i/FPS;(D.draw||drawFrame)(ctx,D,t);const vf=new VideoFrame(cv,{timestamp:Math.round(t*1e6),duration:Math.round(1e6/FPS)});ve.encode(vf,{keyFrame:i%(FPS*2)===0});vf.close();
     if(ve.encodeQueueSize>6)while(ve.encodeQueueSize>2)await yieldMC();
     if(i%6===0){$('reProg').style.width=(cl(i/N)*100)+'%';if(D.onProg)D.onProg(i/N);await yieldMC()}}
-  await ve.flush();await ae.flush();if(err)throw err;ve.close();ae.close();muxer.finalize();$('reProg').style.width='100%';
+  await ve.flush();await ae.flush();if(err)throw err;if(!nA)throw new Error('audio encoder produced no data');ve.close();ae.close();muxer.finalize();$('reProg').style.width='100%';
   return new Blob([target.buffer],{type:'video/mp4'})}
 async function record(D,samples,dur){
   try{const cc=await wcCodecs();if(cc){const b=await recordWC(D,samples,dur,cc);S.recMode='кадр-за-кадром ('+cc.ac[1]+')';return b}S.recMode='realtime: браузер не поддерживает WebCodecs'}catch(e){console.warn('WebCodecs failed, using realtime recorder',e);S.recMode='realtime: '+String(e&&e.message||e).slice(0,80)}
   return recordRT(D,samples,dur)}
-async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const ac=new AudioContext({sampleRate:SR});await ac.resume();
+// iOS/Safari: an AudioContext only plays if it was created/resumed inside a tap → we create it in the button handler
+let UAC=null;function unlockAudio(){try{if(!UAC||UAC.state==='closed')UAC=new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});UAC.resume();
+  const b=UAC.createBuffer(1,1,SR),s=UAC.createBufferSource();s.buffer=b;s.connect(UAC.destination);s.start(0)}catch(e){}}
+async function recordRT(D,samples,dur){const cv=$('reCv'),ctx=cv.getContext('2d');const own=!UAC||UAC.state==='closed';const ac=own?new AudioContext({sampleRate:SR}):UAC;
+  await Promise.race([ac.resume(),new Promise(r=>setTimeout(r,1500))]);if(ac.state!=='running')throw new Error('Звук заблокирован браузером. Нажмите кнопку ещё раз (лучше создавать видео на компьютере в Chrome).');
   const buf=ac.createBuffer(1,samples.length,SR);buf.copyToChannel(samples,0);const src=ac.createBufferSource();src.buffer=buf;const dest=ac.createMediaStreamDestination();src.connect(dest);
   (D.draw||drawFrame)(ctx,D,0);const vs=cv.captureStream(FPS);const stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);
   const mime=pickMime();const rec=new MediaRecorder(stream,{mimeType:mime||undefined,videoBitsPerSecond:8e6,audioBitsPerSecond:192e3});const chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const done=new Promise(r=>rec.onstop=r);rec.start(250);const t0=ac.currentTime+.1;src.start(t0);
   await new Promise(res=>{const loop=()=>{const t=ac.currentTime-t0;(D.draw||drawFrame)(ctx,D,Math.max(0,t));$('reProg').style.width=(cl(t/dur)*100)+'%';if(t>=dur){res();return}requestAnimationFrame(loop)};requestAnimationFrame(loop)});
-  rec.stop();await done;src.stop();ac.close();return new Blob(chunks,{type:rec.mimeType||mime||'video/webm'})}
+  rec.stop();await done;src.stop();if(own)ac.close();return new Blob(chunks,{type:rec.mimeType||mime||'video/webm'})}
 
 // ---------- history (video gallery, same size cards) ----------
 let HOFF=0,HCOUNT=0;const HPAGE=24,HSEEN=new Map();
@@ -392,11 +396,11 @@ async function autoReel(lang,vid,vname,extraAvoid,st){
   const blob=await record(D,audio,D.tl.dur);
   st('☁️ Сохраняем…');const ext=blob.type.includes('mp4')?'mp4':'webm',path=`${new Date().toISOString().slice(0,10)}/${row.id}.${ext}`;
   const up=await sb.storage.from('reels').upload(path,blob,{contentType:blob.type.split(';')[0]});if(up.error)throw new Error('Загрузка: '+up.error.message);
-  await sb.from('reels').update({video_path:path,status:'done'}).eq('id',row.id);
+  await sb.from('reels').update({video_path:path,status:'done',script:{voices:parts,auto:true,rec:S.recMode||'',ua:navigator.userAgent.slice(0,140)}}).eq('id',row.id);
   return {id:row.id,qs:set.map(q=>q.q.replace(/\n/g,' ')),url:URL.createObjectURL(blob),ext,imgs:imgs.filter(Boolean).length}}
 let QK_STOP=false,QK_RUN=false;
 $('qkStop').onclick=()=>{QK_STOP=true;$('qkStop').textContent='Остановится после текущего…';$('qkStop').disabled=true};
-$('qkGo').onclick=async()=>{if(QK_RUN)return;const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
+$('qkGo').onclick=async()=>{if(QK_RUN)return;unlockAudio();const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
   if(!vid){alert('Выберите голос (ElevenLabs должен быть подключён)');return}
   const N=Math.max(1,Math.min(30,+$('qkN').value||1)),mode=$('qkLang').value;QK_RUN=true;QK_STOP=false;
   busy($('qkGo'),true,`⏳ Создаём 0/${N}…`);$('qkStop').classList.toggle('hide',N<2);$('qkStop').disabled=false;$('qkStop').textContent='⏹ Остановить после текущего';
@@ -405,7 +409,7 @@ $('qkGo').onclick=async()=>{if(QK_RUN)return;const vid=$('qkVoice').value,vname=
   for(let i=0;i<N;i++){if(QK_STOP){for(let k=i;k<N;k++)$('qks'+k).textContent='Отменено';break}
     const lang=mode==='mix'?(i%2?'ru':'kz'):mode;const stt=$('qks'+i);stt.classList.remove('muted');$('qkr'+i).style.borderColor='#a78bfa';
     try{const r=await autoReel(lang,vid,vname,made,t=>{stt.textContent=t});made.push(...r.qs);ok++;
-      $('qkr'+i).style.borderColor='#86efac';stt.innerHTML=`✅ #${r.id} · ${esc(r.qs[0])}… ${r.imgs<4?`<span class="muted">(картинок ${r.imgs}/4, остальные — эмодзи)</span>`:''}`;
+      $('qkr'+i).style.borderColor='#86efac';stt.innerHTML=`✅ #${r.id} · ${esc(r.qs[0])}… <span class="muted" style="font-size:11px">[${esc(S.recMode||'')}]</span> ${r.imgs<4?`<span class="muted">(картинок ${r.imgs}/4, остальные — эмодзи)</span>`:''}`;
       $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`)}
     catch(e){fail++;$('qkr'+i).style.borderColor='#fca5a5';stt.innerHTML=`<span style="color:#b91c1c">❌ ${esc(e.message)}</span>`;
       if(/ElevenLabs|quota|credits|ANTHROPIC_API_KEY/i.test(e.message)){for(let k=i+1;k<N;k++)$('qks'+k).textContent='Пропущено (см. ошибку выше)';break}}
