@@ -3,8 +3,9 @@ window.QUIZ=(function(){
 const W=1080,H=1920,SR=44100;
 // Сұрақтарды енді тек ЖИ (Claude, /api/reels/quiz) жазады — ескі сұрақтар базасы өшірілді.
 // ЕРЕЖЕ: эмодзи сұрақтың тақырыбын ғана көрсетеді, ЕШҚАШАН жауапты (дұрыс нұсқаны) көрсетпейді.
-const CTA={kz:['','Жауабыңыз дұрыс болса, лайк басыңыз!','','Жауабыңызды комментарийге жазыңыз!'],
- ru:['','Если ваш ответ верный — ставьте лайк!','','Напишите свой ответ в комментариях!']};
+const CTA={kz:['','Жауабыңыз дұрыс болса, лайк басыңыз!','','Жауабыңызды комментарийге жазыңыз! Ал IQ деңгейіңізді білу үшін биодағы сілтемеге кіріңіз!'],
+ ru:['','Если ваш ответ верный — ставьте лайк!','','Напишите свой ответ в комментариях! А чтобы узнать свой уровень IQ — переходите по ссылке в описании профиля!']};
+const OUTRO={kz:['IQ деңгейіңізді білу үшін','биодағы сілтемеге кіріңіз 👆'],ru:['Узнайте свой уровень IQ —','ссылка в описании профиля 👆']};
 const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 let LASTPOS=-1;
 // AI item {emo,col,q,v,o,a,av} → screen item with shuffled options (correct answer not in the same place twice in a row)
@@ -57,6 +58,11 @@ function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBasel
   // step dots
   const dw=76,gap=22,x0=W/2-(n*dw+(n-1)*gap)/2;ctx.font=F(800,46);ctx.textBaseline='middle';
   for(let k=0;k<n;k++){const cx=x0+k*(dw+gap)+dw/2,cy=190;ctx.save();if(k===i){ctx.shadowColor='rgba(13,12,22,.35)';ctx.shadowBlur=24;ctx.shadowOffsetY=10;ctx.fillStyle=INK}else{ctx.fillStyle=k<i?'#22c55e':'rgba(255,255,255,.75)'}ctx.beginPath();ctx.arc(cx,cy,dw/2,0,7);ctx.fill();ctx.restore();ctx.fillStyle=k===i||k<i?'#fff':INK;ctx.fillText(k<i?'✓':String(k+1),cx,cy+3)}
+  // frosted card behind question + picture (site style)
+  {ctx.textBaseline='alphabetic';ctx.font=F(800,70);const qn=wrap(ctx,q.q,940).length,cy0=268,ch=(350+qn*82+10+400+34)-cy0;ctx.save();ctx.globalAlpha=ap;ctx.shadowColor='rgba(80,40,140,.18)';ctx.shadowBlur=60;ctx.shadowOffsetY=26;ctx.fillStyle='rgba(255,255,255,.5)';rr(ctx,50,cy0,W-100,ch,60);ctx.fill();ctx.shadowColor='transparent';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.85)';ctx.stroke();ctx.restore()}
+  // mascot (bottom-right), gentle bob
+  const outro=last&&t>=o.ra;
+  if(D.mascot&&!outro){const mh=330,mw=mh*D.mascot.width/D.mascot.height;ctx.save();ctx.translate(W-mw-40,H-mh-40+Math.sin(t*2)*6);ctx.drawImage(D.mascot,0,0,mw,mh);ctx.restore()}
   // question
   ctx.textBaseline='alphabetic';ctx.save();ctx.globalAlpha=ap;ctx.translate(0,(1-ease(ap))*30);ctx.font=F(800,70);try{ctx.letterSpacing='-2px'}catch(e){}ctx.fillStyle=INK;
   ctx.shadowColor='rgba(255,255,255,.6)';ctx.shadowBlur=0;ctx.shadowOffsetY=0;const ql=wrap(ctx,q.q,940);ql.forEach((l,k)=>ctx.fillText(l,W/2,350+k*82));ctx.restore();
@@ -81,6 +87,12 @@ function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBasel
     ctx.shadowColor=ok?'rgba(34,197,94,.4)':'rgba(80,40,140,.14)';ctx.shadowBlur=ok?40:26;ctx.shadowOffsetY=ok?16:10;ctx.fillStyle=ok?'#22c55e':'rgba(255,255,255,.8)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.fill();ctx.shadowColor='transparent';
     if(!ok){ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.stroke()}
     ctx.fillStyle=ok?'#fff':INK;ctx.textBaseline='middle';ctx.fillText(ok?s+'  ✓':s,W/2,y+oh/2+3);ctx.restore()});
+  // outro: link-in-bio call to action (last question, after the timer)
+  if(outro){const p=ease(cl((t-o.ra)/.45)),L=OUTRO[D.lang==='ru'?'ru':'kz'],cy=H-340,chh=280;ctx.save();ctx.globalAlpha=p;ctx.translate(0,(1-p)*60);
+    ctx.shadowColor='rgba(80,40,140,.3)';ctx.shadowBlur=60;ctx.shadowOffsetY=24;ctx.fillStyle='rgba(255,255,255,.9)';rr(ctx,70,cy,W-140,chh,56);ctx.fill();ctx.shadowColor='transparent';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=INK;ctx.font=F(800,50);ctx.fillText(L[0],W/2,cy+62);ctx.fillStyle=grad(ctx,200,W-200);ctx.fillText(L[1],W/2,cy+122);
+    const pw=420,ph=64,px=(W-pw)/2,py=cy+chh-ph-24,pz=1+.04*Math.sin((t-o.ra)*5);ctx.translate(W/2,py+ph/2);ctx.scale(pz,pz);ctx.translate(-W/2,-(py+ph/2));
+    ctx.fillStyle=INK;rr(ctx,px,py,pw,ph,ph/2);ctx.fill();ctx.fillStyle='#fff';ctx.font=F(800,34);ctx.fillText('iqtest.live',W/2,py+ph/2+2);ctx.restore()}
 }
 return{fromAI,voices,timeline,mix,draw,CTA};
 })();

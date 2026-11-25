@@ -201,6 +201,7 @@ async function genIll(i){const box=$('qi'+i),st=$('qis'+i);if(!box)return;const 
   catch(e){S.ill[i]=null;box.textContent=val('qe'+i)||S.set[i].emo;box.style.fontSize='48px';
     st.textContent=/not set/.test(e.message)?'Ключи картинок (Cloudflare) не заданы в Render — будет эмодзи':'Не получилось ('+e.message+') — будет эмодзи'}}
 function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}
+let MASC=null;function mascotImg(){if(!MASC)MASC=loadImg('/assets/hero-scientist-sm.webp?v=2');return MASC}
 function loadImg(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src})}
 // Rasterise once at tile size ×2 so drawing each frame is a cheap bitmap copy.
 async function illBitmap(src){if(!src)return null;if(ILLC[src])return ILLC[src];const im=await loadImg(src);if(!im)return null;
@@ -213,7 +214,7 @@ function kzFix(){if(S.lang!=='kz')return;$('rePlan').querySelectorAll('input,tex
 async function buildQuiz(){unlockAudio();kzFix();$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
   if(VMODE==='design'&&!VPICK){try{busy($('reGo'),true,'Готовим диктора…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — попробуйте через «📚 Мои голоса».';busy($('reGo'),false,'✅ Согласен — создать озвучку и видео');return}}
   const set=S.set.map((q,i)=>({emo:val('qe'+i)||q.emo,col:q.col,q:val('qq'+i),o:[0,1,2].map(k=>val(`qo${i}_${k}`)),a:+$('qa'+i).value}));
-  const D={set,draw:QUIZ.draw};const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,sets={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
+  const D={set,draw:QUIZ.draw,mascot:await mascotImg(),lang:typeof lang!=='undefined'?lang:S.lang};const vid=$('pVoice').value,vname=$('pVoice').selectedOptions[0]?.textContent,sets={stability:+$('pStab').value,similarity:+$('pSim').value,style:+$('pSty').value,speed:+$('pSpd').value};
   $('reS3').classList.remove('hide');$('reS3').scrollIntoView({behavior:'smooth'});
   try{await loadFonts();for(let i=0;i<set.length;i++){const b=await illBitmap(S.ill&&S.ill[i]);if(b)set[i].img=b}
     const parts=[];set.forEach((q,i)=>{parts.push(['q'+i,val('qvq'+i)]);parts.push(['a'+i,val('qva'+i)])});const clips={},paths={};
@@ -414,7 +415,7 @@ async function autoReel(lang,vid,vname,extraAvoid,st,src){
   const clips={},paths={};let n=0;
   for(const [k,t] of parts){if(!t)continue;st(`🎙 Озвучка ${++n}/${parts.length}…`);const r=await tts(t,vid,vname,DEF_SET);clips[k]=await decode(r.url);paths[k]=r.job&&r.job.path}
   const imgs=await imgsP;imgs.forEach((b,i)=>{if(b)set[i].img=b});
-  const D={set,draw:QUIZ.draw};D.tl=QUIZ.timeline(D,clips);
+  const D={set,draw:QUIZ.draw,mascot:await mascotImg(),lang:typeof lang!=='undefined'?lang:S.lang};D.tl=QUIZ.timeline(D,clips);
   const clean=set.map(({img,...q})=>q);
   const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,bank:set.map(q=>q.bid).filter(Boolean),q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
   if(error)throw new Error(error.message);
