@@ -54,7 +54,8 @@ function mix(T,c,bg,sfx){sfx=sfx||{};const N=Math.ceil(T.dur*SR)+SR,voice=new Fl
   const correct=new Float32Array(1.1*SR|0);add(correct,0,mx(bellv(84,.5,.15),vox(hz(84),.18,.05,'tri',.003,10)));add(correct,.11,mx(bellv(88,.9,.17),vox(hz(88),.3,.05,'tri',.003,7)));add(correct,.11,bellv(91,.8,.07)); // C7→E7(+G) ding-ding!
   const dun=new Float32Array(1.4*SR|0);add(dun,0,mx(vox(hz(45),.35,.22,'sq',.005,6),vox(hz(57),.35,.08,'tri',.005,6)));add(dun,.38,mx(vox(hz(44),1.0,.24,'sq',.005,2.6),vox(hz(56),1.0,.09,'tri',.005,2.6))); // A2 → G#2 "dun-duuun"
   // user-supplied samples (from their reference TikTok): question-start hit + 5 s timer ticks
-  if(sfx.start)add(fx,.08,sfx.start,1);   // one 'tық' at the very beginning of the video only
+  // user-chosen UI sound (#1 from their SFX video): at the very start of the video and on every question change
+  if(sfx.start)T.qs.forEach((o,i)=>add(fx,i===0?.08:o.s,sfx.start,.55));
   T.qs.forEach((o,i)=>{
     opPop.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
     for(let k=0;k<5;k++)add(fx,o.ts+k,tickOrig,k>=3?1.4:.9);   // the original timer tick (one per second, louder for the last 2)
