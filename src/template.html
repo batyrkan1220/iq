@@ -781,6 +781,20 @@ header .logo .wm .ld{background:#c13fe0!important}
 
 .brand .mmi{background:#fff;padding:3px;box-sizing:border-box;border-radius:9px}
 .logo .mmi{width:40px;height:40px;filter:none;background:#fff;border-radius:12px;padding:3px;box-sizing:border-box;box-shadow:0 6px 16px -8px rgba(80,40,140,.45)}
+
+/* ---- softer test screen on mobile (2026-11-25) ---- */
+html{min-height:100%;background-color:#efe2fb}
+body{background:transparent!important;min-height:100svh}
+@media (max-width:820px){html{background-attachment:scroll!important;background-size:100% 100%!important}}
+/* question pictures: near-black ink → soft violet ink, grey cells → lavender (same mapping everywhere, so answers stay distinguishable) */
+#qvis [fill="#1f2433"],.opts [fill="#1f2433"]{fill:#3d3470}
+#qvis [stroke="#1f2433"],.opts [stroke="#1f2433"]{stroke:#3d3470}
+#qvis [fill="#f3f4f8"],.opts [fill="#f3f4f8"]{fill:#f7f4ff}
+#qvis [fill="#e3e6ee"],.opts [fill="#e3e6ee"]{fill:#ece6fb}
+#qvis [stroke="#e3e6ee"],.opts [stroke="#e3e6ee"]{stroke:#e2d9fa}
+#qvis [stroke="#9aa0b4"],.opts [stroke="#9aa0b4"]{stroke:#b3a6dc}
+.lsw button.on{background:linear-gradient(135deg,#7c3aed,#c13fe0)}
+@media (max-width:600px){#test .card{border-radius:24px;padding:18px 16px}#test .qtext{font-size:17px;line-height:1.38}.opt{padding:13px 14px}}
 </style>
 </head>
 <body>
