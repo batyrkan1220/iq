@@ -141,7 +141,7 @@ const nOpts=q=>q.osvg?q.osvg.length:q.text&&!q.vq?q.o.length:q.opts.length;
 let ans=[],cur=0,left=TIME,tick=null,userName='';
 const $=id=>document.getElementById(id);
 function show(id){$('stickyCta').classList.toggle('on',false);document.querySelector('.pwsticky').classList.remove('on');['start','test','email','analyze','paywall','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
-function start(){TR('start');if(PATH_LANG){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
+function start(){TR('start');if(true){$('wordModal').classList.add('on');return}$('langModal').classList.add('on')}
 document.querySelectorAll('#langModal .lpick').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;TR('lang',{l:LANG});try{localStorage.setItem('iq_lang',LANG)}catch(e){};applyLang();syncUrl();$('langModal').classList.remove('on');$('wordModal').classList.add('on')});
 $('wordBtn').onclick=()=>{$('wordModal').classList.remove('on');begin()};
 function begin(){TR('begin',{l:LANG});paceShown=false;shownI={};userName='';Q.forEach(q=>delete q.seen);ans=new Array(TOTAL).fill(null);cur=0;left=TIME;show('test');render();
@@ -452,7 +452,7 @@ function histResult(iq){const el=$('hiRes');if(!el)return;const rows=HIST.map(h=
 function renderSample(){if(!$('smpRadar'))return;$('smpRadar').innerHTML=radarSVG([.8,.65,.9,.7,.85],[T('Логика'),T('Внимание'),T('Память'),T('Числа'),T('Пространство')])}
 if(FREE){const f=document.getElementById('faqPay');if(f)f.remove()}
 /* ===== language switch ===== */
-function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want='/'+LANG+'/';const p=location.pathname;
+function syncUrl(){try{if(!/^https?:/.test(location.protocol))return;const want='/kz/';const p=location.pathname;
   if(/^\/(kz|ru)(\/|$)/i.test(p)||p==='/'||p==='/index.html'){if(p!==want)history.replaceState(null,'',want+location.search+location.hash)}}catch(e){}}
 function applyLang(){document.documentElement.lang=LANG==='kz'?'kk':'ru';
   document.querySelectorAll('[data-kz]').forEach(el=>{if(el.dataset.ru==null)el.dataset.ru=el.innerHTML;el.innerHTML=LANG==='kz'?el.dataset.kz:el.dataset.ru});

@@ -1,6 +1,6 @@
 /* ===== i18n: Russian is the source; Kazakh translations below ===== */
 const PATH_LANG=(()=>{const p=(location.pathname||'').toLowerCase();return /^\/kz(\/|$)/.test(p)?'kz':/^\/ru(\/|$)/.test(p)?'ru':null})();
-let LANG=PATH_LANG||(()=>{try{return localStorage.getItem('iq_lang')||'ru'}catch(e){return 'ru'}})();
+let LANG='kz';// site is Kazakh-only
 const KZ={
 "Какая плитка стоит на месте «?»":"«?» орнына қай плитка келеді?",
 "В каждой строке точка сдвигается слева направо, а в каждом столбце — сверху вниз. На месте «?» точка должна быть справа посередине.":"Әр жолда нүкте солдан оңға, ал әр бағанда жоғарыдан төменге жылжиды. «?» орнында нүкте оң жақта, ортасында болуы керек.",

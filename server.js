@@ -29,6 +29,8 @@ http.createServer((req, res) => {
   const host = (req.headers.host || '').toLowerCase();
   if (host.startsWith('www.')) { res.writeHead(301, { Location: 'https://' + host.slice(4) + req.url }); return res.end(); }
   if (p === '/' ) p = '/index.html';
+  // site is Kazakh-only: /ru/… → /kz/…
+  if (/^\/ru(\/|$)/.test(p)) { res.writeHead(301, { Location: '/kz/' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '') }); return res.end(); }
   if (/^\/(kz|ru|admin|privacy|oferta)$/.test(p)) { res.writeHead(301, { Location: p + '/' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '') }); return res.end(); }
   if (p.endsWith('/')) p += 'index.html';
   if (p.includes('..') || !ALLOW.some(r => r.test(p))) return notFound(req, res);
