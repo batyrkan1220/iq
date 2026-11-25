@@ -29,8 +29,8 @@ function mix(T,c,bg){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mu
   const kick=(()=>{const n=.3*SR|0,o=new Float32Array(n);let ph=0;for(let k=0;k<n;k++){const t=k/SR;ph+=2*Math.PI*(50+80*Math.exp(-t*30))/SR;o[k]=.35*Math.sin(ph)*Math.exp(-t*10)}return o})();
   if(bg===false){/* no music */}
   else if(bg&&bg.length>SR*4){
-    // uploaded background track, looped with a 1 s crossfade so it never stops
-    const X=SR|0,stp=bg.length-X;for(let st=0,k=0;st<N;st+=stp,k++){const o=new Float32Array(bg.length);for(let j=0;j<bg.length;j++){let g=1;if(k>0&&j<X)g=j/X;if(j>bg.length-X)g=(bg.length-j)/X;o[j]=bg[j]*g*.42}add(mus,st/SR,o)}}
+    // background track is an exact number of bars → loop it end-to-end (no overlap, so it never sounds doubled)
+    const o=Float32Array.from(bg,v=>v*.42);for(let st=0;st<N;st+=bg.length)add(mus,st/SR,o)}
   else{const P=notes.map(pl);for(let b=0;b*beat<T.dur+1;b++){add(mus,b*beat,P[b%8]);if(b%4===0)add(mus,b*beat,kick)}}
   const win=.25*SR|0;let acc=0;const env=new Float32Array(N);for(let k=0;k<N;k++){acc+=Math.abs(voice[k]);if(k>=win)acc-=Math.abs(voice[k-win]);env[k]=acc/win}
   const end=T.dur*SR|0;for(let k=0;k<N;k++){const d=1-(bg?.72:.6)*Math.min(1,env[Math.min(N-1,k+(win>>1))]/.03);const fi=Math.min(1,k/(.6*SR)),fo=k>end?0:Math.min(1,(end-k)/(1.5*SR));mus[k]*=d*fi*fo*.8}

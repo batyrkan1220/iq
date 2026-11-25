@@ -237,7 +237,8 @@ async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm
 const val=id=>($(id)?$(id).value:'').trim();
 async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
 // ---------- background music: one fixed track for all reels (IQ Light 7, scripts/make-reels-music.py) ----------
-let BGM=null;function bgm(){if(!BGM)BGM=decode('audio/iq-light7.m4a?v=1').catch(e=>{console.warn('bg music',e);BGM=null;return null});return BGM}
+let BGM=null;const BGM_LOOP=19.2;// seconds: exact length of the track's 16 bars (the decoder adds a few ms of padding)
+function bgm(){if(!BGM)BGM=decode('audio/iq-light7.m4a?v=1').then(b=>b&&b.length>Math.round(SR*BGM_LOOP)?b.subarray(0,Math.round(SR*BGM_LOOP)):b).catch(e=>{console.warn('bg music',e);BGM=null;return null});return BGM}
 async function decode(url){const ab=await (await fetch(url)).arrayBuffer();const oc=new OfflineAudioContext(1,SR,SR);const b=await oc.decodeAudioData(ab);return b.getChannelData(0)}
 async function build(){kzFix();const ans=S.format==='answer';$('reGoErr').textContent='';busy($('reGo'),true,'Создаём озвучку…');
   if(VMODE==='design'&&!VPICK){try{$('reGoErr').textContent='';busy($('reGo'),true,'Готовим диктора…');if(!PREV||!PREV.length)await doDesign();await pickPrev(0)}catch(e){$('reGoErr').textContent='Voice Design: '+e.message+' — попробуйте через «📚 Мои голоса».';busy($('reGo'),false,'✅ Согласен — создать озвучку и видео');return}}
