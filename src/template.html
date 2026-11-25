@@ -766,8 +766,8 @@ header .logo .wm .ld{background:#c13fe0!important}
 @media (max-width:760px){
   #start>.hero-card{min-height:calc(100svh - 96px);align-items:flex-start}
   #start .hero{grid-template-columns:1fr;gap:0}
-  #start .hero-pic{order:-1;align-self:center;height:min(34svh,280px);overflow:hidden}
-  #start .hero-pic img{height:min(42svh,340px)}
+  #start .hero-pic{order:-1;align-self:center;height:auto;overflow:visible;padding-top:4px}
+  #start .hero-pic img{height:clamp(200px,34svh,300px);width:auto;max-width:100%;object-fit:contain}
   #start .hero-txt{text-align:center}#start .hero-txt p{margin-left:auto;margin-right:auto;font-size:15.5px}
   #start .hero-txt h1{font-size:clamp(32px,9vw,44px);margin-top:6px}
   #start .trust{justify-content:center}
@@ -792,7 +792,7 @@ header .logo .wm .ld{background:#c13fe0!important}
           <button class="btn big cta" id="startBtn" data-kz="Тестті бастау &lt;span class=&quot;arr&quot;&gt;→&lt;/span&gt;">Начать тест <span class="arr">→</span></button>
           <ul class="trust" aria-label="Тест туралы"><li data-kz="⏱ 10–12 минут">⏱ 10–12 минут</li><li data-kz="🔒 Тіркелусіз">🔒 Без регистрации</li><li data-kz="⚡ Нәтиже тест соңында">⚡ Результат сразу после теста</li></ul>
         </div>
-        <div class="hero-pic" aria-hidden="true"><img src="/assets/hero-scientist.webp" alt="" width="520" height="910" fetchpriority="high"></div>
+        <div class="hero-pic" aria-hidden="true"><img src="/assets/hero-scientist-sm.webp?v=2" srcset="/assets/hero-scientist-sm.webp?v=2 736w, /assets/hero-scientist.webp?v=2 1472w" sizes="(max-width:760px) 200px, 340px" alt="" width="736" height="1288" fetchpriority="high" decoding="async"></div>
         <div class="demo hv" id="demo">
           <svg class="hv-svg" viewBox="0 0 300 300" aria-hidden="true">
             <defs>
