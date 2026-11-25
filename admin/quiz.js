@@ -60,7 +60,7 @@ function mix(T,c,bg,sfx){sfx=sfx||{};const N=Math.ceil(T.dur*SR)+SR,voice=new Fl
   T.qs.forEach((o,i)=>{
     opPop.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
     if(sfx.timer)add(fx,o.ts,sfx.timer,.6);else for(let k=0;k<5;k++)add(fx,o.ts+k,tickOrig,k>=3?1.4:.9);   // user's 5 s timer sound   // the original timer tick (one per second, louder for the last 2)
-    add(fx,o.ra,i<T.qs.length-1?correct:dun)});
+    add(fx,o.ra,i<T.qs.length-1?(sfx.answer||correct):dun,i<T.qs.length-1&&sfx.answer?.7:1)});   // answer reveal: user's sound
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
 // ---------- drawing (iqtest.live riddle style) ----------
