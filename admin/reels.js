@@ -146,20 +146,24 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=1').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=2').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   (data||[]).forEach(r=>(r.question&&r.question.bank||[]).forEach(id=>BANK_USED.add(id)));
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();(data||[]).forEach(r=>(r.question&&r.question.quiz||[]).forEach(q=>usedQ.add(norm(q))));
   (BANK||[]).forEach(x=>{if(usedQ.has(norm(x.q)))BANK_USED.add(x.id)})}
 function bankFree(){return BANK?BANK.filter(x=>!BANK_USED.has(x.id)).length:0}
-// 2 easy + 1 medium + 1 comment question, 4 different topics, at most 2 math questions, facts preferred where available
-function bankPick(){const free=BANK.filter(x=>!BANK_USED.has(x.id));const pick=[],topics=new Set();let math=0;
-  const take=(lvl,preferFact)=>{let pool=free.filter(x=>x.l===lvl&&!topics.has(x.t)&&!pick.includes(x));const facts=pool.filter(x=>FACTY.has(x.t));
-    if((preferFact||math>=2)&&facts.length)pool=facts;else if(!preferFact&&math<2){const m=pool.filter(x=>!FACTY.has(x.t));if(m.length&&Math.random()<.85)pool=m}
-    if(!pool.length)pool=free.filter(x=>x.l===lvl&&!pick.includes(x));if(!pool.length)return false;
-    const tps=[...new Set(pool.map(x=>x.t))],tp=tps[Math.floor(Math.random()*tps.length)],tpool=pool.filter(x=>x.t===tp);const x=tpool[Math.floor(Math.random()*tpool.length)];pick.push(x);topics.add(x.t);if(!FACTY.has(x.t))math++;return true};
-  if(!(take(1,true)&&take(1,false)&&take(2,true)&&take(3,Math.random()<.5)))return null;
-  pick.forEach(x=>BANK_USED.add(x.id));return pick}
+// v2 pick: Q1 easy hook · Q2 medium logic · Q3 logic (medium/hard) · Q4 tricky comment question.
+// 4 different topics, at most one plain-arithmetic question; topics are chosen uniformly so big topics don't dominate.
+const LOGIC=new Set(['cmp','days','months','analogy','oddword','oddnum','missing','clock','seq','bigger','age','riddle','price']);
+const ARITH=new Set(['add','sub','mult','pct','order','missing','dec','prime','conv']);
+function bankPick(){const free=BANK.filter(x=>!BANK_USED.has(x.id));const pick=[],topics=new Set();let ar=0;
+  const take=(lvls,filt)=>{let pool=free.filter(x=>lvls.includes(x.l)&&!topics.has(x.t)&&!pick.includes(x)&&(!ar||!ARITH.has(x.t)));
+    const f=filt?pool.filter(filt):pool;if(f.length)pool=f;if(!pool.length)return false;
+    const tps=[...new Set(pool.map(x=>x.t))],tp=tps[Math.floor(Math.random()*tps.length)],tpool=pool.filter(x=>x.t===tp);
+    const x=tpool[Math.floor(Math.random()*tpool.length)];pick.push(x);topics.add(x.t);if(ARITH.has(x.t))ar++;return true};
+  const BAIT=new Set([...LOGIC,'order','dec','fact']);
+  const ok=take([1],Math.random()<.55?x=>LOGIC.has(x.t):x=>x.t==='fact'||x.t==='capital')&&take([2],x=>LOGIC.has(x.t))&&take(Math.random()<.5?[2]:[3],x=>LOGIC.has(x.t))&&take([3],x=>BAIT.has(x.t));
+  if(!ok)return null;pick.forEach(x=>BANK_USED.add(x.id));return pick}
 async function bankQuiz(lang){if(lang&&lang!=='kz')throw new Error('База пока только на казахском — выберите язык «Казахский».');
   if(!BANK){await bankLoad();await bankUsedLoad()}const p=bankPick();if(!p)throw new Error('В базе закончились неиспользованные вопросы.');
   S.qSrc='bank';const set=QUIZ.fromAI(p);set.forEach((q,i)=>q.bid=p[i].id);$('qkDbN')&&($('qkDbN').textContent=`· ${bankFree()}`);return set}

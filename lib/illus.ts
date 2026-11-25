@@ -168,6 +168,16 @@ const TOPIC: Record<string, string[]> = {
   "📏": ["A yellow measuring tape and a wooden ruler on a craft table", "Colorful rulers and pencils neatly arranged on a desk"],
   "⏱️": ["A shiny silver stopwatch next to a glass hourglass with flowing sand", "A cute alarm clock and a calendar on a desk"],
   "🧪": ["Laboratory glass flasks with bright colorful glowing liquids", "A science lab table with test tubes and bubbling beakers"],
+  "👥": ["Three cute cartoon kids standing side by side on a stage with a spotlight, seen from behind", "Three cartoon runners on a race track seen from far away"],
+  "📅": ["A blank colorful desk calendar with a cup of tea and a plant", "A cozy desk with a blank planner notebook and colorful pencils"],
+  "🗓️": ["One tree whose crown is split into spring, summer, autumn and winter", "Four seasons landscape panorama from snowy winter to golden autumn"],
+  "🔗": ["Two glowing puzzle pieces clicking together with sparkles", "Two colorful chain links connecting, glowing softly"],
+  "🔍": ["A big magnifying glass over a row of colorful wrapped gift boxes, one glowing", "A curious cartoon detective magnifying glass over colorful shapes"],
+  "❓": ["A glowing puzzle box with a hidden missing piece, sparkles", "A treasure map path with a glowing mystery chest at the end"],
+  "🕰️": ["A vintage wall clock on a pastel wall with soft light", "A cute alarm clock on a nightstand next to a lamp"],
+  "🕵️": ["A cute cartoon detective with a magnifying glass, mysterious friendly mood", "A detective desk with a lamp, magnifying glass and notebook"],
+  "💰": ["A cute shop counter with a cash register and a few coins", "A colorful piggy bank with coins around it"],
+  "🎂": ["A colorful birthday cake with lit candles and confetti", "A family photo frame wall with balloons, cozy living room"],
 };
 const GENERIC = [
   "A big friendly glowing question mark surrounded by soft sparkles and floating abstract shapes",

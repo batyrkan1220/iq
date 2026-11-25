@@ -29,7 +29,9 @@ def kzdec(s):  # "0,45" -> "нөл бүтін жүзден қырық бес"
 EMO = {'capital': '🏙️', 'continent': '🌍', 'element': '🧪', 'mult': '🧮', 'add': '➕', 'sub': '➖', 'conv': '⏱️', 'len': '📏',
        'seq': '🧩', 'order': '🤯', 'pct': '💯', 'dec': '⚖️', 'prime': '🔢', 'odd': '🎲', 'fact': '💡'}
 COL = {'capital': '#ffedd5', 'continent': '#dbeafe', 'element': '#ccfbf1', 'mult': '#ede9fe', 'add': '#dcfce7', 'sub': '#fee2e2', 'conv': '#fef3c7',
-       'len': '#e0f2fe', 'seq': '#fae8ff', 'order': '#fde68a', 'pct': '#e0e7ff', 'dec': '#e5e7eb', 'prime': '#f3e8ff', 'odd': '#fce7f3', 'fact': '#fef9c3'}
+       'len': '#e0f2fe', 'seq': '#fae8ff', 'order': '#fde68a', 'pct': '#e0e7ff', 'dec': '#e5e7eb', 'prime': '#f3e8ff', 'odd': '#fce7f3', 'fact': '#fef9c3',
+       'cmp': '#e0e7ff', 'days': '#dcfce7', 'months': '#fef3c7', 'analogy': '#fae8ff', 'oddword': '#e0f2fe', 'oddnum': '#fce7f3', 'missing': '#ede9fe',
+       'clock': '#ffedd5', 'bigger': '#e5e7eb', 'riddle': '#fde68a', 'price': '#dcfce7', 'age': '#fee2e2'}
 
 def add(topic, lvl, q, o, a_idx, v=None, av=None, emo=None, col=None):
     o = [str(x) for x in o]
@@ -103,12 +105,12 @@ for sym, name, l in E:
     add('element', l, f'«{sym}» — қай химиялық\nэлементтің таңбасы?', o, a, v=f'{" ".join(sym)} — қай химиялық элементтің таңбасы?')
 
 # ---------------- unit conversions (easy) ----------------
-for n in range(2, 13):
+for n in range(2, 5):
     add('conv', 1, f'{n} сағатта неше\nминут бар?', [n*60, n*60+40 if n%2 else n*60-20, n*100], 0, v=f'{kz(n)} сағатта неше минут бар?', av=f'{kz(n*60)} минут')
     add('conv', 1, f'{n} минутта неше\nсекунд бар?', [n*60, n*100, n*30], 0, v=f'{kz(n)} минутта неше секунд бар?', av=f'{kz(n*60)} секунд')
     add('conv', 1, f'{n} тәулікте неше\nсағат бар?', [n*24, n*20, n*12], 0, v=f'{kz(n)} тәулікте неше сағат бар?', av=f'{kz(n*24)} сағат')
     add('conv', 1, f'{n} аптада неше\nкүн бар?', [n*7, n*5, n*10], 0, v=f'{kz(n)} аптада неше күн бар?', av=f'{kz(n*7)} күн')
-for n in range(2, 21):
+for n in range(2, 0):
     add('len', 1, f'{n} километрде неше\nметр бар?', [n*1000, n*100, n*10000], 0, v=f'{kz(n)} километрде неше метр бар?', av=f'{kz(n*1000)} метр')
     add('len', 1, f'{n} метрде неше\nсантиметр бар?', [n*100, n*10, n*1000], 0, v=f'{kz(n)} метрде неше сантиметр бар?', av=f'{kz(n*100)} сантиметр')
     add('len', 1, f'{n} килограмда неше\nграмм бар?', [n*1000, n*100, n*10000], 0, v=f'{kz(n)} килограмда неше грамм бар?', av=f'{kz(n*1000)} грамм')
@@ -119,12 +121,12 @@ for a_ in range(3, 10):
         r = a_*b; w = sorted({r + a_, r - b, r + 1, r - 1} - {r}); R.shuffle(w)
         add('mult', 1, f'{a_} × {b} = ?', [r] + w[:2], 0, v=f'{kz(a_)} көбейту {kz(b)} неше болады?', av=kz(r))
 for _ in range(9000):
-    if len([i for i in items if i['t'] == 'add']) >= 2600: break
+    if len([i for i in items if i['t'] == 'add']) >= 150: break
     a_, b = R.randint(12, 89), R.randint(12, 89); r = a_ + b
     w = [r + 10, r - 10] if R.random() < .5 else [r + 1, r - 9]
     add('add', 1, f'{a_} + {b} = ?', [r] + w, 0, v=f'{kz(a_)} қосу {kz(b)} неше болады?', av=kz(r))
 for _ in range(9000):
-    if len([i for i in items if i['t'] == 'sub']) >= 2000: break
+    if len([i for i in items if i['t'] == 'sub']) >= 150: break
     a_ = R.randint(41, 99); b = R.randint(12, a_ - 11); r = a_ - b
     w = [r + 10, r - 10] if R.random() < .5 else [r + 2, r - 8]
     add('sub', 2, f'{a_} − {b} = ?', [r] + w, 0, v=f'{kz(a_)} алу {kz(b)} неше болады?', av=kz(r))
@@ -171,7 +173,7 @@ for st in range(1, 60):
 
 # ---------------- order of operations (comment questions) ----------------
 for _ in range(20000):
-    if len([i for i in items if i['t'] == 'order']) >= 3000: break
+    if len([i for i in items if i['t'] == 'order']) >= 1200: break
     kind = R.randint(0, 3)
     if kind == 0:
         a_, b, c = R.randint(2, 20), R.randint(2, 9), R.randint(2, 9); r = a_ + b * c; w = (a_ + b) * c
@@ -203,7 +205,7 @@ for i in range(1, 10):
 
 # ---------------- odd / prime ----------------
 for _ in range(4000):
-    if len([i for i in items if i['t'] == 'odd']) >= 500: break
+    if len([i for i in items if i['t'] == 'odd']) >= 0: break
     odd = R.randrange(11, 99, 2); ev = R.sample(range(10, 99, 2), 2)
     add('odd', 1, f'Қай сан тақ?\n({odd}, {ev[0]}, {ev[1]})', [odd] + ev, 0, v=f'Мына сандардың қайсысы тақ: {kz(odd)}, {kz(ev[0])}, {kz(ev[1])}?', av=kz(odd))
 PR = [p for p in range(11, 100) if all(p % d for d in range(2, int(p ** .5) + 1))]
@@ -218,6 +220,10 @@ def F(lvl, emo, q, o, v=None, av=None): add('fact', lvl, q, o, 0, v=v, av=av, em
 sys.path.insert(0, os.path.dirname(__file__))
 from quiz_facts_kz import FACTS  # noqa: E402
 for f in FACTS: F(*f)
+
+# ---------------- short logic / IQ-style questions (v2) ----------------
+from quiz_logic_kz import build as build_logic  # noqa: E402
+build_logic(add, R, kz)
 
 R.shuffle(items)
 for k, it in enumerate(items, 1): it['id'] = k
