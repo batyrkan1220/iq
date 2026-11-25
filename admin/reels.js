@@ -27,7 +27,7 @@ box.innerHTML=`
   <label class="fld"><span>Сколько видео</span><input id="qkN" type="number" min="1" max="30" value="1"></label>
  </div>
 
- <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qkGo" style="flex:1;min-width:200px">⚡ Создать</button><button class="btn sec hide" id="qkStop">⏹ Остановить после текущего</button></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qkGoDb" style="flex:1;min-width:200px">📚 Создать из базы <span id="qkDbN" style="opacity:.8;font-weight:600"></span></button><button class="btn sec" id="qkGo" style="flex:1;min-width:200px">🤖 Создать через ИИ (Anthropic)</button><button class="btn sec hide" id="qkStop">⏹ Остановить после текущего</button></div>
  <div class="muted" id="qkNote" style="font-size:12px;margin-top:8px">Пока идёт создание, держите эту вкладку открытой. Одно видео ≈ 1–2 мин. Расход ElevenLabs ≈ 400–500 символов на видео.</div>
  <div id="qkQ" style="display:grid;gap:6px;margin-top:10px"></div>
 </div>
@@ -39,7 +39,7 @@ box.innerHTML=`
   <label class="fld"><span>Формат</span><select id="reFmt"><option value="quiz" selected>🎯 Викторина: 4 вопроса × 3 варианта (в конце — комментарий)</option><option value="comment">Без ответа — «Пишите в комментариях»</option><option value="answer">С ответом — «Подробнее»</option></select></label>
   <label class="fld" id="reHintL" style="grid-column:span 2;display:none"><span>Дополнительное пожелание (необязательно)</span><input id="reHint" placeholder="например: про возраст, про календарь, попроще…"></label>
  </div>
- <button class="btn" id="reGen" style="width:100%">✨ ИИ: предложить вопросы</button><div class="err" id="reGenErr"></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="reGenDb" style="flex:1">📚 Вопросы из базы</button><button class="btn sec" id="reGen" style="flex:1">✨ ИИ: предложить вопросы</button></div><div class="err" id="reGenErr"></div>
  <div id="reQs" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:12px"></div>
 </div>
 </div></details>
@@ -141,17 +141,36 @@ async function usedQs(){const {data:prev}=await sb.from('reels').select('questio
   const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(String(x).replace(/\n/g,' '))));return used}
 async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({lang:lang||S.lang,n,avoid:[...(extra||[]),...await usedQs()]})});
   const j=await r.json().catch(()=>({}));
-  if(!j.ok){const p=await preparedSet(n,lang||S.lang,extra);if(p){S.qSrc='prepared';return QUIZ.fromAI(p)}
-    throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — ИИ не может написать вопросы':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'), а готовые наборы закончились.')}
+  if(!j.ok)throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — используйте «📚 из базы»':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'). Используйте «📚 из базы».');
   S.qSrc='ai';return QUIZ.fromAI(j.items)}
-// prepared sets (admin/prepared.js): used when the AI is unavailable; a set is skipped once any of its questions was already used
-async function preparedSet(n,lang,extra){const bank=lang==='kz'?(window.PREPARED_KZ||[]):[];if(!bank.length||n!==4)return null;
-  const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const used=new Set([...(extra||[]),...await usedQs()].map(norm));
-  const set=bank.find(st=>st.every(x=>!used.has(norm(x.q))));return set?set.map(x=>({...x})):null}
-async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGen'),true,'ИИ пишет вопросы… (≈20–40 сек)');
+// ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
+let BANK=null,BANKP=null;const BANK_USED=new Set();
+const FACTY=new Set(['fact','capital','continent','element']);
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=1').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
+  (data||[]).forEach(r=>(r.question&&r.question.bank||[]).forEach(id=>BANK_USED.add(id)));
+  const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();(data||[]).forEach(r=>(r.question&&r.question.quiz||[]).forEach(q=>usedQ.add(norm(q))));
+  (BANK||[]).forEach(x=>{if(usedQ.has(norm(x.q)))BANK_USED.add(x.id)})}
+function bankFree(){return BANK?BANK.filter(x=>!BANK_USED.has(x.id)).length:0}
+// 2 easy + 1 medium + 1 comment question, 4 different topics, at most 2 math questions, facts preferred where available
+function bankPick(){const free=BANK.filter(x=>!BANK_USED.has(x.id));const pick=[],topics=new Set();let math=0;
+  const take=(lvl,preferFact)=>{let pool=free.filter(x=>x.l===lvl&&!topics.has(x.t)&&!pick.includes(x));const facts=pool.filter(x=>FACTY.has(x.t));
+    if((preferFact||math>=2)&&facts.length)pool=facts;else if(!preferFact&&math<2){const m=pool.filter(x=>!FACTY.has(x.t));if(m.length&&Math.random()<.85)pool=m}
+    if(!pool.length)pool=free.filter(x=>x.l===lvl&&!pick.includes(x));if(!pool.length)return false;
+    const tps=[...new Set(pool.map(x=>x.t))],tp=tps[Math.floor(Math.random()*tps.length)],tpool=pool.filter(x=>x.t===tp);const x=tpool[Math.floor(Math.random()*tpool.length)];pick.push(x);topics.add(x.t);if(!FACTY.has(x.t))math++;return true};
+  if(!(take(1,true)&&take(1,false)&&take(2,true)&&take(3,Math.random()<.5)))return null;
+  pick.forEach(x=>BANK_USED.add(x.id));return pick}
+async function bankQuiz(lang){if(lang&&lang!=='kz')throw new Error('База пока только на казахском — выберите язык «Казахский».');
+  if(!BANK){await bankLoad();await bankUsedLoad()}const p=bankPick();if(!p)throw new Error('В базе закончились неиспользованные вопросы.');
+  S.qSrc='bank';const set=QUIZ.fromAI(p);set.forEach((q,i)=>q.bid=p[i].id);$('qkDbN')&&($('qkDbN').textContent=`· ${bankFree()}`);return set}
+async function bankInfo(){try{await bankLoad();await bankUsedLoad();$('qkDbN').textContent=`· ${bankFree().toLocaleString('ru-RU')}`}catch(e){}}
+async function genQuizDb(){S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGenDb'),true,'Берём из базы…');
+  try{S.set=await bankQuiz(S.lang);drawSet()}catch(e){$('reGenErr').textContent=e.message}busy($('reGenDb'),false,'📚 Другие 4 из базы')}
+$('reGenDb').onclick=genQuizDb;
+async function genQuiz(){S.qSrc='ai';S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGen'),true,'ИИ пишет вопросы… (≈20–40 сек)');
   try{S.set=await aiQuiz(4);drawSet()}
   catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Другие 4 вопроса (ИИ)')}
-async function swapQ(i,btn){btn.disabled=true;btn.textContent='⏳';try{const [x]=await aiQuiz(1,S.set.map(q=>q.q.replace(/\n/g,' ')));S.set[i]=x;drawSet()}catch(e){$('reGenErr').textContent=e.message;btn.disabled=false;btn.textContent='🔄'}}
+async function swapQ(i,btn){btn.disabled=true;btn.textContent='⏳';try{const [x]=S.qSrc==='bank'?(await bankQuiz(S.lang)).slice(i,i+1):await aiQuiz(1,S.set.map(q=>q.q.replace(/\n/g,' ')));S.set[i]=x;drawSet()}catch(e){$('reGenErr').textContent=e.message;btn.disabled=false;btn.textContent='🔄'}}
 function drawSet(){$('reQs').innerHTML=`<div class="card" style="grid-column:1/-1">${S.set.map((q,i)=>`<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
    <div style="font-size:40px;width:52px;text-align:center">${q.emo}</div><div style="flex:1"><b>${i+1}. ${esc(q.q.replace(/\n/g,' '))}</b><div style="font-size:13px;margin-top:4px">${q.o.map((o,k)=>k===q.a&&i<3?`<span class="pill ok">${esc(o)}</span>`:`<span class="pill">${esc(o)}</span>`).join(' ')}${i===3?' <span class="muted">— ответ не озвучивается, в комментарии</span>':''}</div></div>
    <button class="btn sec sm" data-s="${i}">🔄</button></div>`).join('')}
@@ -387,8 +406,8 @@ async function qkVoicesLoad(){{const vs=await voices();if(!vs||!vs.length)throw 
 $('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
 async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a})});
   const j=await r.json().catch(()=>({}));if(!j.ok)return null;return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return null}}
-async function autoReel(lang,vid,vname,extraAvoid,st){
-  st('🤖 ИИ пишет вопросы…');const set=await aiQuiz(4,extraAvoid,lang);
+async function autoReel(lang,vid,vname,extraAvoid,st,src){
+  st(src==='bank'?'📚 Берём вопросы из базы…':'🤖 ИИ пишет вопросы…');const set=src==='bank'?await bankQuiz(lang):await aiQuiz(4,extraAvoid,lang);
   st('🎨 Картинки + 🎙 озвучка…');const imgsP=Promise.all(set.map(illFor));
   const vo=QUIZ.voices(set,lang);const parts=[];set.forEach((q,i)=>{parts.push(['q'+i,lang==='kz'?kzText(vo[i].q):vo[i].q]);parts.push(['a'+i,lang==='kz'?kzText(vo[i].a):vo[i].a])});
   if(lang==='kz')set.forEach(q=>q.q=kzText(q.q));
@@ -397,7 +416,7 @@ async function autoReel(lang,vid,vname,extraAvoid,st){
   const imgs=await imgsP;imgs.forEach((b,i)=>{if(b)set[i].img=b});
   const D={set,draw:QUIZ.draw};D.tl=QUIZ.timeline(D,clips);
   const clean=set.map(({img,...q})=>q);
-  const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
+  const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,bank:set.map(q=>q.bid).filter(Boolean),q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
   if(error)throw new Error(error.message);
   const audio=QUIZ.mix(D.tl,clips,await bgm());D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
   const blob=await record(D,audio,D.tl.dur);
@@ -416,15 +435,16 @@ async function uploadReel(r,st){let last='';
   return last||'network'}
 let QK_STOP=false,QK_RUN=false;
 $('qkStop').onclick=()=>{QK_STOP=true;$('qkStop').textContent='Остановится после текущего…';$('qkStop').disabled=true};
-$('qkGo').onclick=async()=>{if(QK_RUN)return;unlockAudio();const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
+$('qkGo').onclick=()=>qkRun('ai');$('qkGoDb').onclick=()=>qkRun('bank');
+async function qkRun(src){if(QK_RUN)return;unlockAudio();const goBtn=src==='bank'?$('qkGoDb'):$('qkGo'),goTxt=goBtn.innerHTML;const vid=$('qkVoice').value,vname=$('qkVoice').selectedOptions[0]?.textContent;
   if(!vid){alert('Выберите голос (ElevenLabs должен быть подключён)');return}
   const N=Math.max(1,Math.min(30,+$('qkN').value||1)),mode=$('qkLang').value;QK_RUN=true;QK_STOP=false;
-  busy($('qkGo'),true,`⏳ Создаём 0/${N}…`);$('qkStop').classList.toggle('hide',N<2);$('qkStop').disabled=false;$('qkStop').textContent='⏹ Остановить после текущего';
+  busy(goBtn,true,`⏳ Создаём 0/${N}…`);$('qkGo').disabled=$('qkGoDb').disabled=true;$('qkStop').classList.toggle('hide',N<2);$('qkStop').disabled=false;$('qkStop').textContent='⏹ Остановить после текущего';
   await loadFonts();const made=[];let ok=0,fail=0;
   $('qkQ').innerHTML=Array.from({length:N},(_,i)=>`<div id="qkr${i}" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px"><b style="width:28px">${i+1}</b><span class="pill" id="qkl${i}">${mode==='mix'?(i%2?'RU':'KZ'):mode.toUpperCase()}</span><span id="qks${i}" class="muted" style="flex:1">В очереди</span></div>`).join('');
   for(let i=0;i<N;i++){if(QK_STOP){for(let k=i;k<N;k++)$('qks'+k).textContent='Отменено';break}
     const lang=mode==='mix'?(i%2?'ru':'kz'):mode;const stt=$('qks'+i);stt.classList.remove('muted');$('qkr'+i).style.borderColor='#a78bfa';
-    try{const r=await autoReel(lang,vid,vname,made,t=>{stt.textContent=t});made.push(...r.qs);
+    try{const r=await autoReel(src==='bank'?'kz':lang,vid,vname,made,t=>{stt.textContent=t},src);made.push(...r.qs);
       if(r.uploadErr){fail++;$('qkr'+i).style.borderColor='#fcd34d';stt.innerHTML=`⚠️ #${r.id} видео готово, но не загрузилось в облако (${esc(r.uploadErr)}). Скачайте или повторите:`;
         const bt=document.createElement('button');bt.className='btn sec sm';bt.textContent='☁️ Загрузить снова';bt.onclick=async()=>{bt.disabled=true;const e=await uploadReel(r,t=>bt.textContent=t);if(e){bt.disabled=false;bt.textContent='☁️ Загрузить снова'}else{bt.remove();stt.innerHTML=`✅ #${r.id} загружено`;loadHist()}};
         $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`);$('qkr'+i).appendChild(bt)}
@@ -432,12 +452,12 @@ $('qkGo').onclick=async()=>{if(QK_RUN)return;unlockAudio();const vid=$('qkVoice'
       $('qkr'+i).style.borderColor='#86efac';stt.innerHTML=`✅ #${r.id} · ${esc(r.qs[0])}… <span class="muted" style="font-size:11px">[${esc(S.recMode||'')}]</span> ${r.imgs<4?`<span class="muted">(картинок ${r.imgs}/4, остальные — эмодзи)</span>`:''}`;
       $('qkr'+i).insertAdjacentHTML('beforeend',`<a class="btn sec sm" href="${r.url}" download="iqtest_reels_${r.id}.${r.ext}" style="text-decoration:none">⬇</a>`)}}
     catch(e){fail++;$('qkr'+i).style.borderColor='#fca5a5';stt.innerHTML=`<span style="color:#b91c1c">❌ ${esc(e.message)}</span>`;
-      if(/ElevenLabs|quota|credits|ANTHROPIC_API_KEY/i.test(e.message)){for(let k=i+1;k<N;k++)$('qks'+k).textContent='Пропущено (см. ошибку выше)';break}}
-    busy($('qkGo'),true,`⏳ Создаём ${Math.min(i+2,N)}/${N}…`);loadHist()}
-  busy($('qkGo'),false,'⚡ Создать');$('qkStop').classList.add('hide');QK_RUN=false;
+      if(/ElevenLabs|quota|credits|ANTHROPIC_API_KEY|базе|базы|Анthropic|Anthropic|ИИ не смог/i.test(e.message)){for(let k=i+1;k<N;k++)$('qks'+k).textContent='Пропущено (см. ошибку выше)';break}}
+    busy(goBtn,true,`⏳ Создаём ${Math.min(i+2,N)}/${N}…`);loadHist()}
+  goBtn.innerHTML=goTxt;$('qkGo').disabled=$('qkGoDb').disabled=false;$('qkStop').classList.add('hide');QK_RUN=false;if(src==='bank')bankInfo();
   $('qkNote').innerHTML=`Готово: <b>${ok}</b> видео${fail?`, ошибок: <b style="color:#b91c1c">${fail}</b>`:''}. Все видео ниже в «Созданные Reels».`}
 window.addEventListener('beforeunload',e=>{if(QK_RUN){e.preventDefault();e.returnValue=''}});
 
-window.loadRe=async()=>{elStatus();status();loadHist();loadFonts();qkVoices()};
+window.loadRe=async()=>{elStatus();status();loadHist();loadFonts();qkVoices();bankInfo()};
 window.__reelsTest={drawFrame,timeline,mixAudio,S,loadFonts};
 })();
