@@ -191,7 +191,7 @@ export function topicSubject(emo?: string): { key: string; subjects: string[] } 
 }
 
 // ---- image cache in Supabase Storage (bucket "reels", folder illus-cache/<key>/): one FLUX picture is reused many times ----
-const CACHE_MAX = 6;
+const CACHE_MAX = 20;   // Workers Paid: more variety per topic (each new picture ≈ $0.001)
 function sbStore(): { url: string; h: Record<string, string> } | null {
   const url = (env.SUPABASE_URL || "https://dlhejkmuyyqvjzjxbwbg.supabase.co").trim().replace(/\/+$/, "");
   const key = (env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SECRET_KEY || "").trim();
