@@ -146,7 +146,7 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=4').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=5').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   (data||[]).forEach(r=>(r.question&&r.question.bank||[]).forEach(id=>BANK_USED.add(id)));
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();(data||[]).forEach(r=>(r.question&&r.question.quiz||[]).forEach(q=>usedQ.add(norm(q))));
@@ -411,8 +411,11 @@ function qkVoices(force){if(QKV&&!force)return QKV;$('qkVoice').innerHTML='<opti
 async function qkVoicesLoad(){{const vs=await voices();if(!vs||!vs.length)throw new Error('В ElevenLabs нет голосов');const pv=localStorage.getItem('el_voice');const h=vs.find(v=>/^\s*Hale\b/i.test(v.name));const def=(vs.find(v=>v.id===pv)||h||vs[0]||{}).id;
   $('qkVoice').innerHTML=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===def?'selected':''}>${esc(v.name)}</option>`).join('')}}
 $('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
+// offline topic pictures (admin/illus/<emoji code>.webp) — used when FLUX/Claude are unavailable
+const ILL_LOCAL=new Set(['1f92f','2795','2796','1f9e9','1f9ee','1f3b2','2696-fe0f','1f4af','1f522','1f3d9-fe0f','1f30d','1f4cf','23f1-fe0f','1f9ea','1f465','1f4c5','1f5d3-fe0f','1f517','1f50d','2753','1f570-fe0f','1f575-fe0f','1f4b0','1f382']);
+function localIll(emo){const c=[...String(emo||'')].map(ch=>ch.codePointAt(0).toString(16)).join('-');return illBitmap('illus/'+(ILL_LOCAL.has(c)?c:'generic')+'.webp?v=1').catch(()=>null)}
 async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a,emo:q.emo})});
-  const j=await r.json().catch(()=>({}));if(!j.ok)return null;return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return null}}
+  const j=await r.json().catch(()=>({}));if(!j.ok)return await localIll(q.emo);return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return await localIll(q.emo)}}
 async function autoReel(lang,vid,vname,extraAvoid,st,src){
   st(src==='bank'?'📚 Берём вопросы из базы…':'🤖 ИИ пишет вопросы…');const set=src==='bank'?await bankQuiz(lang):await aiQuiz(4,extraAvoid,lang);
   st('🎨 Картинки + 🎙 озвучка…');const imgsP=Promise.all(set.map(illFor));

@@ -67,23 +67,6 @@ def build(add, R, kz):
         o = [ans] + [x[0] for x in p if x[0] != ans]
         add('cmp', 3 if hard else 2, q, o, 0, emo='👥')
 
-    # ---------- 2. days of the week ----------
-    for d in range(7):
-        for k in (1, 2):
-            a = DAYS[(d + k) % 7]
-            q = f'Бүгін {DAYS[d]}.\n{"Ертең" if k == 1 else "Бүрсігүні"} қай күн?'
-            add('days', 1, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7] if k == 2 else DAYS[(d + 3) % 7]], 0, emo='📅')
-        for k in (3, 4):
-            a = DAYS[(d + k) % 7]
-            q = f'Бүгін {DAYS[d]}.\n{k} күннен кейін қай күн болады?'
-            add('days', 2, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7]], 0, v=f'Бүгін {DAYS[d]}. {kz(k)} күннен кейін қай күн болады?', emo='📅')
-        # yesterday was X → what is tomorrow?   (= X + 2)
-        a = DAYS[(d + 2) % 7]
-        add('days', 2, f'Кеше {DAYS[d]} болды.\nЕртең қай күн болады?', [a, DAYS[(d + 1) % 7], DAYS[(d + 3) % 7]], 0, emo='📅')
-        # the day after tomorrow is X → what is today?   (= X − 2)
-        a = DAYS[(d - 2) % 7]
-        add('days', 3, f'Бүрсігүні {DAYS[d]} болады.\nБүгін қай күн?', [a, DAYS[(d - 1) % 7], DAYS[(d + 2) % 7]], 0, emo='📅')
-
     # ---------- 3. months ----------
     for m in range(12):
         for k in (3, 4, 5):
