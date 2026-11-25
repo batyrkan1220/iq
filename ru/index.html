@@ -740,11 +740,17 @@ header .logo .wm .ld{background:#c13fe0!important}
 .opt{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:20px;box-shadow:none;transition:background .12s,border-color .12s,color .12s,transform .1s}
 .opt:hover{border-color:rgba(13,12,22,.25);transform:translateY(-1px)}
 .opt .l{background:#f2f0f7;color:var(--ink);border-radius:50%}
-.opt.sel{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 12px 24px -14px rgba(13,12,22,.7)}
-.opt.sel .l{background:#fff;color:var(--ink)}
+.opt.sel{background:#f4efff;border-color:#8b5cf6;color:var(--ink);box-shadow:0 0 0 3px rgba(139,92,246,.18)}
+.opt.sel .l{background:linear-gradient(135deg,#8b5cf6,#d946ef);color:#fff}
 .opts.vis .opt{background:rgba(255,255,255,.85);border-color:var(--line)}
-.opts.vis .opt.sel{background:#fff;border:2px solid var(--ink);color:var(--ink)}
-.opts.vis .opt.sel .l{background:var(--ink);color:#fff}
+.opts.vis .opt.sel{background:#f4efff;border:2px solid #8b5cf6;color:var(--ink);box-shadow:0 0 0 3px rgba(139,92,246,.16)}
+.opts.vis .opt.sel .l{background:linear-gradient(135deg,#8b5cf6,#d946ef);color:#fff}
+/* softer test screen: lighter frames around the question picture, lilac tones instead of black */
+#test .card{background:rgba(255,255,255,.78)!important}
+#test .btn.line,#test .btn.ghost{color:#4c3a8a}
+#test .tag{background:#f4efff;color:#6d28d9;border-color:#e6dcff}
+#test .qtext{color:#1f1a3a}
+.toast{background:rgba(255,255,255,.96)!important;color:#3b2a78!important;border:1px solid #e6dcff;box-shadow:0 14px 30px -14px rgba(80,40,140,.4)!important}
 .opt.ok,.rv-ok{border-color:#22c55e!important;background:#ecfdf3!important;color:var(--ink)!important}
 .opt.no,.rv-bad{border-color:#f87171!important;background:#fff1f2!important;color:var(--ink)!important}
 .shot-hint{color:var(--muted)!important}
