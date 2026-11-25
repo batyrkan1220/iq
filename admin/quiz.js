@@ -49,15 +49,15 @@ function mix(T,c,bg,sfx){sfx=sfx||{};const N=Math.ceil(T.dur*SR)+SR,voice=new Fl
   const reveal=new Float32Array(.9*SR|0);add(reveal,0,vox(260,.16,.11,'tri',.01,6,1050));add(reveal,.13,bellv(88,.75,.16));add(reveal,.13,bellv(95,.5,.06));
   const opPop=[0,1,2].map(k=>vox(700+k*120,.07,.17,'sin',.002,35,350+k*60));      // "pop" per option
   const tick=wood(1900,.22),tock=wood(1350,.22);                                     // clock tick-tock
+  const tickOrig=mx(tone(1500,.04,.12,100),tone(750,.04,.06,100));
   const beep=vox(hz(81),.14,.07,'sq',.004,9);                                       // countdown beep (A5)
   const correct=new Float32Array(1.1*SR|0);add(correct,0,mx(bellv(84,.5,.15),vox(hz(84),.18,.05,'tri',.003,10)));add(correct,.11,mx(bellv(88,.9,.17),vox(hz(88),.3,.05,'tri',.003,7)));add(correct,.11,bellv(91,.8,.07)); // C7→E7(+G) ding-ding!
   const dun=new Float32Array(1.4*SR|0);add(dun,0,mx(vox(hz(45),.35,.22,'sq',.005,6),vox(hz(57),.35,.08,'tri',.005,6)));add(dun,.38,mx(vox(hz(44),1.0,.24,'sq',.005,2.6),vox(hz(56),1.0,.09,'tri',.005,2.6))); // A2 → G#2 "dun-duuun"
   // user-supplied samples (from their reference TikTok): question-start hit + 5 s timer ticks
   if(sfx.start)add(fx,.08,sfx.start,1);   // one 'tық' at the very beginning of the video only
-  if(sfx.timer)T.qs.forEach(o=>add(fx,o.ts,sfx.timer.subarray(0,Math.min(sfx.timer.length,Math.round(5*SR))),.9));
   T.qs.forEach((o,i)=>{
     opPop.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
-    if(!sfx.timer)for(let k=0;k<5;k++){add(fx,o.ts+k,k%2?tock:tick);add(fx,o.ts+k+.5,k%2?tick:tock,.55);if(k>=3)add(fx,o.ts+k,beep)}
+    for(let k=0;k<5;k++)add(fx,o.ts+k,tickOrig,k>=3?1.4:.9);   // the original timer tick (one per second, louder for the last 2)
     add(fx,o.ra,i<T.qs.length-1?correct:dun)});
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
