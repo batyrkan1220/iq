@@ -221,7 +221,7 @@ async function buildQuiz(){unlockAudio();kzFix();$('reGoErr').textContent='';bus
     for(const [k,t] of parts){if(!t)continue;$('reStat').textContent=`ElevenLabs: озвучка (${Object.keys(clips).length+1}/${parts.length})…`;const r=await tts(t,vid,vname,sets);clips[k]=await decode(r.url);paths[k]=r.job&&r.job.path}
     D.tl=QUIZ.timeline(D,clips);
     const {data:row}=await sb.from('reels').insert({lang:S.lang,format:'quiz',question:{quiz:set.map(q=>q.q),set,q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts},voice:{id:vid,name:vname,settings:sets},audio_paths:paths,status:'audio'}).select().single();S.reelId=row&&row.id;
-    $('reStat').textContent='Собираем аудиодорожку…';const audio=QUIZ.mix(D.tl,clips,await bgm(),await sfx());QUIZ.draw($('reCv').getContext('2d'),D,1);
+    $('reStat').textContent='Собираем аудиодорожку…';const audio=QUIZ.mix(D.tl,clips,false,await sfx());QUIZ.draw($('reCv').getContext('2d'),D,1);
     $('reStat').innerHTML='Записываем видео — не закрывайте страницу и не переключайте вкладку (≈'+Math.ceil(D.tl.dur)+' сек)…';
     const blob=await record(D,audio,D.tl.dur);await finishVideo(blob)}
   catch(e){$('reGoErr').textContent=e.message;$('reStat').textContent='Ошибка: '+e.message}
@@ -421,7 +421,7 @@ async function autoReel(lang,vid,vname,extraAvoid,st,src){
   const clean=set.map(({img,...q})=>q);
   const {data:row,error}=await sb.from('reels').insert({lang,format:'quiz',question:{quiz:set.map(q=>q.q),set:clean,bank:set.map(q=>q.bid).filter(Boolean),q_screen:set.map(q=>q.q.replace(/\n/g,' ')).join(' | ')},script:{voices:parts,auto:true},voice:{id:vid,name:vname,settings:DEF_SET},audio_paths:paths,status:'audio'}).select().single();
   if(error)throw new Error(error.message);
-  const audio=QUIZ.mix(D.tl,clips,await bgm(),await sfx());D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
+  const audio=QUIZ.mix(D.tl,clips,false,await sfx());D.onProg=p=>st(`🎬 Видео ${Math.round(p*100)}%`);
   const blob=await record(D,audio,D.tl.dur);
   st('☁️ Сохраняем…');const ext=blob.type.includes('mp4')?'mp4':'webm',path=`${new Date().toISOString().slice(0,10)}/${row.id}.${ext}`;
   const meta={voices:parts,auto:true,rec:S.recMode||'',ua:navigator.userAgent.slice(0,140)};
