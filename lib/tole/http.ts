@@ -143,13 +143,18 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     const who = await requireAdmin(req, ctx);
     if (typeof who !== "string") { send(res, who.error === "forbidden" ? 403 : 401, who); return true; }
     const raw = await readRaw(req, 8 * 1024);
-    let b: { q?: string; o?: string[]; a?: number; lang?: string } = {};
+    let b: { q?: string; o?: string[]; a?: number; lang?: string; emo?: string } = {};
     try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
     if (!b.q || !Array.isArray(b.o)) { send(res, 400, { error: "q_and_o_required" }); return true; }
-    const { makeIllus, makeFlux, fluxConfigured } = await import("../illus.ts");
+    const { makeIllus, makeFlux, fluxConfigured, topicImage, topicSubject } = await import("../illus.ts");
     const inp = { q: b.q, o: b.o, a: Number(b.a) || 0, lang: b.lang };
     // FLUX (Cloudflare, free daily quota) first; if it fails (e.g. daily quota used up → 429) fall back to a Claude-drawn SVG.
-    let out: any = fluxConfigured() ? await makeFlux(inp) : null;
+    // Bank categories (emoji) → neutral cached/fresh FLUX picture without any LLM call.
+    let out: any = topicSubject(b.emo) ? await topicImage(b.emo) : null;
+    if (out && !out.ok) log.log("warn", "illus topic failed", { error: String(out.error).slice(0, 80) });
+    if (!out || !out.ok) out = fluxConfigured() ? await makeFlux(inp) : null;
+    // Anything else that failed (no Claude credits, CF text quota) → a neutral generic picture rather than nothing.
+    if (!out || !out.ok) { const g = await topicImage(""); if (g.ok) out = g; else if (out) out.error = out.error + " | " + g.error; }
     if (!out || !out.ok) {
       if (out) log.log("warn", "illus flux failed", { error: String(out.error).slice(0, 60) });
       const svg = await makeIllus(inp);

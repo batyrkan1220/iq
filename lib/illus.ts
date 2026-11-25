@@ -151,6 +151,88 @@ async function writeFluxPrompt(q: string, opts: string[], correct: string, stric
   return t;
 }
 
+/** Neutral picture subjects for the offline question bank's categories (picked by the question's emoji).
+ *  None of them can reveal an answer, and they need no LLM call (works when Anthropic credits / CF text quota run out). */
+const TOPIC: Record<string, string[]> = {
+  "🤯": ["Colorful glossy 3D building blocks of different heights lined up in a row on a desk", "Playful stack of colorful wooden toy blocks and marbles, puzzle mood"],
+  "➕": ["Two groups of shiny colorful marbles being poured together into one glass bowl", "Colorful toy blocks being stacked together into a tall tower"],
+  "➖": ["A tower of colorful toy blocks with a few blocks flying away from the top", "A glass jar of colorful candies with some candies rolling out"],
+  "🧩": ["Colorful jigsaw puzzle pieces floating in the air, one empty slot glowing", "A winding path of colorful stepping stones leading into the distance"],
+  "🧮": ["A wooden abacus with bright colorful beads on a desk", "Neat grid of colorful candies arranged in rows on a tray"],
+  "🎲": ["Colorful dice tumbling through the air with sparkles", "A board game table with colorful dice and game pieces"],
+  "⚖️": ["A shiny brass balance scale with colorful weights", "A balance scale holding colorful fruit on both sides"],
+  "💯": ["A big round pie cut into colorful slices on a plate", "A colorful progress bar made of glowing glass segments"],
+  "🔢": ["Glowing colorful crystal cubes floating in a soft space", "A mysterious treasure chest glowing with colorful light"],
+  "🏙️": ["A generic modern city skyline at sunset with glass towers, no famous landmarks", "A cozy evening city street with lights and trams, generic city"],
+  "🌍": ["A vintage brass compass lying on a rolled-up old paper map tied with string", "A hot air balloon flying high above fluffy clouds"],
+  "📏": ["A yellow measuring tape and a wooden ruler on a craft table", "Colorful rulers and pencils neatly arranged on a desk"],
+  "⏱️": ["A shiny silver stopwatch next to a glass hourglass with flowing sand", "A cute alarm clock and a calendar on a desk"],
+  "🧪": ["Laboratory glass flasks with bright colorful glowing liquids", "A science lab table with test tubes and bubbling beakers"],
+};
+const GENERIC = [
+  "A big friendly glowing question mark surrounded by soft sparkles and floating abstract shapes",
+  "A glowing light bulb idea floating above an open book with sparkles",
+  "A cute cartoon brain with a lightbulb, thinking, surrounded by sparkles",
+  "A magnifying glass over a stack of colorful books with sparkles",
+];
+export function topicSubject(emo?: string): { key: string; subjects: string[] } | null {
+  const e = String(emo || "").trim();
+  return TOPIC[e] ? { key: [...e].map((c) => c.codePointAt(0)!.toString(16)).join("-"), subjects: TOPIC[e] } : null;
+}
+
+// ---- image cache in Supabase Storage (bucket "reels", folder illus-cache/<key>/): one FLUX picture is reused many times ----
+const CACHE_MAX = 6;
+function sbStore(): { url: string; h: Record<string, string> } | null {
+  const url = (env.SUPABASE_URL || "https://dlhejkmuyyqvjzjxbwbg.supabase.co").trim().replace(/\/+$/, "");
+  const key = (env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SECRET_KEY || "").trim();
+  if (!key) return null;
+  const h: Record<string, string> = { apikey: key };
+  if (key.startsWith("eyJ")) h.Authorization = `Bearer ${key}`;
+  return { url, h };
+}
+async function cacheList(key: string): Promise<string[]> {
+  const s = sbStore(); if (!s) return [];
+  try {
+    const r = await fetch(`${s.url}/storage/v1/object/list/reels`, { method: "POST", headers: { ...s.h, "Content-Type": "application/json" }, body: JSON.stringify({ prefix: `illus-cache/${key}/`, limit: 50 }), signal: AbortSignal.timeout(8000) });
+    const j = await r.json().catch(() => []);
+    return Array.isArray(j) ? j.map((x: any) => String(x.name || "")).filter((n: string) => n.endsWith(".jpg")) : [];
+  } catch { return []; }
+}
+async function cacheGet(key: string, name: string): Promise<string | null> {
+  const s = sbStore(); if (!s) return null;
+  try {
+    const r = await fetch(`${s.url}/storage/v1/object/reels/illus-cache/${key}/${name}`, { headers: s.h, signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return null;
+    return "data:image/jpeg;base64," + Buffer.from(await r.arrayBuffer()).toString("base64");
+  } catch { return null; }
+}
+async function cachePut(key: string, b64: string): Promise<void> {
+  const s = sbStore(); if (!s) return;
+  try {
+    await fetch(`${s.url}/storage/v1/object/reels/illus-cache/${key}/${Date.now()}.jpg`, { method: "POST", headers: { ...s.h, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: Buffer.from(b64, "base64"), signal: AbortSignal.timeout(15000) });
+  } catch { /* cache is best-effort */ }
+}
+
+/** Picture for a bank question by its category emoji: cached FLUX picture, or a new one (stored for reuse). No LLM needed. */
+export async function topicImage(emo?: string): Promise<{ ok: true; src: string; prompt: string } | { ok: false; error: string }> {
+  const t = topicSubject(emo) || { key: "generic", subjects: GENERIC };
+  const have = await cacheList(t.key);
+  const useCache = have.length >= CACHE_MAX || (have.length > 0 && Math.random() < 0.5);
+  if (useCache) {
+    const src = await cacheGet(t.key, have[Math.floor(Math.random() * have.length)]);
+    if (src) return { ok: true, src, prompt: "cache:" + t.key };
+  }
+  if (fluxConfigured()) {
+    const subject = t.subjects[Math.floor(Math.random() * t.subjects.length)];
+    const r = await slot(() => cfRun(CF_IMG, { prompt: fluxPrompt(subject), steps: 8 }));
+    const b64 = r.json?.result?.image || r.json?.image;
+    if (r.ok && b64) { await cachePut(t.key, b64); return { ok: true, src: "data:image/jpeg;base64," + b64, prompt: subject }; }
+    if (have.length) { const src = await cacheGet(t.key, have[Math.floor(Math.random() * have.length)]); if (src) return { ok: true, src, prompt: "cache:" + t.key }; }
+    return { ok: false, error: "cloudflare_" + r.status + ": " + String(r.json?.errors?.[0]?.message || "").slice(0, 120) };
+  }
+  return { ok: false, error: "no_cache_no_flux" };
+}
+
 export function fluxPrompt(subject: string): string {
   const s = subject.replace(/^["'\s]+|["'\s]+$/g, "").slice(0, 400);
   return `${s}. Bright friendly 3D cartoon illustration, soft studio lighting, clean pastel background, single centered subject, high detail, vibrant colors, landscape composition. Absolutely no text, no letters, no numbers, no words, no captions, no watermark, no logos, no flags.`;

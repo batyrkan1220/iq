@@ -407,7 +407,7 @@ function qkVoices(force){if(QKV&&!force)return QKV;$('qkVoice').innerHTML='<opti
 async function qkVoicesLoad(){{const vs=await voices();if(!vs||!vs.length)throw new Error('В ElevenLabs нет голосов');const pv=localStorage.getItem('el_voice');const h=vs.find(v=>/^\s*Hale\b/i.test(v.name));const def=(vs.find(v=>v.id===pv)||h||vs[0]||{}).id;
   $('qkVoice').innerHTML=vs.map(v=>`<option value="${esc(v.id)}" ${v.id===def?'selected':''}>${esc(v.name)}</option>`).join('')}}
 $('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
-async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a})});
+async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a,emo:q.emo})});
   const j=await r.json().catch(()=>({}));if(!j.ok)return null;return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return null}}
 async function autoReel(lang,vid,vname,extraAvoid,st,src){
   st(src==='bank'?'📚 Берём вопросы из базы…':'🤖 ИИ пишет вопросы…');const set=src==='bank'?await bankQuiz(lang):await aiQuiz(4,extraAvoid,lang);
