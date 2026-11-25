@@ -46,7 +46,7 @@ box.innerHTML=`
 <div class="card hide" id="reS2" style="margin-top:12px"><h3>2. Озвучка: предложение</h3><div id="rePlan"></div></div>
 <div class="card hide" id="reS3" style="margin-top:12px"><h3>3. Видео</h3>
  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-  <canvas id="reCv" width="${W}" height="${H}" style="width:270px;height:480px;border-radius:14px;border:1px solid var(--line);background:#f7f8fb"></canvas>
+  <canvas id="reCv" width="${W}" height="${H}" style="width:270px;height:480px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.6)"></canvas>
   <div style="flex:1;min-width:240px"><div id="reStat" class="muted"></div><div class="fun"><div class="tr" style="height:12px;margin:10px 0"><i id="reProg" style="width:0"></i></div></div><div id="reOut"></div></div>
  </div></div>
 <div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎬 Созданные Reels <span class="muted" id="reHistN" style="font-weight:500"></span></h3></div>
@@ -126,7 +126,7 @@ async function pickPrev(i){const p=PREV[i],b=$('vdPrev').querySelector(`button[d
 function selInfo(){const id=VMODE==='design'?VPICK:$('pVoice').value;const v=S.voices.find(x=>x.id===id);$('vSel').innerHTML=id&&v?`Выбранный диктор: <b>${esc(v.name)}</b>`:VMODE==='design'?'Прослушайте варианты и выберите понравившийся. Если не выбрать — возьмём 1-й.':''}
 
 
-function narr(vopt,st){return `<div class="card" style="background:#faf8ff;border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
+function narr(vopt,st){return `<div class="card" style="background:rgba(243,237,255,.7);border-color:#e9e3ff;margin-bottom:12px"><b>🎨 Диктор</b>
        <div class="seg" style="margin:10px 0;display:flex"><button type="button" id="vmE" class="on" style="flex:1">📚 Мои голоса</button><button type="button" id="vmD" style="flex:1">✨ Voice Design</button></div>
        <div id="vpD"><label class="fld"><span>Образ</span><select id="vdPre">${Object.keys(VPRE).map(k=>`<option value="${k}">${VPRE[k].n}</option>`).join('')}</select></label>
         <label class="fld"><span>Описание голоса (лучше на английском — можно менять)</span><textarea id="vdDesc" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit"></textarea></label>
