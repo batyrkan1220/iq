@@ -120,16 +120,25 @@ Deno.serve(async (req) => {
           use_speaker_boost: true,
         },
       };
-      const r = await fetch(`${EL}/text-to-speech/${encodeURIComponent(body.voice_id)}?output_format=mp3_44100_128`, {
+      // Kazakh reels: force Kazakh pronunciation and Kazakh number/text normalization (multilingual_v2 does not take language_code)
+      const lang = String(body.lang || "").toLowerCase();
+      const lc = lang === "kz" || lang === "kk" ? "kk" : lang === "ru" ? "ru" : "";
+      if (lc && payload.model_id !== "eleven_multilingual_v2") payload.language_code = lc;
+      const call = () => fetch(`${EL}/text-to-speech/${encodeURIComponent(body.voice_id)}?output_format=mp3_44100_128`, {
         method: "POST", headers: { ...H, "Content-Type": "application/json", Accept: "audio/mpeg" }, body: JSON.stringify(payload),
       });
+      let r = await call();
+      if (!r.ok && payload.language_code && (r.status === 400 || r.status === 422)) {
+        // model does not accept the language code → retry once without it
+        delete payload.language_code; r = await call();
+      }
       if (!r.ok) return json({ error: "ElevenLabs: " + r.status + " " + (await r.text()).slice(0, 300) }, 502);
       const buf = new Uint8Array(await r.arrayBuffer());
       const path = `${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.mp3`;
       const up = await admin.storage.from("tts").upload(path, buf, { contentType: "audio/mpeg" });
       if (up.error) return json({ error: "storage: " + up.error.message }, 500);
       const { data: job } = await admin.from("tts_jobs").insert({
-        text, voice_id: body.voice_id, voice_name: body.voice_name || null, model_id: payload.model_id, chars: text.length, path, settings: vs,
+        text, voice_id: body.voice_id, voice_name: body.voice_name || null, model_id: payload.model_id, chars: text.length, path, settings: { ...vs, language_code: payload.language_code || null },
       }).select().single();
       const { data: s } = await admin.storage.from("tts").createSignedUrl(path, 3600);
       return json({ ok: true, job, url: s?.signedUrl });

@@ -239,6 +239,8 @@ KEEP = {'landmarks', 'capital', 'element', 'fact', 'animals', 'body', 'space', '
 items[:] = [i for i in items if i['t'] in KEEP]
 for i in items:
     if any(h in i['q'] for h in HOOKS): i['h'] = 1
+from quiz_review_kz import apply as review  # noqa: E402
+items[:] = review(items)
 LOGIC = {'cmp', 'days', 'months', 'analogy', 'oddword', 'oddnum', 'missing', 'clock', 'bigger', 'riddle', 'price', 'age', 'seq'}
 items[:] = [i for i in items if i['t'] not in LOGIC or len(i['q'].replace('\n', ' ')) <= 80]
 

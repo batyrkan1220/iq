@@ -146,7 +146,7 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=11').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=12').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   // bank ids change on every rebuild, so used questions are matched by text + options only
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();const key=x=>norm(x.q)+'|'+[...(x.o||[])].map(String).sort().join('|');(data||[]).forEach(r=>(r.question&&r.question.set||[]).forEach(q=>usedQ.add(key(q))));
@@ -238,7 +238,8 @@ async function finishVideo(blob){const ext=blob.type.includes('mp4')?'mp4':'webm
 
 // ---------- build ----------
 const val=id=>($(id)?$(id).value:'').trim();
-async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings});return r}
+async function tts(text,voice_id,voice_name,settings){const r=await EL({action:'tts',text,voice_id,voice_name,model_id:localStorage.getItem('el_model')||undefined,settings,lang:TTS_LANG||S.lang||'kz'});return r}
+let TTS_LANG=null;
 // ---------- background music: one fixed track for all reels (IQ Light 7, scripts/make-reels-music.py) ----------
 let BGM=null;const BGM_LOOP=19.2;// seconds: exact length of the track's 16 bars (the decoder adds a few ms of padding)
 function bgm(){if(!BGM)BGM=decode('audio/iq-light7.m4a?v=1').then(b=>b&&b.length>Math.round(SR*BGM_LOOP)?b.subarray(0,Math.round(SR*BGM_LOOP)):b).catch(e=>{console.warn('bg music',e);BGM=null;return null});return BGM}
@@ -416,7 +417,7 @@ const ILL_TOPIC={animals:'t-animals',body:'t-body',space:'t-space',geo:'t-geo',k
 function localIll(emo,t){const c=[...String(emo||'')].map(ch=>ch.codePointAt(0).toString(16)).join('-');const f=ILL_TOPIC[t]||(ILL_LOCAL.has(c)?c:['generic','t-myth','t-people','t-science'][Math.floor(Math.random()*4)]);return illBitmap('illus/'+f+'.webp?v=1').catch(()=>null)}
 async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a,emo:q.emo})});
   const j=await r.json().catch(()=>({}));if(!j.ok)return await localIll(q.emo,q.t);return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return await localIll(q.emo,q.t)}}
-async function autoReel(lang,vid,vname,extraAvoid,st,src){
+async function autoReel(lang,vid,vname,extraAvoid,st,src){TTS_LANG=lang;
   st(src==='bank'?'📚 Берём вопросы из базы…':'🤖 ИИ пишет вопросы…');const set=src==='bank'?await bankQuiz(lang):await aiQuiz(4,extraAvoid,lang);
   st('🎨 Картинки + 🎙 озвучка…');const imgsP=Promise.all(set.map(illFor));
   const vo=QUIZ.voices(set,lang);const parts=[];set.forEach((q,i)=>{parts.push(['q'+i,lang==='kz'?kzText(vo[i].q):vo[i].q]);parts.push(['a'+i,lang==='kz'?kzText(vo[i].a):vo[i].a])});
