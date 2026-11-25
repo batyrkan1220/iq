@@ -129,14 +129,13 @@ def build(add, R, kz):
     TRICK = [('fish', ['кит', 'дельфин'], 3), ('bird', ['жарқанат'], 3), ('planet', ['Ай', 'Күн'], 3)]
     for _ in range(800):
         main, odds, lvl = R.choice(TRICK)
-        three = R.sample(CAT[main], 3); x = R.choice(odds); shown = three + [x]; R.shuffle(shown)
-        add('oddword', lvl, f'Қайсысы артық?\n{", ".join(shown)}', [x] + R.sample(three, 2), 0, emo='🔍')
+        two = R.sample(CAT[main], 2); x = R.choice(odds); shown = two + [x]; R.shuffle(shown)
+        add('oddword', lvl, 'Қайсысы артық?', [x] + two, 0, v=f'Қайсысы артық: {shown[0]}, {shown[1]} әлде {shown[2]}?', emo='🔍')
     for _ in range(6000):
         main, odd, lvl = R.choice(PAIRS)
-        three = R.sample(CAT[main], 3); x = R.choice(CAT[odd])
-        shown = three + [x]; R.shuffle(shown)
-        o = [x] + R.sample(three, 2)
-        add('oddword', lvl, f'Қайсысы артық?\n{", ".join(shown)}', o, 0, emo='🔍')
+        two = R.sample(CAT[main], 2); x = R.choice(CAT[odd])
+        shown = two + [x]; R.shuffle(shown)
+        add('oddword', lvl, 'Қайсысы артық?', [x] + two, 0, v=f'Қайсысы артық: {shown[0]}, {shown[1]} әлде {shown[2]}?', emo='🔍')
 
     # ---------- 6. odd one out (numbers) ----------
     SQ = [n * n for n in range(2, 13)]
@@ -152,10 +151,13 @@ def build(add, R, kz):
         else:            # multiples of 3 + one not
             three = R.sample(range(12, 99, 3), 3); x = R.choice([n for n in range(11, 99) if n % 3 and min(abs(n - s) for s in three) < 6]); lvl = 2
         if x in three: continue
-        shown = sorted(three + [x])
-        o = [x] + R.sample(three, 2)
-        add('oddnum', lvl, f'Қай сан артық?\n{", ".join(map(str, shown))}', o, 0,
-            v=f'Қай сан артық: {", ".join(kz(n) for n in shown)}?', av=kz(x), emo='🔍')
+        two = R.sample(three, 2); nums = two + [x]
+        props = [lambda n: n % 2 == 0, lambda n: n % 3 == 0, lambda n: n % 5 == 0, lambda n: n in SQ, lambda n: n in PR, lambda n: n % 10 == 0, lambda n: n < 10]
+        if any(sum(map(f, nums)) in (1, 2) and [n for n in nums if f(n) == (sum(map(f, nums)) == 1)] != [x] for f in props): continue
+        shown = sorted(nums)
+        o = [x] + two
+        add('oddnum', lvl, 'Қай сан артық?', o, 0,
+            v=f'Қай сан артық: {kz(shown[0])}, {kz(shown[1])} әлде {kz(shown[2])}?', av=kz(x), emo='🔍')
 
     # ---------- 7. missing number ----------
     for a in range(3, 13):

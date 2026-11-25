@@ -35,7 +35,7 @@ COL = {'capital': '#ffedd5', 'continent': '#dbeafe', 'element': '#ccfbf1', 'mult
 
 def add(topic, lvl, q, o, a_idx, v=None, av=None, emo=None, col=None):
     o = [str(x) for x in o]
-    key = re.sub(r'\s+', ' ', q.replace('\n', ' ')).strip().lower()
+    key = re.sub(r'\s+', ' ', q.replace('\n', ' ')).strip().lower() + '|' + '|'.join(sorted(str(x) for x in o))
     if key in seen or len(set(o)) != 3 or any(len(x) > 18 for x in o): return
     seen.add(key)
     items.append({'id': len(items) + 1, 't': topic, 'l': lvl, 'emo': emo or EMO[topic], 'col': col or COL[topic], 'q': q,
