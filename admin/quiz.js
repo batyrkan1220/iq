@@ -119,7 +119,7 @@ function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBasel
     const sc=ok?1+.05*Math.max(0,Math.sin((t-o.ra)*10))*Math.exp(-(t-o.ra)*2):1;ctx.translate(W/2,y+oh/2);ctx.scale(sc,sc);ctx.translate(-W/2,-(y+oh/2));
     ctx.shadowColor=ok?'rgba(34,197,94,.4)':'rgba(80,40,140,.14)';ctx.shadowBlur=ok?40:26;ctx.shadowOffsetY=ok?16:10;ctx.fillStyle=ok?'#22c55e':'rgba(255,255,255,.8)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.fill();ctx.shadowColor='transparent';
     if(!ok){ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.stroke()}
-    ctx.fillStyle=ok?'#fff':INK;ctx.textBaseline='middle';ctx.fillText(ok?s+'  ✓':s,W/2,y+oh/2+3);ctx.restore()});
+    ctx.fillStyle=ok?'#fff':INK;ctx.textBaseline='middle';const lbl=ok?s+'  ✓':s,f0=ctx.font;for(let fs=50;fs>=34&&ctx.measureText(lbl).width>ow-70;fs-=2)ctx.font=F(800,fs);ctx.fillText(lbl,W/2,y+oh/2+3);ctx.font=f0;ctx.restore()});
   // outro: link-in-bio call to action (last question, after the timer)
   if(outro){const p=ease(cl((t-o.ra)/.45)),L=OUTRO[D.lang==='ru'?'ru':'kz'],cy=H-340,chh=280;ctx.save();ctx.globalAlpha=p;ctx.translate(0,(1-p)*60);
     ctx.shadowColor='rgba(80,40,140,.3)';ctx.shadowBlur=60;ctx.shadowOffsetY=24;ctx.fillStyle='rgba(255,255,255,.9)';rr(ctx,70,cy,W-140,chh,56);ctx.fill();ctx.shadowColor='transparent';
