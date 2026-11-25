@@ -155,11 +155,49 @@ gn += '<rect x="400" y="360" width="100" height="70" rx="14" fill="#94a3b8"/><re
 gn += ''.join(f'<rect x="446" y="60" width="8" height="40" rx="4" fill="#fff" transform="rotate({k*30-90} 450 250)"/>' for k in range(7))
 P['generic'] = ('#c7d2fe', '#fbcfe8', gn)
 
+# ---- per-topic pictures for the general-knowledge bank (file name t-<topic>) ----
+T = {}
+# animals: paw prints trail + leaf
+paw = lambda x, y, r, c: f'<g transform="translate({x} {y}) rotate({r})"><ellipse cx="0" cy="18" rx="30" ry="24" fill="{c}"/>' + ''.join(f'<ellipse cx="{dx}" cy="{dy}" rx="11" ry="14" fill="{c}"/>' for dx, dy in ((-30, -18), (-11, -32), (11, -32), (30, -18))) + '</g>'
+T['animals'] = ('#bbf7d0', '#fde68a', paw(250, 430, -20, '#92400e') + paw(380, 330, -10, '#b45309') + paw(520, 380, 10, '#92400e') + paw(650, 270, 20, '#b45309') +
+                '<path d="M690 470 q60 -110 0 -200 q-60 90 0 200Z" fill="#22c55e"/><path d="M690 470 v-180" stroke="#15803d" stroke-width="6"/>')
+# body: heart with pulse line
+T['body'] = ('#fecaca', '#fbcfe8', '<path d="M450 470 C 250 350 230 200 340 170 C 400 155 440 190 450 215 C 460 190 500 155 560 170 C 670 200 650 350 450 470Z" fill="#ef4444"/><path d="M450 470 C 250 350 230 200 340 170 C 400 155 440 190 450 215 C 460 190 500 155 560 170 C 670 200 650 350 450 470Z" fill="url(#gl)"/>'
+             '<path d="M130 330 h170 l30 -60 l40 120 l35 -90 l25 30 h340" stroke="#fff" stroke-width="12" fill="none" stroke-linejoin="round" stroke-linecap="round"/>')
+# space: ringed planet + rocket
+T['space'] = ('#c7d2fe', '#a5b4fc', ball(380, 300, 130, '#fde68a', '#f59e0b') + '<ellipse cx="380" cy="300" rx="230" ry="48" fill="none" stroke="#fff" stroke-width="16" opacity=".85" transform="rotate(-18 380 300)"/>'
+              '<g transform="translate(660 250) rotate(35)"><path d="M0 -120 q50 60 40 170 h-80 q-10 -110 40 -170Z" fill="#fff"/><circle cx="0" cy="-30" r="20" fill="#60a5fa"/><path d="M-40 50 l-30 50 h30Z M40 50 l30 50 h-30Z" fill="#ef4444"/><path d="M-20 52 q20 70 40 0Z" fill="#f59e0b"/></g>')
+# geo: mountains + river + sun
+T['geo'] = ('#bae6fd', '#bbf7d0', '<circle cx="700" cy="160" r="60" fill="#fde047"/><path d="M80 520 L300 210 L430 380 L560 170 L820 520Z" fill="#7c3aed"/><path d="M300 210 l-50 70 h100Z M560 170 l-60 85 h120Z" fill="#fff"/>'
+            '<path d="M80 520 L300 330 L420 450 L560 300 L820 520Z" fill="#22c55e" opacity=".85"/><path d="M300 520 q60 -60 150 -40 t160 -30" stroke="#38bdf8" stroke-width="26" fill="none" stroke-linecap="round"/>')
+# kz: steppe with a yurt and mountains
+T['kz'] = ('#bae6fd', '#fde68a', '<circle cx="700" cy="150" r="58" fill="#fde047"/><path d="M60 420 L240 230 L360 360 L500 200 L760 420Z" fill="#93c5fd"/><path d="M240 230 l-40 45 h80Z M500 200 l-45 50 h90Z" fill="#fff"/>'
+           '<rect x="0" y="410" width="900" height="190" fill="#facc15" opacity=".55"/><path d="M330 470 v-90 q120 -90 240 0 v90Z" fill="#fff"/><path d="M330 380 q120 -90 240 0" fill="none" stroke="#b45309" stroke-width="10"/>'
+           '<rect x="425" y="410" width="50" height="60" rx="6" fill="#b45309"/><path d="M345 420 h210 M345 445 h210" stroke="#dc2626" stroke-width="6"/>')
+# people: stack of books + light bulb
+T['people'] = ('#fef3c7', '#ddd6fe', block(270, 440, 360, 60, '#3b82f6', 18) + block(300, 380, 320, 60, '#ec4899', 18) + block(250, 320, 380, 60, '#22c55e', 18) +
+               '<circle cx="450" cy="200" r="75" fill="#fde047"/><circle cx="450" cy="200" r="75" fill="url(#gl)"/><rect x="420" y="265" width="60" height="40" rx="10" fill="#94a3b8"/>')
+# food: fruit bowl
+T['food'] = ('#fed7aa', '#fecaca', ball(360, 300, 70, '#fecaca', '#ef4444') + ball(470, 280, 75, '#fef08a', '#f59e0b') + ball(560, 320, 62, '#bbf7d0', '#22c55e') + ball(420, 350, 55, '#e9d5ff', '#8b5cf6') +
+             '<path d="M230 340 h440 q-20 160 -220 160 q-200 0 -220 -160Z" fill="#fff"/><path d="M230 340 h440 q-20 160 -220 160 q-200 0 -220 -160Z" fill="url(#gl)"/><path d="M470 205 q10 -40 40 -50" stroke="#15803d" stroke-width="8" fill="none"/>')
+# science: atom
+T['science'] = ('#ccfbf1', '#c7d2fe', ''.join(f'<ellipse cx="450" cy="300" rx="230" ry="80" fill="none" stroke="{c}" stroke-width="16" transform="rotate({a} 450 300)"/>' for a, c in ((0, '#8b5cf6'), (60, '#ec4899'), (120, '#06b6d4'))) + ball(450, 300, 46, '#fff', '#f59e0b'))
+# sport: trophy + ball
+T['sport'] = ('#fde68a', '#bbf7d0', '<path d="M360 160 h180 v90 q0 100 -90 110 q-90 -10 -90 -110Z" fill="#facc15"/><path d="M360 180 q-80 0 -60 70 q20 50 70 40 M540 180 q80 0 60 70 q-20 50 -70 40" stroke="#facc15" stroke-width="18" fill="none"/>'
+              '<rect x="430" y="360" width="40" height="60" fill="#eab308"/><rect x="380" y="420" width="140" height="40" rx="10" fill="#a16207"/><path d="M360 160 h180 v90 q0 100 -90 110 q-90 -10 -90 -110Z" fill="url(#gl)"/>' + ball(680, 430, 70, '#fff', '#f97316'))
+# tech: laptop + phone
+T['tech'] = ('#ede9fe', '#bae6fd', '<rect x="200" y="160" width="400" height="260" rx="20" fill="#334155"/><rect x="222" y="182" width="356" height="216" rx="8" fill="#a78bfa"/><rect x="222" y="182" width="356" height="216" rx="8" fill="url(#gl)"/>'
+             '<path d="M150 420 h500 l-30 50 h-440Z" fill="#94a3b8"/><rect x="640" y="230" width="120" height="230" rx="22" fill="#0f172a"/><rect x="652" y="252" width="96" height="180" rx="10" fill="#f9a8d4"/>')
+# myth: speech bubble with question mark shape (no letters) — thought cloud
+T['myth'] = ('#fae8ff', '#c7d2fe', '<circle cx="450" cy="270" r="150" fill="#fff"/><circle cx="330" cy="300" r="100" fill="#fff"/><circle cx="570" cy="300" r="100" fill="#fff"/><circle cx="300" cy="450" r="30" fill="#fff"/><circle cx="250" cy="500" r="16" fill="#fff"/>'
+             '<path d="M410 230 q0 -60 50 -60 q50 0 50 50 q0 30 -40 50 v30" stroke="#8b5cf6" stroke-width="26" fill="none" stroke-linecap="round"/><circle cx="470" cy="380" r="16" fill="#8b5cf6"/>')
+for k, v in T.items(): P['t-' + k] = v
+
 if __name__ == '__main__':
     import subprocess, json
     files = []
     for e, (c1, c2, body) in P.items():
-        name = 'generic' if e == 'generic' else code(e)
+        name = e if e == 'generic' or e.startswith('t-') else code(e)
         open(os.path.join(OUT, name + '.svg'), 'w').write(frame(c1, c2, body)); files.append(name)
     json.dump(files, open(os.path.join(OUT, 'index.json'), 'w'))
     print(len(files), 'svg written')
