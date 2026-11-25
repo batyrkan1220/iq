@@ -697,6 +697,57 @@ body:has(.modal.on) .sticky-cta,body:has(.modal.on) .pm-bar{opacity:0;pointer-ev
   .dots{gap:6px}.dots button{min-width:40px;min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ===================== QUIZ-APP THEME (2026-11): purple stage · white cards · yellow CTA ===================== */
+:root{--stage1:#7b4dff;--stage2:#5b21b6;--stage3:#3f1590;--yel:#ffd23f;--yelD:#e0ac00;--acc:#6d28d9;--acc2:#8b5cf6;--accSoft:#f1ecff;--line:#ebe6fb}
+html,body{background:
+  radial-gradient(520px 520px at 108% 4%,rgba(255,255,255,.10) 0 49.5%,transparent 50%),
+  radial-gradient(380px 380px at -8% 38%,rgba(255,255,255,.07) 0 49.5%,transparent 50%),
+  radial-gradient(260px 260px at 95% 78%,rgba(255,210,63,.10) 0 49.5%,transparent 50%),
+  linear-gradient(170deg,var(--stage1) 0%,var(--stage2) 48%,var(--stage3) 100%) fixed;color:var(--ink)}
+/* header on the purple stage */
+header .logo,header .logo .wm{color:#fff!important;-webkit-text-fill-color:#fff}header .logo .wm em{color:var(--yel)!important;-webkit-text-fill-color:var(--yel);font-style:normal}header .logo .wm .ld{background:var(--yel)!important}header .logo .mmi{filter:drop-shadow(0 6px 14px rgba(20,0,60,.35))}
+.lsw{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.25);backdrop-filter:blur(6px)}
+.lsw button{color:rgba(255,255,255,.85)}.lsw button.on{background:#fff;color:#4c1d95}.lsw button:not(.on):hover{background:rgba(255,255,255,.12);color:#fff}
+/* cards */
+.card,#start>.steps,#start>.fin,#start>.hero-card{border:0;border-radius:30px;box-shadow:0 2px 0 rgba(255,255,255,.6) inset,0 26px 60px -24px rgba(25,5,80,.55)}
+#start>.steps,#start>.fin{background:#fff}
+#start>.hist{border:0;background:#1b0f45;box-shadow:0 26px 60px -24px rgba(10,0,40,.6)}
+#start>.ft{color:rgba(255,255,255,.75)}#start>.ft b{color:#fff}.ft a{color:#ffe27a!important}
+/* buttons: yellow 3D primary, white secondary */
+.btn{border-radius:18px;background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 5px 0 #4c1d95,0 14px 26px -12px rgba(40,10,110,.6);transition:transform .12s,box-shadow .12s}
+.btn.cta,.btn.big.cta,.hero-card .btn.big.cta{background:var(--yel);color:#2a1660;border-radius:999px;font-weight:900;box-shadow:0 6px 0 var(--yelD),0 18px 30px -12px rgba(40,10,110,.55)}
+.btn.cta:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.btn:active,.btn.cta:active{transform:translateY(4px);box-shadow:0 2px 0 var(--yelD),0 8px 16px -10px rgba(40,10,110,.5)}
+.btn.line{background:#fff;color:#4c1d95;border:2px solid var(--line);box-shadow:0 4px 0 #e4dcfb}
+.btn.ghost{background:var(--accSoft);color:#5b21b6;box-shadow:0 4px 0 #ddd2fb}
+.sticky-cta{background:linear-gradient(180deg,rgba(63,21,144,0),rgba(63,21,144,.92) 40%)}
+/* hero text accents */
+.hero-card h1 em{color:#6d28d9;background:linear-gradient(transparent 62%,#ffe27a 62%);padding:0 4px;border-radius:4px;-webkit-text-fill-color:currentColor}
+.livepill{background:#fff7d6!important;color:#7a5600!important;border:0!important}
+/* test screen: counter + progress on purple, question in a white card */
+#test .topbar .cnt{color:#fff}#test .topbar .cnt small{color:rgba(255,255,255,.75)}
+.progress{height:12px;background:rgba(255,255,255,.22);border-radius:99px;box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
+.progress i{background:linear-gradient(90deg,#ffe27a,var(--yel));border-radius:99px}
+.tag{background:var(--yel);color:#3b1d00;letter-spacing:.04em;border-radius:99px}
+#qcard{padding-top:22px}
+.qtext{color:#1d1240}
+/* answer options = rounded pills with lettered badges */
+.opt{border:2px solid #ece7fb;border-radius:18px;background:#fff;box-shadow:0 3px 0 #ece7fb;transition:transform .1s,border-color .12s,background .12s,box-shadow .12s}
+.opt:hover{border-color:#c9b8ff;transform:translateY(-1px)}
+.opt .l{background:#f1ecff;color:#6d28d9;border-radius:50%}
+.opt.sel{border-color:#7c3aed;background:#f5f0ff;box-shadow:0 3px 0 #7c3aed}
+.opt.sel .l{background:#7c3aed;color:#fff}
+.opts.vis .opt{background:#f7f4ff;border-color:#f7f4ff;box-shadow:none}
+.opts.vis .opt.sel{background:#efe7ff;border-color:#7c3aed}
+.opts.vis .opt.sel .l{background:#7c3aed}
+.opt.ok,.rv-ok{border-color:#22c55e!important;background:#eafbf0!important}
+.opt.no,.rv-bad{border-color:#f87171!important;background:#fff1f1!important}
+/* analysis / email / paywall headings stay readable inside white cards; section titles on the stage turn white */
+#paywall>h2,#result>h2,#test>h2{color:#fff}
+.shot-hint{color:rgba(255,255,255,.85)!important}
+@media (max-width:600px){.card{border-radius:24px}.btn.big{padding:17px}}
+@media (prefers-reduced-motion:reduce){.btn,.opt{transition:none}}
 </style>
 </head>
 <body>
