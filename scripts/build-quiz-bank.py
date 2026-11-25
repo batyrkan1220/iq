@@ -31,7 +31,9 @@ EMO = {'capital': '🏙️', 'continent': '🌍', 'element': '🧪', 'mult': '�
 COL = {'capital': '#ffedd5', 'continent': '#dbeafe', 'element': '#ccfbf1', 'mult': '#ede9fe', 'add': '#dcfce7', 'sub': '#fee2e2', 'conv': '#fef3c7',
        'len': '#e0f2fe', 'seq': '#fae8ff', 'order': '#fde68a', 'pct': '#e0e7ff', 'dec': '#e5e7eb', 'prime': '#f3e8ff', 'odd': '#fce7f3', 'fact': '#fef9c3',
        'cmp': '#e0e7ff', 'days': '#dcfce7', 'months': '#fef3c7', 'analogy': '#fae8ff', 'oddword': '#e0f2fe', 'oddnum': '#fce7f3', 'missing': '#ede9fe',
-       'clock': '#ffedd5', 'bigger': '#e5e7eb', 'riddle': '#fde68a', 'price': '#dcfce7', 'age': '#fee2e2'}
+       'clock': '#ffedd5', 'bigger': '#e5e7eb', 'riddle': '#fde68a', 'price': '#dcfce7', 'age': '#fee2e2',
+       'animals': '#dcfce7', 'body': '#fee2e2', 'space': '#e0e7ff', 'geo': '#dbeafe', 'kz': '#e0f2fe', 'people': '#fef3c7', 'food': '#ffedd5',
+       'science': '#ccfbf1', 'sport': '#fde68a', 'tech': '#ede9fe', 'myth': '#fae8ff', 'currency': '#dcfce7', 'landmark': '#ffedd5'}
 
 def add(topic, lvl, q, o, a_idx, v=None, av=None, emo=None, col=None):
     o = [str(x) for x in o]
@@ -230,6 +232,11 @@ for f in FACTS: F(*f)
 # ---------------- short logic / IQ-style questions (v2) ----------------
 from quiz_logic_kz import build as build_logic  # noqa: E402
 build_logic(add, R, kz)
+from quiz_trivia_kz import build as build_trivia  # noqa: E402
+build_trivia(add, R)
+# v3 (user feedback): only interesting general-knowledge questions — no arithmetic, no logic puzzles
+KEEP = {'capital', 'element', 'fact', 'animals', 'body', 'space', 'geo', 'kz', 'people', 'food', 'science', 'sport', 'tech', 'myth', 'currency', 'landmark'}
+items[:] = [i for i in items if i['t'] in KEEP]
 LOGIC = {'cmp', 'days', 'months', 'analogy', 'oddword', 'oddnum', 'missing', 'clock', 'bigger', 'riddle', 'price', 'age', 'seq'}
 items[:] = [i for i in items if i['t'] not in LOGIC or len(i['q'].replace('\n', ' ')) <= 80]
 
