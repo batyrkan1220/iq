@@ -146,7 +146,7 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=3').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=4').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   (data||[]).forEach(r=>(r.question&&r.question.bank||[]).forEach(id=>BANK_USED.add(id)));
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();(data||[]).forEach(r=>(r.question&&r.question.quiz||[]).forEach(q=>usedQ.add(norm(q))));
@@ -162,7 +162,7 @@ function bankPick(){const free=BANK.filter(x=>!BANK_USED.has(x.id));const pick=[
     const tps=[...new Set(pool.map(x=>x.t))],tp=tps[Math.floor(Math.random()*tps.length)],tpool=pool.filter(x=>x.t===tp);
     const x=tpool[Math.floor(Math.random()*tpool.length)];pick.push(x);topics.add(x.t);if(ARITH.has(x.t))ar++;return true};
   const BAIT=new Set([...LOGIC,'order','dec','fact']);
-  const ok=take([1],Math.random()<.55?x=>LOGIC.has(x.t):x=>x.t==='fact'||x.t==='capital')&&take([2],x=>LOGIC.has(x.t))&&take(Math.random()<.5?[2]:[3],x=>LOGIC.has(x.t))&&take([3],x=>BAIT.has(x.t));
+  const ok=take(Math.random()<.5?[1]:[2],Math.random()<.55?x=>LOGIC.has(x.t):x=>x.t==='fact'||x.t==='capital')&&take([2],x=>LOGIC.has(x.t))&&take(Math.random()<.7?[3]:[2],x=>LOGIC.has(x.t))&&take([3],x=>BAIT.has(x.t));
   if(!ok)return null;pick.forEach(x=>BANK_USED.add(x.id));return pick}
 async function bankQuiz(lang){if(lang&&lang!=='kz')throw new Error('База пока только на казахском — выберите язык «Казахский».');
   if(!BANK){await bankLoad();await bankUsedLoad()}const p=bankPick();if(!p)throw new Error('В базе закончились неиспользованные вопросы.');

@@ -57,7 +57,7 @@ def build(add, R, kz):
     for _ in range(4000):
         p = R.sample(NAMES, 3)               # p[0] > p[1] > p[2]
         more, less, ask_max, ask_min = R.choice(ATTR)
-        hard = False   # 5-second rule: no reversed wording
+        hard = R.random() < .35   # some reversed wording → needs a second of thought
         s1 = f'{p[0][0]} {p[1][1]} {more}' if not (hard and R.random() < .5) else f'{p[1][0]} {p[0][1]} {less}'
         s2 = f'{p[1][0]} {p[2][1]} {more}' if not hard else f'{p[2][0]} {p[1][1]} {less}'
         st = [s1, s2]; R.shuffle(st)
@@ -73,20 +73,20 @@ def build(add, R, kz):
             a = DAYS[(d + k) % 7]
             q = f'Бүгін {DAYS[d]}.\n{"Ертең" if k == 1 else "Бүрсігүні"} қай күн?'
             add('days', 1, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7] if k == 2 else DAYS[(d + 3) % 7]], 0, emo='📅')
-        for k in (3,):
+        for k in (3, 4):
             a = DAYS[(d + k) % 7]
             q = f'Бүгін {DAYS[d]}.\n{k} күннен кейін қай күн болады?'
             add('days', 2, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7]], 0, v=f'Бүгін {DAYS[d]}. {kz(k)} күннен кейін қай күн болады?', emo='📅')
         # yesterday was X → what is tomorrow?   (= X + 2)
         a = DAYS[(d + 2) % 7]
-        add('days', 3, f'Кеше {DAYS[d]} болды.\nЕртең қай күн болады?', [a, DAYS[(d + 1) % 7], DAYS[(d + 3) % 7]], 0, emo='📅')
+        add('days', 2, f'Кеше {DAYS[d]} болды.\nЕртең қай күн болады?', [a, DAYS[(d + 1) % 7], DAYS[(d + 3) % 7]], 0, emo='📅')
         # the day after tomorrow is X → what is today?   (= X − 2)
         a = DAYS[(d - 2) % 7]
         add('days', 3, f'Бүрсігүні {DAYS[d]} болады.\nБүгін қай күн?', [a, DAYS[(d - 1) % 7], DAYS[(d + 2) % 7]], 0, emo='📅')
 
     # ---------- 3. months ----------
     for m in range(12):
-        for k in (2, 3):
+        for k in (3, 4, 5):
             a = MONTHS[(m + k) % 12]
             add('months', 2 if k <= 4 else 3, f'{MONTHS_ABL[m].capitalize()} {k} ай\nөткен соң қай ай болады?',
                 [a.capitalize(), MONTHS[(m + k + 1) % 12].capitalize(), MONTHS[(m + k - 1) % 12].capitalize()], 0,
@@ -143,6 +143,11 @@ def build(add, R, kz):
     PAIRS = [('fruit', 'veg', 1), ('veg', 'fruit', 1), ('wild', 'home', 2), ('home', 'wild', 2), ('bird', 'fish', 1), ('fish', 'bird', 2),
              ('trans', 'furn', 1), ('furn', 'trans', 1), ('instr', 'trans', 2), ('days', 'months', 1), ('months', 'days', 1),
              ('planet', 'notplanet', 3), ('metal', 'gas', 2), ('color', 'body', 1)]
+    TRICK = [('fish', ['кит', 'дельфин'], 3), ('bird', ['жарқанат'], 3), ('planet', ['Ай', 'Күн'], 3)]
+    for _ in range(800):
+        main, odds, lvl = R.choice(TRICK)
+        three = R.sample(CAT[main], 3); x = R.choice(odds); shown = three + [x]; R.shuffle(shown)
+        add('oddword', lvl, f'Қайсысы артық?\n{", ".join(shown)}', [x] + R.sample(three, 2), 0, emo='🔍')
     for _ in range(6000):
         main, odd, lvl = R.choice(PAIRS)
         three = R.sample(CAT[main], 3); x = R.choice(CAT[odd])
@@ -178,12 +183,12 @@ def build(add, R, kz):
 
     # ---------- 8. clock ----------
     for _ in range(3000):
-        h, m = R.randint(1, 11), R.choice(range(0, 60, 5)); add_m = R.choice([15, 20, 30, 45, 60])
+        h, m = R.randint(1, 11), R.choice(range(0, 60, 5)); add_m = R.choice([35, 40, 45, 50, 55, 70])
         t = h * 60 + m + add_m; H, M = (t // 60 - 1) % 12 + 1, t % 60
         f = lambda hh, mm: f'{hh}:{mm:02d}'
         w1 = f(H, (M + 10) % 60); w2 = f((H - 2) % 12 + 1, M)
         if len({f(H, M), w1, w2}) < 3: continue
-        add('clock', 2, f'Қазір сағат {f(h, m)}.\n{add_m} минуттан кейін\nсағат неше?', [f(H, M), w1, w2], 0,
+        add('clock', 2 if add_m < 60 else 3, f'Қазір сағат {f(h, m)}.\n{add_m} минуттан кейін\nсағат неше?', [f(H, M), w1, w2], 0,
             v=f'Қазір сағат {kz(h)}{" " + kz(m) if m else ""}. {kz(add_m)} минуттан кейін сағат неше болады?', av=f'{kz(H)}{" " + kz(M) if M else ""}', emo='🕰️')
     for h in (3, 6, 9):
         ang = min(30 * h, 360 - 30 * h)
@@ -197,7 +202,7 @@ def build(add, R, kz):
         ('км', 1000, 'метр'), ('кг', 1000, 'грамм'), ('метр', 100, 'см'), ('жыл', 12, 'ай')]
     for big, f, small in U:
         if big in ('км', 'жыл', 'минут'): continue
-        for n in range(1, 4):
+        for n in range(2, 6):
             for delta in (-3, -2, -1, 0, 1, 2) if f < 100 else (-200, -100, 0, 100, 200):
                 s = n * f + delta * (1 if f < 100 else 1)
                 if s <= 0: continue

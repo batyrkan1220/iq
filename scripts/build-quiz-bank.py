@@ -150,7 +150,7 @@ def seq_item(sq, nxt, lvl, wrong):
     add('seq', lvl, f'Келесі сан қандай?\n{shown}, ?', [nxt] + wrong, 0,
         v=f'Қатардағы келесі сан қандай: {", ".join(kz(x) for x in sq)}?', av=kz(nxt))
 for st in range(1, 31):
-    for d in (2, 3, 4, 5, 10):
+    for d in (3, 4, 6, 7, 8, 9, 11, 12):
         sq = [st + d * k for k in range(4)]; n = sq[-1] + d
         seq_item(sq, n, 2, [n + 1, n - 2] if d > 2 else [n + 2, n + 3])
 for st in range(1, 8):
@@ -170,6 +170,12 @@ for st in range(1, 0):
     for d1, d2 in ((2, 3), (3, 1), (5, 2), (1, 4), (4, 1), (2, 5), (3, 4), (6, 1)):
         sq = [st]; [sq.append(sq[-1] + (d1 if k % 2 == 0 else d2)) for k in range(4)]; n = sq[-1] + d1
         seq_item(sq, n, 3, [sq[-1] + d2, n + 1])
+
+# growing steps: +1, +2, +3, +4 …
+for st in range(1, 30):
+    for g0 in (1, 2):
+        sq = [st]; [sq.append(sq[-1] + g0 + k) for k in range(4)]; n = sq[-1] + g0 + 4
+        seq_item(sq, n, 3, [n - 1, sq[-1] + (sq[-1] - sq[-2])])
 
 # ---------------- order of operations (comment questions) ----------------
 for _ in range(20000):
