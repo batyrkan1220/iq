@@ -146,7 +146,7 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=2').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=3').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   (data||[]).forEach(r=>(r.question&&r.question.bank||[]).forEach(id=>BANK_USED.add(id)));
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();(data||[]).forEach(r=>(r.question&&r.question.quiz||[]).forEach(q=>usedQ.add(norm(q))));

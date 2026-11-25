@@ -150,23 +150,23 @@ def seq_item(sq, nxt, lvl, wrong):
     add('seq', lvl, f'Келесі сан қандай?\n{shown}, ?', [nxt] + wrong, 0,
         v=f'Қатардағы келесі сан қандай: {", ".join(kz(x) for x in sq)}?', av=kz(nxt))
 for st in range(1, 31):
-    for d in range(2, 13):
+    for d in (2, 3, 4, 5, 10):
         sq = [st + d * k for k in range(4)]; n = sq[-1] + d
         seq_item(sq, n, 2, [n + 1, n - 2] if d > 2 else [n + 2, n + 3])
 for st in range(1, 8):
-    for m in (2, 3):
+    for m in (2,):
         sq = [st * m ** k for k in range(4)]; n = sq[-1] * m
         if n > 5000: continue
         seq_item(sq, n, 3 if m == 3 else 2, [sq[-1] + (sq[-1] - sq[-2]), n - m])
-for st in range(1, 9):
+for st in range(1, 0):
     sq = [(st + k) ** 2 for k in range(4)]; n = (st + 4) ** 2
     seq_item(sq, n, 3, [sq[-1] + (sq[-1] - sq[-2]), n + 1])
-for a_ in range(1, 10):
+for a_ in range(1, 0):
     for b in range(1, 10):
         sq = [a_, b, a_ + b, a_ + 2 * b]
         sq = [a_, b]; [sq.append(sq[-1] + sq[-2]) for _ in range(3)]; n = sq[-1] + sq[-2]
         seq_item(sq, n, 3, [sq[-1] + (sq[-1] - sq[-2]), n + 1])
-for st in range(1, 60):
+for st in range(1, 0):
     for d1, d2 in ((2, 3), (3, 1), (5, 2), (1, 4), (4, 1), (2, 5), (3, 4), (6, 1)):
         sq = [st]; [sq.append(sq[-1] + (d1 if k % 2 == 0 else d2)) for k in range(4)]; n = sq[-1] + d1
         seq_item(sq, n, 3, [sq[-1] + d2, n + 1])
@@ -224,6 +224,8 @@ for f in FACTS: F(*f)
 # ---------------- short logic / IQ-style questions (v2) ----------------
 from quiz_logic_kz import build as build_logic  # noqa: E402
 build_logic(add, R, kz)
+LOGIC = {'cmp', 'days', 'months', 'analogy', 'oddword', 'oddnum', 'missing', 'clock', 'bigger', 'riddle', 'price', 'age', 'seq'}
+items[:] = [i for i in items if i['t'] not in LOGIC or len(i['q'].replace('\n', ' ')) <= 80]
 
 R.shuffle(items)
 for k, it in enumerate(items, 1): it['id'] = k

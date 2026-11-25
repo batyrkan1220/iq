@@ -57,7 +57,7 @@ def build(add, R, kz):
     for _ in range(4000):
         p = R.sample(NAMES, 3)               # p[0] > p[1] > p[2]
         more, less, ask_max, ask_min = R.choice(ATTR)
-        hard = R.random() < .45
+        hard = False   # 5-second rule: no reversed wording
         s1 = f'{p[0][0]} {p[1][1]} {more}' if not (hard and R.random() < .5) else f'{p[1][0]} {p[0][1]} {less}'
         s2 = f'{p[1][0]} {p[2][1]} {more}' if not hard else f'{p[2][0]} {p[1][1]} {less}'
         st = [s1, s2]; R.shuffle(st)
@@ -73,7 +73,7 @@ def build(add, R, kz):
             a = DAYS[(d + k) % 7]
             q = f'Бүгін {DAYS[d]}.\n{"Ертең" if k == 1 else "Бүрсігүні"} қай күн?'
             add('days', 1, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7] if k == 2 else DAYS[(d + 3) % 7]], 0, emo='📅')
-        for k in (3, 4, 5, 10):
+        for k in (3,):
             a = DAYS[(d + k) % 7]
             q = f'Бүгін {DAYS[d]}.\n{k} күннен кейін қай күн болады?'
             add('days', 2, q, [a, DAYS[(d + k + 1) % 7], DAYS[(d + k - 1) % 7]], 0, v=f'Бүгін {DAYS[d]}. {kz(k)} күннен кейін қай күн болады?', emo='📅')
@@ -86,7 +86,7 @@ def build(add, R, kz):
 
     # ---------- 3. months ----------
     for m in range(12):
-        for k in (2, 3, 4, 5, 7, 9):
+        for k in (2, 3):
             a = MONTHS[(m + k) % 12]
             add('months', 2 if k <= 4 else 3, f'{MONTHS_ABL[m].capitalize()} {k} ай\nөткен соң қай ай болады?',
                 [a.capitalize(), MONTHS[(m + k + 1) % 12].capitalize(), MONTHS[(m + k - 1) % 12].capitalize()], 0,
@@ -154,9 +154,9 @@ def build(add, R, kz):
     SQ = [n * n for n in range(2, 13)]
     PR = [p for p in range(2, 60) if all(p % d for d in range(2, int(p ** .5) + 1))]
     for _ in range(4000):
-        kind = R.randint(0, 3)
+        kind = R.choice((0, 1, 1))
         if kind == 0:   # three squares + one non-square
-            three = R.sample(SQ, 3); x = R.choice([n for n in range(10, 140) if n not in SQ and min(abs(n - s) for s in three) < 12]); lvl = 3
+            three = R.sample(SQ[:6], 3); x = R.choice([n for n in range(10, 140) if n not in SQ and min(abs(n - s) for s in three) < 12]); lvl = 3
         elif kind == 1:  # multiples of 5 + one not
             three = R.sample(range(10, 100, 5), 3); x = R.choice([n for n in range(11, 99) if n % 5 and min(abs(n - s) for s in three) < 8]); lvl = 2
         elif kind == 2:  # primes + one composite odd
@@ -178,14 +178,14 @@ def build(add, R, kz):
 
     # ---------- 8. clock ----------
     for _ in range(3000):
-        h, m = R.randint(1, 11), R.choice(range(0, 60, 5)); add_m = R.choice([25, 35, 45, 50, 75, 90, 105, 150])
+        h, m = R.randint(1, 11), R.choice(range(0, 60, 5)); add_m = R.choice([15, 20, 30, 45, 60])
         t = h * 60 + m + add_m; H, M = (t // 60 - 1) % 12 + 1, t % 60
         f = lambda hh, mm: f'{hh}:{mm:02d}'
         w1 = f(H, (M + 10) % 60); w2 = f((H - 2) % 12 + 1, M)
         if len({f(H, M), w1, w2}) < 3: continue
-        add('clock', 2 if add_m < 60 else 3, f'Қазір сағат {f(h, m)}.\n{add_m} минуттан кейін\nсағат неше болады?', [f(H, M), w1, w2], 0,
+        add('clock', 2, f'Қазір сағат {f(h, m)}.\n{add_m} минуттан кейін\nсағат неше?', [f(H, M), w1, w2], 0,
             v=f'Қазір сағат {kz(h)}{" " + kz(m) if m else ""}. {kz(add_m)} минуттан кейін сағат неше болады?', av=f'{kz(H)}{" " + kz(M) if M else ""}', emo='🕰️')
-    for h in range(1, 12):
+    for h in (3, 6, 9):
         ang = min(30 * h, 360 - 30 * h)
         w = sorted({ang + 30, abs(ang - 30) or 45, ang + 60, ang * 2} - {ang, 0})[:2]
         add('clock', 3, f'Сағат {h}:00-де сағат тілдерінің\nарасындағы бұрыш қанша?', [f'{ang}°'] + [f'{x}°' for x in w], 0,
@@ -196,7 +196,8 @@ def build(add, R, kz):
         ('тәулік', 24, 'сағат'), ('сағат', 60, 'минут'), ('апта', 7, 'күн'), ('минут', 60, 'секунд'),
         ('км', 1000, 'метр'), ('кг', 1000, 'грамм'), ('метр', 100, 'см'), ('жыл', 12, 'ай')]
     for big, f, small in U:
-        for n in range(1, 6):
+        if big in ('км', 'жыл', 'минут'): continue
+        for n in range(1, 4):
             for delta in (-3, -2, -1, 0, 1, 2) if f < 100 else (-200, -100, 0, 100, 200):
                 s = n * f + delta * (1 if f < 100 else 1)
                 if s <= 0: continue
@@ -235,37 +236,12 @@ def build(add, R, kz):
     for kg in (1, 2, 3, 4, 5):
         add('riddle', 3, f'Кірпіш {kg} кг және тағы жарты\nкірпішке тең. Бір кірпіш\nнеше кг?', [f'{2 * kg} кг', f'{kg * 1.5:g} кг'.replace('.', ','), f'{kg} кг'], 0,
             v=f'Кірпіш {kz(kg)} килограмм және тағы жарты кірпішке тең. Бір кірпіш неше килограмм?', av=f'{kz(2 * kg)} килограмм', emo=RI)
-    for n in range(3, 13):
-        for t in (2, 3, 4, 5):
-            add('riddle', 3, f'Бөренені бір рет кесу {t} минут.\nОны {n} бөлікке бөлу үшін\nқанша минут керек?', [(n - 1) * t, n * t, (n - 2) * t if n > 3 else (n + 1) * t], 0,
-                v=f'Бөренені бір рет кесу {kz(t)} минут. Оны {kz(n)} бөлікке бөлу үшін қанша минут керек?', av=f'{kz((n - 1) * t)} минут', emo=RI)
-    for L in (10, 12, 20, 24, 30, 40, 60):
-        for s in (2, 3, 4, 5, 6, 10):
-            if L % s or L // s < 3: continue
-            add('riddle', 3, f'{L} метр жолға әр {s} метр сайын\nағаш отырғызылды (басы мен\nсоңына да). Неше ағаш?', [L // s + 1, L // s, L // s - 1], 0,
-                v=f'{kz(L)} метр жолға әр {kz(s)} метр сайын ағаш отырғызылды, басы мен соңына да. Неше ағаш отырғызылды?', av=kz(L // s + 1), emo=RI)
+    for n in range(3, 11):
+        add('riddle', 3, f'Бөренені {n} бөлікке бөлу үшін\nнеше рет кесу керек?', [n - 1, n, n + 1], 0,
+            v=f'Бөренені {kz(n)} бөлікке бөлу үшін неше рет кесу керек?', av=f'{kz(n - 1)} рет', emo=RI)
     for d in range(10, 61, 2):
         add('riddle', 3, f'Тоғандағы балдыр күн сайын\n2 есе көбейеді. {d}-күні тоған толық\nжабылды. Жартысы қай күні жабылды?', [d - 1, d // 2, d - 2], 0,
             v=f'Тоғандағы балдыр күн сайын екі есе көбейеді. {ordw(kz(d))} күні тоған толық жабылды. Тоғанның жартысы қай күні жабылды?', av=f'{ordw(kz(d - 1))} күні', emo=RI)
-    for r in (1, 2, 3):
-        for n in range(4, 13):
-            trap = n * r if n * r != (n - 1) * r else n * r + 1
-            add('riddle', 3, f'1-қабаттан 3-қабатқа шығу\n{2 * r} минут алады. 1-қабаттан {n}-қабатқа\nқанша минутта шығасыз?', [(n - 1) * r, (2 * r * n) // 3 if (2 * r * n) // 3 not in ((n - 1) * r,) else trap + 1, trap], 0,
-                v=f'Бірінші қабаттан үшінші қабатқа шығу {kz(2 * r)} минут алады. Бірінші қабаттан {ordw(kz(n))} қабатқа қанша минутта шығасыз?', av=f'{kz((n - 1) * r)} минутта', emo=RI)
-    for h in range(3, 13):
-        for sec in (2, 4, 6):
-            gap = sec / (3 - 1)
-            for h2 in (h,):
-                pass
-            if h == 3: continue
-            ans = gap * (h - 1)
-            if ans != int(ans): continue
-            add('riddle', 3, f'Сағат 3-те 3 рет соғады,\nоған {sec} секунд кетеді.\n{dsuf(h, kz, loc)} {h} рет соғуға неше секунд?', [int(ans), int(gap * h), int(sec * h / 3) if int(sec * h / 3) not in (int(ans), int(gap * h)) else int(ans) + 2], 0,
-                v=f'Сағат үште үш рет соғады, оған {kz(sec)} секунд кетеді. Сағат {loc(kz(h))} {kz(h)} рет соғуға неше секунд кетеді?', av=f'{kz(int(ans))} секунд', emo=RI)
-    for n in range(3, 9):
-        hs = n * (n - 1) // 2
-        add('riddle', 3, f'{n} адам бір-бірімен бір реттен\nқол алысты. Барлығы неше\nрет қол алысу болды?', [hs, n * (n - 1), n * n], 0,
-            v=f'{kz(n)} адам бір-бірімен бір реттен қол алысты. Барлығы неше рет қол алысу болды?', av=kz(hs), emo=RI)
     for b in range(1, 5):
         for s in range(1, 5):
             add('riddle', 3, f'Менің {b} ағам және {s} әпкем бар.\nОтбасымызда барлығы\nнеше бала?', [b + s + 1, b + s, b + s + 2], 0,
@@ -280,19 +256,19 @@ def build(add, R, kz):
     ITEMS = [('Кітап', 'қалам', 'қаламнан', 'Қалам'), ('Торт', 'шырын', 'шырыннан', 'Шырын'), ('Көйлек', 'белбеу', 'белбеуден', 'Белбеу'),
              ('Сағат', 'бау', 'баудан', 'Бау'), ('Сөмке', 'кілтқап', 'кілтқаптан', 'Кілтқап'), ('Доп', 'насос', 'насостан', 'Насос')]
     for big, small, small_abl, Small in ITEMS:
-        for D in (100, 200, 500, 1000, 2000):
-            for c in (50, 100, 150, 250, 500):
+        for D in (100, 1000):
+            for c in (50, 100):
                 T = D + 2 * c
                 add('price', 3, f'{big} мен {small} бірге {T} ₸.\n{big} {small_abl} {D} ₸ қымбат.\n{Small} қанша тұрады?', [f'{c} ₸', f'{T - D} ₸', f'{c + 50} ₸' if c + 50 != T - D else f'{c + 100} ₸'], 0,
                     v=f'{big} мен {small} бірге {kz(T)} теңге. {big} {small_abl} {kz(D)} теңге қымбат. {Small} қанша тұрады?', av=f'{kz(c)} теңге', emo='💰')
 
     # ---------- 12. ages ----------
-    for M in range(24, 46):
-        for d in range(2, 10):
+    for M in (24, 25, 27, 28, 30, 32, 35, 36, 40):
+        for d in range(2, 6):
             if M % d or M - d < 18: continue
             k = M // d
             if k > 8: continue
-            for f in (d + 2, d + 4, d + 5, 2 * d):
+            for f in (d + 1, d + 2, 2 * d):
                 ans, trap = M + (f - d), k * f
                 if trap == ans or ans > 80: continue
                 add('age', 3, f'Ана {M} жаста, қызы {d} жаста.\nҚызы {f} жаста болғанда,\nанасы неше жаста болады?', [ans, trap, ans + 2], 0,
