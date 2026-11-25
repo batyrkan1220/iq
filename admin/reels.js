@@ -140,7 +140,14 @@ function narr(vopt,st){return `<div class="card" style="background:#faf8ff;borde
 async function usedQs(){const {data:prev}=await sb.from('reels').select('question').eq('format','quiz').order('created_at',{ascending:false}).limit(60);
   const used=[];(prev||[]).forEach(p=>(p.question&&p.question.quiz||[]).forEach(x=>used.push(String(x).replace(/\n/g,' '))));return used}
 async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({lang:lang||S.lang,n,avoid:[...(extra||[]),...await usedQs()]})});
-  const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — ИИ не может написать вопросы':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'). Нажмите ещё раз.');return QUIZ.fromAI(j.items)}
+  const j=await r.json().catch(()=>({}));
+  if(!j.ok){const p=await preparedSet(n,lang||S.lang,extra);if(p){S.qSrc='prepared';return QUIZ.fromAI(p)}
+    throw new Error(/ANTHROPIC_API_KEY/.test(j.error||'')?'В Render не задан ANTHROPIC_API_KEY — ИИ не может написать вопросы':'ИИ не смог написать вопросы ('+(j.error||'HTTP '+r.status)+'), а готовые наборы закончились.')}
+  S.qSrc='ai';return QUIZ.fromAI(j.items)}
+// prepared sets (admin/prepared.js): used when the AI is unavailable; a set is skipped once any of its questions was already used
+async function preparedSet(n,lang,extra){const bank=lang==='kz'?(window.PREPARED_KZ||[]):[];if(!bank.length||n!==4)return null;
+  const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const used=new Set([...(extra||[]),...await usedQs()].map(norm));
+  const set=bank.find(st=>st.every(x=>!used.has(norm(x.q))));return set?set.map(x=>({...x})):null}
 async function genQuiz(){S.lang=$('reLang').value;S.format='quiz';$('reGenErr').textContent='';busy($('reGen'),true,'ИИ пишет вопросы… (≈20–40 сек)');
   try{S.set=await aiQuiz(4);drawSet()}
   catch(e){$('reGenErr').textContent=e.message}busy($('reGen'),false,'✨ Другие 4 вопроса (ИИ)')}
