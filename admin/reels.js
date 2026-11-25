@@ -146,7 +146,7 @@ async function aiQuiz(n,extra,lang){const r=await fetch('/api/reels/quiz',{metho
 // ---------- 📚 offline question bank (admin/quiz-bank.json, scripts/build-quiz-bank.py) ----------
 let BANK=null,BANKP=null;const BANK_USED=new Set();
 const FACTY=new Set(['fact','capital','continent','element']);
-function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=9').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
+function bankLoad(){if(!BANKP)BANKP=fetch('quiz-bank.json?v=10').then(r=>r.json()).then(b=>{BANK=b;return b}).catch(e=>{BANKP=null;throw new Error('База не загрузилась')});return BANKP}
 async function bankUsedLoad(){const {data}=await sb.from('reels').select('question').eq('format','quiz').limit(5000);
   // bank ids change on every rebuild, so used questions are matched by text + options only
   const norm=t=>String(t).replace(/\n/g,' ').replace(/\s+/g,' ').trim().toLowerCase();const usedQ=new Set();const key=x=>norm(x.q)+'|'+[...(x.o||[])].map(String).sort().join('|');(data||[]).forEach(r=>(r.question&&r.question.set||[]).forEach(q=>usedQ.add(key(q))));
@@ -160,7 +160,9 @@ function bankPick(){const free=BANK.filter(x=>!BANK_USED.has(x.id));const pick=[
     let pool=free.filter(x=>lvls.includes(x.l)&&ok(x));if(!pool.length)pool=free.filter(ok);if(!pool.length)pool=free.filter(x=>!pick.includes(x));if(!pool.length)return false;
     const tps=[...new Set(pool.map(x=>x.t))],tp=tps[Math.floor(Math.random()*tps.length)],tpool=pool.filter(x=>x.t===tp);
     const x=tpool[Math.floor(Math.random()*tpool.length)];pick.push(x);topics.add(x.t);if(TEMPL.has(x.t))tm++;return true};
-  if(!(take([1])&&take([1,2])&&take([2])&&take([3])))return null;pick.forEach(x=>BANK_USED.add(x.id));return pick}
+  // Q1 = a hook (the most surprising questions, marked h in the bank) — that is what makes people watch on
+  const hook=()=>{const hs=free.filter(x=>x.h&&!pick.includes(x));if(!hs.length)return take([1]);const x=hs[Math.floor(Math.random()*hs.length)];pick.push(x);topics.add(x.t);if(TEMPL.has(x.t))tm++;return true};
+  if(!(hook()&&take([1,2])&&take([2])&&take([3])))return null;pick.forEach(x=>BANK_USED.add(x.id));return pick}
 async function bankQuiz(lang){if(lang&&lang!=='kz')throw new Error('База пока только на казахском — выберите язык «Казахский».');
   if(!BANK){await bankLoad();await bankUsedLoad()}const p=bankPick();if(!p)throw new Error('В базе закончились неиспользованные вопросы.');
   S.qSrc='bank';const set=QUIZ.fromAI(p);set.forEach((q,i)=>{q.bid=p[i].id;q.t=p[i].t});$('qkDbN')&&($('qkDbN').textContent=`· ${bankFree()}`);return set}
@@ -410,7 +412,7 @@ async function qkVoicesLoad(){{const vs=await voices();if(!vs||!vs.length)throw 
 $('qkVoice').onchange=()=>{if($('qkVoice').value)localStorage.setItem('el_voice',$('qkVoice').value)};
 // offline topic pictures (admin/illus/<emoji code>.webp) — used when FLUX/Claude are unavailable
 const ILL_LOCAL=new Set(['1f92f','2795','2796','1f9e9','1f9ee','1f3b2','2696-fe0f','1f4af','1f522','1f3d9-fe0f','1f30d','1f4cf','23f1-fe0f','1f9ea','1f465','1f4c5','1f5d3-fe0f','1f517','1f50d','2753','1f570-fe0f','1f575-fe0f','1f4b0','1f382']);
-const ILL_TOPIC={animals:'t-animals',body:'t-body',space:'t-space',geo:'t-geo',kz:'t-kz',people:'t-people',food:'t-food',science:'t-science',sport:'t-sport',tech:'t-tech',myth:'t-myth',capital:'1f3d9-fe0f',currency:'1f4b0',landmark:'1f30d',element:'1f9ea'};
+const ILL_TOPIC={animals:'t-animals',body:'t-body',space:'t-space',geo:'t-geo',kz:'t-kz',people:'t-people',food:'t-food',science:'t-science',sport:'t-sport',tech:'t-tech',myth:'t-myth',capital:'1f3d9-fe0f',currency:'1f4b0',landmark:'1f30d',landmarks:'1f30d',element:'1f9ea'};
 function localIll(emo,t){const c=[...String(emo||'')].map(ch=>ch.codePointAt(0).toString(16)).join('-');const f=ILL_TOPIC[t]||(ILL_LOCAL.has(c)?c:['generic','t-myth','t-people','t-science'][Math.floor(Math.random()*4)]);return illBitmap('illus/'+f+'.webp?v=1').catch(()=>null)}
 async function illFor(q){try{const r=await fetch('/api/reels/illus',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Content-Type':'application/json'},body:JSON.stringify({q:q.q,o:q.o,a:q.a,emo:q.emo})});
   const j=await r.json().catch(()=>({}));if(!j.ok)return await localIll(q.emo,q.t);return await illBitmap(j.src||svgUrl(j.svg))}catch(e){return await localIll(q.emo,q.t)}}
