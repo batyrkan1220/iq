@@ -44,39 +44,43 @@ const EF=s=>`${s}px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans
 const cl=x=>Math.max(0,Math.min(1,x)),ease=x=>1-Math.pow(1-x,3);
 function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 function wrap(ctx,text,maxW){const out=[];String(text).split('\n').forEach(par=>{let line='';par.split(' ').forEach(w=>{const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t});out.push(line)});return out}
-let BG=null;function bg(ctx){if(!BG){BG=document.createElement('canvas');BG.width=W;BG.height=H;const b=BG.getContext('2d');b.fillStyle='#f7f8fb';b.fillRect(0,0,W,H);b.fillStyle='#c9cdd8';for(let y=24;y<H;y+=48)for(let x=24;x<W;x+=48){b.beginPath();b.arc(x,y,2.6,0,7);b.fill()}}ctx.drawImage(BG,0,0)}
+let BG=null;function bg(ctx){if(!BG){BG=document.createElement('canvas');BG.width=W;BG.height=H;const b=BG.getContext('2d');
+  const lg=b.createLinearGradient(0,0,W*.4,H);lg.addColorStop(0,'#fbe3f1');lg.addColorStop(.45,'#efe2fb');lg.addColorStop(1,'#ddd0fb');b.fillStyle=lg;b.fillRect(0,0,W,H);
+  [[W*.1,H*.06,620,'rgba(255,207,236,.9)'],[W*.95,H*.2,560,'rgba(226,207,255,.9)'],[W*.5,H*1.02,760,'rgba(208,190,255,.85)'],[W*.05,H*.7,420,'rgba(255,214,240,.55)']].forEach(([x,y,r,c])=>{const g=b.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(255,255,255,0)');b.fillStyle=g;b.fillRect(0,0,W,H)});
+  b.fillStyle='rgba(13,12,22,.55)';b.font=F(800,34);b.textAlign='center';b.textBaseline='middle';b.fillText('iqtest.live',W/2,H-86)}ctx.drawImage(BG,0,0)}
+const INK='#0d0c16';function grad(ctx,x0,x1){const g=ctx.createLinearGradient(x0,0,x1,0);g.addColorStop(0,'#7c3aed');g.addColorStop(.55,'#c13fe0');g.addColorStop(1,'#ff4fa3');return g}
 function draw(ctx,D,t){const T=D.tl;bg(ctx);ctx.textAlign='center';ctx.textBaseline='alphabetic';
   let i=T.qs.findIndex(o=>t<o.e);if(i<0)i=T.qs.length-1;const o=T.qs[i],q=D.set[i],lt=t-o.s,n=T.qs.length;
   const ap=cl(lt/.3);const revealed=t>=o.ra,last=i===n-1;
   // progress bar on top
-  const g=ctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#4f46e5');g.addColorStop(1,'#a855f7');ctx.fillStyle=g;ctx.fillRect(0,0,W*cl(t/T.dur),14);
+  ctx.fillStyle='rgba(255,255,255,.65)';rr(ctx,60,44,W-120,14,7);ctx.fill();const pw=(W-120)*cl(t/T.dur);if(pw>14){ctx.fillStyle=grad(ctx,60,W-60);rr(ctx,60,44,pw,14,7);ctx.fill()}
   // step dots
   const dw=76,gap=22,x0=W/2-(n*dw+(n-1)*gap)/2;ctx.font=F(800,46);ctx.textBaseline='middle';
-  for(let k=0;k<n;k++){const cx=x0+k*(dw+gap)+dw/2,cy=190;if(k===i){ctx.save();ctx.shadowColor='rgba(91,33,182,.35)';ctx.shadowBlur=20;ctx.shadowOffsetY=8;ctx.fillStyle='#5b21b6';ctx.beginPath();ctx.arc(cx,cy,dw/2,0,7);ctx.fill();ctx.restore();ctx.fillStyle='#fff'}else ctx.fillStyle=k<i?'#16a34a':'#111';ctx.fillText(String(k+1),cx,cy+3)}
+  for(let k=0;k<n;k++){const cx=x0+k*(dw+gap)+dw/2,cy=190;ctx.save();if(k===i){ctx.shadowColor='rgba(13,12,22,.35)';ctx.shadowBlur=24;ctx.shadowOffsetY=10;ctx.fillStyle=INK}else{ctx.fillStyle=k<i?'#22c55e':'rgba(255,255,255,.75)'}ctx.beginPath();ctx.arc(cx,cy,dw/2,0,7);ctx.fill();ctx.restore();ctx.fillStyle=k===i||k<i?'#fff':INK;ctx.fillText(k<i?'✓':String(k+1),cx,cy+3)}
   // question
-  ctx.textBaseline='alphabetic';ctx.save();ctx.globalAlpha=ap;ctx.translate(0,(1-ease(ap))*30);ctx.font=F(800,70);try{ctx.letterSpacing='-2px'}catch(e){}ctx.fillStyle='#111';
-  ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=10;ctx.shadowOffsetY=4;const ql=wrap(ctx,q.q,940);ql.forEach((l,k)=>ctx.fillText(l,W/2,350+k*82));ctx.restore();
+  ctx.textBaseline='alphabetic';ctx.save();ctx.globalAlpha=ap;ctx.translate(0,(1-ease(ap))*30);ctx.font=F(800,70);try{ctx.letterSpacing='-2px'}catch(e){}ctx.fillStyle=INK;
+  ctx.shadowColor='rgba(255,255,255,.6)';ctx.shadowBlur=0;ctx.shadowOffsetY=0;const ql=wrap(ctx,q.q,940);ql.forEach((l,k)=>ctx.fillText(l,W/2,350+k*82));ctx.restore();
   // picture tile (stays as is)
-  const tw=600,th=400,tx=(W-tw)/2,ty=350+ql.length*82+10;ctx.save();ctx.globalAlpha=ap;ctx.shadowColor='rgba(20,20,60,.10)';ctx.shadowBlur=34;ctx.shadowOffsetY=14;ctx.fillStyle=q.col;rr(ctx,tx,ty,tw,th,40);ctx.fill();ctx.restore();
-  ctx.save();ctx.globalAlpha=ap;rr(ctx,tx,ty,tw,th,40);ctx.clip();const rg=ctx.createRadialGradient(W/2,ty+th/2,10,W/2,ty+th/2,tw*.6);rg.addColorStop(0,'rgba(255,255,255,.7)');rg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=rg;ctx.fillRect(tx,ty,tw,th);
+  const tw=600,th=400,tx=(W-tw)/2,ty=350+ql.length*82+10;ctx.save();ctx.globalAlpha=ap;ctx.shadowColor='rgba(80,40,140,.22)';ctx.shadowBlur=50;ctx.shadowOffsetY=24;ctx.fillStyle='rgba(255,255,255,.72)';rr(ctx,tx,ty,tw,th,48);ctx.fill();ctx.shadowColor='transparent';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();ctx.restore();
+  ctx.save();ctx.globalAlpha=ap;rr(ctx,tx,ty,tw,th,48);ctx.clip();const rg=ctx.createRadialGradient(W/2,ty+th/2,10,W/2,ty+th/2,tw*.6);rg.addColorStop(0,'rgba(255,255,255,.7)');rg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=rg;ctx.fillRect(tx,ty,tw,th);
   if(q.img){const z=1.03+.015*Math.sin(t*1.6);ctx.drawImage(q.img,W/2-tw*z/2,ty+th/2-th*z/2,tw*z,th*z)}
   else{ctx.textBaseline='middle';ctx.font=EF(250);ctx.fillText(q.emo,W/2,ty+th/2+12+Math.sin(t*2.2)*6)}ctx.restore();
   // timer bar (old style: black outline, purple fill) + seconds
   const by=ty+th+44,bx=110,bw=W-220,bh=84;
-  if(!revealed){ctx.save();ctx.globalAlpha=ap;ctx.fillStyle='#fff';rr(ctx,bx,by,bw,bh,42);ctx.fill();ctx.lineWidth=6;ctx.strokeStyle='#111';ctx.stroke();
+  if(!revealed){ctx.save();ctx.globalAlpha=ap;ctx.fillStyle='rgba(255,255,255,.72)';ctx.shadowColor='rgba(80,40,140,.15)';ctx.shadowBlur=30;ctx.shadowOffsetY=12;rr(ctx,bx,by,bw,bh,42);ctx.fill();ctx.shadowColor='transparent';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.stroke();
     // bar grows smoothly from zero (no minimum width → no stall at the start of the countdown)
-    const w8=Math.max(0,t-o.ts),p=cl(w8/5),fw=(bw-16)*p;if(t>=o.ts&&fw>1){const fg=ctx.createLinearGradient(bx,0,bx+bw,0);fg.addColorStop(0,'#4f46e5');fg.addColorStop(1,'#7c3aed');ctx.fillStyle=fg;rr(ctx,bx+8,by+8,fw,bh-16,Math.min(34,fw/2));ctx.fill()}
+    const w8=Math.max(0,t-o.ts),p=cl(w8/5),fw=(bw-16)*p;if(t>=o.ts&&fw>1){ctx.fillStyle=grad(ctx,bx,bx+bw);rr(ctx,bx+8,by+8,fw,bh-16,Math.min(34,fw/2));ctx.fill()}
     // seconds appear only when the countdown really starts; each new number pops in, in sync with the tick sound
     if(t>=o.ts){const sec=Math.max(1,Math.ceil(5-w8)),fr=w8-Math.floor(w8),pz=1+.45*Math.exp(-fr*9);ctx.translate(W/2,by+bh+40);ctx.scale(pz,pz);
-      ctx.font=F(800,48);ctx.fillStyle=sec<=2?'#dc2626':'#5b21b6';ctx.textBaseline='middle';ctx.fillText(String(sec),0,0)}ctx.restore()}
+      ctx.font=F(800,48);ctx.fillStyle=sec<=2?'#e0409a':INK;ctx.textBaseline='middle';ctx.fillText(String(sec),0,0)}ctx.restore()}
   // options
   const oy=by+bh+100,ow=780,oh=118,og=24;ctx.font=F(800,q.o.some(s=>s.length>14)?50:q.o.some(s=>s.length>10)?58:64);
   q.o.forEach((s,k)=>{const p=cl((lt-.15-k*.08)/.3);const ok=revealed&&!last&&k===q.a;const y=oy+k*(oh+og);
     ctx.save();ctx.globalAlpha=p*(revealed&&!last&&!ok?.55:1);ctx.translate(0,(1-ease(p))*36);
     const sc=ok?1+.05*Math.max(0,Math.sin((t-o.ra)*10))*Math.exp(-(t-o.ra)*2):1;ctx.translate(W/2,y+oh/2);ctx.scale(sc,sc);ctx.translate(-W/2,-(y+oh/2));
-    ctx.shadowColor=ok?'rgba(22,163,74,.35)':'rgba(20,20,60,.08)';ctx.shadowBlur=ok?34:18;ctx.shadowOffsetY=ok?14:6;ctx.fillStyle=ok?'#16a34a':'#fff';rr(ctx,(W-ow)/2,y,ow,oh,36);ctx.fill();ctx.shadowColor='transparent';
-    if(!ok){ctx.lineWidth=4;ctx.strokeStyle='#e3e5ee';rr(ctx,(W-ow)/2,y,ow,oh,36);ctx.stroke()}
-    ctx.fillStyle=ok?'#fff':'#111';ctx.textBaseline='middle';ctx.fillText(ok?s+'  ✓':s,W/2,y+oh/2+3);ctx.restore()});
+    ctx.shadowColor=ok?'rgba(34,197,94,.4)':'rgba(80,40,140,.14)';ctx.shadowBlur=ok?40:26;ctx.shadowOffsetY=ok?16:10;ctx.fillStyle=ok?'#22c55e':'rgba(255,255,255,.8)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.fill();ctx.shadowColor='transparent';
+    if(!ok){ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';rr(ctx,(W-ow)/2,y,ow,oh,oh/2);ctx.stroke()}
+    ctx.fillStyle=ok?'#fff':INK;ctx.textBaseline='middle';ctx.fillText(ok?s+'  ✓':s,W/2,y+oh/2+3);ctx.restore()});
 }
 return{fromAI,voices,timeline,mix,draw,CTA};
 })();
