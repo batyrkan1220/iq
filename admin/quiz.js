@@ -62,7 +62,7 @@ function mix(T,c,bg,sfx){sfx=sfx||{};const N=Math.ceil(T.dur*SR)+SR,voice=new Fl
   const vRef=actRms(voice)||.1;
   const fit=(x,db)=>{if(!x)return null;const r=actRms(x);if(!r)return null;const g=vRef*Math.pow(10,db/20)/r;return Float32Array.from(x,v=>v*g)};
   const L={start:fit(sfx.start,-3),next:fit(sfx.next,-5),timer:fit(sfx.timer,-7),answer:fit(sfx.answer,-3),
-    pops:opPop.map(x=>fit(x,-12)),dun:fit(dun,-5),tick:fit(tickOrig,-8),correct:fit(correct,-4)};
+    pops:opPop.map(x=>fit(x,-12)),dun:fit(sfx.cta,-4)||fit(dun,-5),tick:fit(tickOrig,-8),correct:fit(correct,-4)};
   if(L.start)add(fx,.08,L.start);                                                   // video start: UI sound #1
   T.qs.forEach((o,i)=>{const nx=L.next||L.start;if(i>0&&nx)add(fx,o.s,nx)});         // question change: 'crisp UI next'
   T.qs.forEach((o,i)=>{
