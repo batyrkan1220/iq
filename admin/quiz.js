@@ -55,12 +55,20 @@ function mix(T,c,bg,sfx){sfx=sfx||{};const N=Math.ceil(T.dur*SR)+SR,voice=new Fl
   const dun=new Float32Array(1.4*SR|0);add(dun,0,mx(vox(hz(45),.35,.22,'sq',.005,6),vox(hz(57),.35,.08,'tri',.005,6)));add(dun,.38,mx(vox(hz(44),1.0,.24,'sq',.005,2.6),vox(hz(56),1.0,.09,'tri',.005,2.6))); // A2 → G#2 "dun-duuun"
   // user-supplied samples (from their reference TikTok): question-start hit + 5 s timer ticks
   // user-chosen UI sound (#1 from their SFX video): at the very start of the video and on every question change
-  if(sfx.start)add(fx,.08,sfx.start,.55);                                  // video start: UI sound #1
-  T.qs.forEach((o,i)=>{if(i>0&&(sfx.next||sfx.start))add(fx,o.s,sfx.next||sfx.start,sfx.next?.6:.55)}); // question change: 'crisp UI next'
+  // ---- loudness matching: every effect is scaled to a fixed level relative to the ElevenLabs voice ----
+  // active RMS = RMS over 20 ms windows that are within 30 dB of the loudest window (ignores silence/tails)
+  const actRms=x=>{if(!x||!x.length)return 0;const w=SR*.02|0,r=[];for(let i=0;i+w<=x.length;i+=w){let q=0;for(let k=i;k<i+w;k++)q+=x[k]*x[k];r.push(q/w)}
+    if(!r.length)return 0;const mxr=Math.max(...r),th=mxr*1e-3;let t=0,n=0;for(const v of r)if(v>=th){t+=v;n++}return Math.sqrt(t/n)};
+  const vRef=actRms(voice)||.1;
+  const fit=(x,db)=>{if(!x)return null;const r=actRms(x);if(!r)return null;const g=vRef*Math.pow(10,db/20)/r;return Float32Array.from(x,v=>v*g)};
+  const L={start:fit(sfx.start,-3),next:fit(sfx.next,-5),timer:fit(sfx.timer,-7),answer:fit(sfx.answer,-3),
+    pops:opPop.map(x=>fit(x,-12)),dun:fit(dun,-5),tick:fit(tickOrig,-8),correct:fit(correct,-4)};
+  if(L.start)add(fx,.08,L.start);                                                   // video start: UI sound #1
+  T.qs.forEach((o,i)=>{const nx=L.next||L.start;if(i>0&&nx)add(fx,o.s,nx)});         // question change: 'crisp UI next'
   T.qs.forEach((o,i)=>{
-    opPop.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
-    if(sfx.timer)add(fx,o.ts,sfx.timer,.6);else for(let k=0;k<5;k++)add(fx,o.ts+k,tickOrig,k>=3?1.4:.9);   // user's 5 s timer sound   // the original timer tick (one per second, louder for the last 2)
-    add(fx,o.ra,i<T.qs.length-1?(sfx.answer||correct):dun,i<T.qs.length-1&&sfx.answer?.7:1)});   // answer reveal: user's sound
+    L.pops.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
+    if(L.timer)add(fx,o.ts,L.timer);else for(let k=0;k<5;k++)add(fx,o.ts+k,L.tick,k>=3?1.3:1);   // 5 s timer sound
+    add(fx,o.ra,i<T.qs.length-1?(L.answer||L.correct):L.dun)});                   // answer reveal
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
 // ---------- drawing (iqtest.live riddle style) ----------
