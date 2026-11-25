@@ -34,30 +34,26 @@ function mix(T,c,bg){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mu
   else{const P=notes.map(pl);for(let b=0;b*beat<T.dur+1;b++){add(mus,b*beat,P[b%8]);if(b%4===0)add(mus,b*beat,kick)}}
   const win=.25*SR|0;let acc=0;const env=new Float32Array(N);for(let k=0;k<N;k++){acc+=Math.abs(voice[k]);if(k>=win)acc-=Math.abs(voice[k-win]);env[k]=acc/win}
   const end=T.dur*SR|0;for(let k=0;k<N;k++){const d=1-(bg?.72:.6)*Math.min(1,env[Math.min(N-1,k+(win>>1))]/.03);const fi=Math.min(1,k/(.6*SR)),fo=k>end?0:Math.min(1,(end-k)/(1.5*SR));mus[k]*=d*fi*fo*.8}
-  // ---------- sound effects (rebuilt 2026-11-25): swoosh + pop on a new question, plinks for the options,
-  // clock ticks for the countdown, sparkly success chime on the answer, "question" two-note on the last one ----------
-  const rnd=(()=>{let x=12345;return()=>{x=(x*1103515245+12345)&0x7fffffff;return x/0x3fffffff-1}})();
-  const envAD=(n,a,d)=>k=>{const t=k/SR;return t<a?t/a:Math.exp(-(t-a)*d)};
-  // simple resonant band-pass (biquad) over noise with a frequency sweep
-  const sweepNoise=(len,f0,f1,q,vol)=>{const n=len*SR|0,o=new Float32Array(n);let x1=0,x2=0,y1=0,y2=0;
-    for(let k=0;k<n;k++){const p=k/n,f=f0*Math.pow(f1/f0,p),w=2*Math.PI*f/SR,al=Math.sin(w)/(2*q),b0=al,a0=1+al,a1=-2*Math.cos(w),a2=1-al;
-      const xi=rnd(),y=(b0*xi-b0*x2-a1*y1-a2*y2)/a0;x2=x1;x1=xi;y2=y1;y1=y;o[k]=y*vol*Math.sin(Math.PI*p)}return o};
-  const sine=(f0,f1,len,vol,a,d,h2=0)=>{const n=len*SR|0,o=new Float32Array(n),e=envAD(n,a,d);let ph=0;
-    for(let k=0;k<n;k++){const p=k/n,f=f0*Math.pow(f1/f0,p);ph+=2*Math.PI*f/SR;o[k]=vol*e(k)*(Math.sin(ph)+h2*Math.sin(2*ph))}return o};
-  const bell=(f,len,vol)=>mx(sine(f,f,len,vol,.004,6,.12),sine(f*2.76,f*2.76,len*.6,vol*.22,.002,12),sine(f*5.4,f*5.4,len*.3,vol*.08,.001,22));
-  const at=(buf,src,t0,g=1)=>add(buf,t0,src,g);
-  const swoosh=mx(sweepNoise(.32,700,5200,1.4,.16),sine(110,55,.22,.18,.005,14));           // whoosh + soft thump
-  const popIn=sine(900,380,.12,.22,.002,28,.2);                                               // bubbly pop
-  const plink=[1320,1480,1660].map(f=>sine(f,f*.98,.09,.09,.001,45,.15));                     // options appear
-  const tickA=mx(sweepNoise(.025,3500,3500,6,.5),sine(1900,1800,.03,.08,.0005,120));          // clock tick
-  const tickB=mx(sweepNoise(.03,4800,4800,6,.6),sine(2600,2500,.04,.12,.0005,90));            // last 2 seconds: higher
-  const shimmer=sweepNoise(.6,6000,11000,3,.05);
-  const chime=new Float32Array(1.2*SR|0);[1046.5,1318.5,1568,2093].forEach((f,k)=>add(chime,k*.06,bell(f,1.0,.16)));add(chime,.05,shimmer);
-  const ask=new Float32Array(.9*SR|0);add(ask,0,bell(659.3,.5,.16));add(ask,.18,bell(987.8,.6,.17));                 // rising "?" two-note
-  T.qs.forEach((o,i)=>{at(fx,swoosh,Math.max(0,o.s-.05),.9);at(fx,popIn,o.s+.12,.8);
-    plink.forEach((pl,k)=>at(fx,pl,o.s+.15+k*.08+.12,.8));
-    for(let k=0;k<5;k++)at(fx,k>=3?tickB:tickA,o.ts+k,1);
-    at(fx,i<T.qs.length-1?chime:ask,o.ra,.9)});
+  // ---------- sound effects v3 (soft & pleasant): all tones are mellow mallet/kalimba notes from the
+  // C-major pentatonic (fits Light 7: Am F C G), soft attacks, no noise, light room reverb on the FX bus ----------
+  const hz=m=>440*Math.pow(2,(m-69)/12);
+  // mallet: sine fundamental + soft 4x partial (marimba) or 2.76x (kalimba-ish), 4 ms attack so nothing clicks
+  const mallet=(m,len,vol,kind=0)=>{const f=hz(m),n=len*SR|0,o=new Float32Array(n),p2=kind?2.76:3.99,a=.004*SR;
+    for(let k=0;k<n;k++){const t=k/SR,at=k<a?k/a:1;o[k]=vol*at*(Math.sin(2*Math.PI*f*t)*Math.exp(-t*(kind?4.5:6))+.18*Math.sin(2*Math.PI*f*p2*t)*Math.exp(-t*30)+.06*Math.sin(4*Math.PI*f*t)*Math.exp(-t*10))}return o};
+  const seq=(notes,step,len,vol,kind)=>{const o=new Float32Array(((notes.length-1)*step+len)*SR|0);notes.forEach((m,k)=>add(o,k*step,mallet(m,len,vol*(1-k*.04),kind)));return o};
+  const glide=(f0,f1,len,vol)=>{const n=len*SR|0,o=new Float32Array(n);let ph=0;for(let k=0;k<n;k++){const p=k/n;ph+=2*Math.PI*(f0+(f1-f0)*(1-Math.pow(1-p,3)))/SR;o[k]=vol*Math.sin(ph)*Math.sin(Math.PI*Math.min(1,p*1.6))*Math.exp(-p*2)}return o};
+  const nextQ=mx(seq([72,74,76,79],.045,.5,.09,1),glide(420,840,.22,.05));      // soft harp-like run up + gentle "bloop"
+  const optN=[76,79,81].map(m=>mallet(m,.35,.07,0));                           // E5 G5 A5 as the answers pop in
+  const tickLo=mallet(69,.22,.075,0),tickHi=mallet(76,.25,.085,0);            // A4 … then E5 for the last two seconds
+  const correct=seq([72,76,79,84],.075,1.3,.13,1);                              // C E G C kalimba arpeggio
+  const askQ=seq([69,76],.16,1.0,.12,1);                                        // A → E, an open "question" interval
+  T.qs.forEach((o,i)=>{add(fx,Math.max(0,o.s-.02),nextQ);
+    optN.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
+    for(let k=0;k<5;k++)add(fx,o.ts+k,k>=3?tickHi:tickLo);
+    add(fx,o.ra,i<T.qs.length-1?correct:askQ)});
+  // light room reverb (4 feedback combs) so the effects sit softly in the mix
+  {const wet=new Float32Array(N);[[1557,.62],[1617,.6],[1491,.63],[1422,.64]].forEach(([d,g])=>{const b=new Float32Array(N);for(let k=0;k<N;k++){b[k]=fx[k]+(k>=d?b[k-d]*g:0);wet[k]+=b[k]*.05}});
+   let lp=0;for(let k=0;k<N;k++){lp+=(wet[k]-lp)*.25;fx[k]+=lp}}
   const out=new Float32Array(N);let m=0;for(let k=0;k<N;k++){out[k]=voice[k]+mus[k]+fx[k];m=Math.max(m,Math.abs(out[k]))}const g=m>.97?.97/m:1;for(let k=0;k<N;k++)out[k]*=g;return out}
 
 // ---------- drawing (iqtest.live riddle style) ----------
