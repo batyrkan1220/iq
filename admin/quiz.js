@@ -52,7 +52,7 @@ function mix(T,c,bg){const N=Math.ceil(T.dur*SR)+SR,voice=new Float32Array(N),mu
   const beep=vox(hz(81),.14,.07,'sq',.004,9);                                       // countdown beep (A5)
   const correct=new Float32Array(1.1*SR|0);add(correct,0,mx(bellv(84,.5,.15),vox(hz(84),.18,.05,'tri',.003,10)));add(correct,.11,mx(bellv(88,.9,.17),vox(hz(88),.3,.05,'tri',.003,7)));add(correct,.11,bellv(91,.8,.07)); // C7→E7(+G) ding-ding!
   const dun=new Float32Array(1.4*SR|0);add(dun,0,mx(vox(hz(45),.35,.22,'sq',.005,6),vox(hz(57),.35,.08,'tri',.005,6)));add(dun,.38,mx(vox(hz(44),1.0,.24,'sq',.005,2.6),vox(hz(56),1.0,.09,'tri',.005,2.6))); // A2 → G#2 "dun-duuun"
-  T.qs.forEach((o,i)=>{add(fx,Math.max(0,o.s-.05),reveal);
+  T.qs.forEach((o,i)=>{/* no reveal sound at the start of a question (removed on request) */
     opPop.forEach((x,k)=>add(fx,o.s+.27+k*.08,x));
     for(let k=0;k<5;k++){add(fx,o.ts+k,k%2?tock:tick);add(fx,o.ts+k+.5,k%2?tick:tock,.55);if(k>=3)add(fx,o.ts+k,beep)}
     add(fx,o.ra,i<T.qs.length-1?correct:dun)});
