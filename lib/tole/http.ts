@@ -139,6 +139,18 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, pathn
     return true;
   }
 
+  if (pathname === "/api/creative/bg" && req.method === "POST") {
+    const who = await requireAdmin(req, ctx);
+    if (typeof who !== "string") { send(res, who.error === "forbidden" ? 403 : 401, who); return true; }
+    const raw = await readRaw(req, 4 * 1024);
+    let b: { scene?: string; custom?: string } = {};
+    try { b = JSON.parse(raw?.toString("utf8") || "{}"); } catch { send(res, 400, { error: "bad_json" }); return true; }
+    const { makeScene } = await import("../illus.ts");
+    const out = await makeScene(String(b.scene || ""), b.custom ? String(b.custom) : undefined);
+    if (!out.ok) log.log("warn", "creative bg failed", { error: String(out.error).slice(0, 120) });
+    send(res, out.ok ? 200 : 502, out);
+    return true;
+  }
   if (pathname === "/api/reels/illus" && req.method === "POST") {
     const who = await requireAdmin(req, ctx);
     if (typeof who !== "string") { send(res, who.error === "forbidden" ? 403 : 401, who); return true; }

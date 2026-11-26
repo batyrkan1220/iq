@@ -243,6 +243,27 @@ export async function topicImage(emo?: string): Promise<{ ok: true; src: string;
   return { ok: false, error: "no_cache_no_flux" };
 }
 
+// ---- ad creatives: one FLUX scene picture (square), no text in the image; the admin page lays text/logo/CTA over it ----
+export const CREATIVE_SCENES: Record<string, string> = {
+  thinker: "A cheerful young Kazakh woman thinking with a finger on her chin, soft glowing light bulb above her head",
+  brain: "A glossy cute 3D brain glowing with soft purple and pink light, small sparkles around it",
+  puzzle: "Colorful glossy 3D jigsaw puzzle pieces floating and clicking together, one glowing piece",
+  student: "A young Kazakh man at a desk solving a puzzle on a laptop, curious and focused, cozy room",
+  bulb: "A big glowing light bulb with a tiny galaxy inside it, sparkles, magical idea moment",
+  rocket: "A small cute rocket launching upward from an open book, trail of sparkles, success and growth",
+  maze: "A colorful 3D labyrinth seen from above with a glowing exit, a tiny figure finding the way",
+  chess: "A glossy 3D chess king piece on a board with soft spotlight, strategic thinking mood",
+};
+export async function makeScene(key: string, custom?: string): Promise<{ ok: true; src: string } | { ok: false; error: string }> {
+  const subject = (custom && custom.trim().slice(0, 300)) || CREATIVE_SCENES[key] || CREATIVE_SCENES.brain;
+  const prompt = `${subject}. Soft pastel 3D illustration, lavender, violet and pink palette, clean gradient background, centered subject, square composition, high detail, premium advertising look. Absolutely no text, no letters, no numbers, no words, no logos, no watermark.`;
+  if (!fluxConfigured()) return { ok: false, error: "flux_not_configured" };
+  const r = await slot(() => cfRun(CF_IMG, { prompt, steps: 8, seed: Math.floor(Math.random() * 1e9) }));
+  const b64 = r.json?.result?.image || r.json?.image;
+  if (r.ok && b64) return { ok: true, src: "data:image/jpeg;base64," + b64 };
+  return { ok: false, error: "cloudflare_" + r.status + ": " + String(r.json?.errors?.[0]?.message || "").slice(0, 160) };
+}
+
 export function fluxPrompt(subject: string): string {
   const s = subject.replace(/^["'\s]+|["'\s]+$/g, "").slice(0, 400);
   return `${s}. Bright friendly 3D cartoon illustration, soft studio lighting, clean pastel background, single centered subject, high detail, vibrant colors, landscape composition. Absolutely no text, no letters, no numbers, no words, no captions, no watermark, no logos, no flags.`;
